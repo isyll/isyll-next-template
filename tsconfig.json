@@ -1,4 +1,8 @@
 {
-  "extends": "@workspace/typescript-config/base.json"
+  "extends": "@workspace/typescript-config/internal-package.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["*.ts", "*.mts", "scripts/**/*.ts"],
+  "exclude": ["node_modules", "apps", "packages"]
 }
-
