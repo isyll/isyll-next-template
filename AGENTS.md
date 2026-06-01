@@ -17,7 +17,7 @@ for the **current** project's brief (created by `pnpm project:init`).
 ## Layout
 
 ```text
-apps/web                      Next.js 16 app (App Router, src/)
+apps/web                      Next.js 16 app (App Router, no src/ — app code at the package root)
 packages/core                 framework-agnostic: Result, AppError, DTOs, env
 packages/db                   Drizzle ORM + PostgreSQL (schema, migrations, DTOs)
 packages/auth                 BetterAuth server + env-gated social providers
@@ -30,7 +30,7 @@ tests/load                    k6 load tests
 
 1. **Server-first.** Default to Server Components + Server Actions. The only API
    route is `/api/auth/[...all]`. Use `next-safe-action` (`actionClient`,
-   `authActionClient`, `adminActionClient` in `apps/web/src/lib/safe-action.ts`).
+   `authActionClient`, `adminActionClient` in `apps/web/lib/safe-action.ts`).
 2. **Security.** Re-verify auth AND ownership inside every action/DAL — page or
    `proxy.ts` checks are not enough. Validate all input with Zod. Return DTOs,
    never raw rows.
