@@ -28,12 +28,18 @@ tests/load                    k6 load tests
 
 ## Golden rules
 
-1. **Server-first.** Default to Server Components + Server Actions. The only API
-   route is `/api/auth/[...all]`. Use `next-safe-action` (`actionClient`,
-   `authActionClient`, `adminActionClient` in `apps/web/lib/safe-action.ts`).
+1. **Server-first.** Default to Server Components + Server Actions. The API
+   routes are the two BetterAuth catch-alls (`/api/auth/[...all]` for users,
+   `/admin/api/auth/[...all]` for admins). Use `next-safe-action`:
+   `actionClient` / `authActionClient` (`apps/web/lib/safe-action.ts`) for user
+   actions, `adminActionClient` (`apps/web/lib/admin-safe-action.ts`) for admin
+   actions.
 2. **Security.** Re-verify auth AND ownership inside every action/DAL — page or
    `proxy.ts` checks are not enough. Validate all input with Zod. Return DTOs,
-   never raw rows.
+   never raw rows. Admins are a **separate, isolated system**: their own
+   BetterAuth instance (`@workspace/auth/admin`), their own DB schema/role
+   (`@workspace/db/admin`), their own cookies. End users have no `role` column;
+   never mix the two.
 3. **DB access** only through `@workspace/db` (`server-only`). Migrations are
    hand-written pure SQL (up/down) under `packages/db/migrations/`. Schema
    changes → `pnpm db:migrate:new <name>`, write the SQL, mirror it in the

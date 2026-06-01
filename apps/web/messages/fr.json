@@ -52,6 +52,22 @@
     "welcome": "Bienvenue, {name}",
     "signedInAs": "Connecté en tant que {email}"
   },
+  "Admin": {
+    "title": "Administration",
+    "loginTitle": "Connexion administrateur",
+    "loginSubtitle": "Espace réservé aux administrateurs",
+    "registerTitle": "Créer un administrateur",
+    "registerSubtitle": "Disponible uniquement lorsque les inscriptions sont activées",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "name": "Nom complet",
+    "signIn": "Se connecter",
+    "signUp": "Créer",
+    "signOut": "Se déconnecter",
+    "created": "Administrateur créé",
+    "welcome": "Connecté en tant que {email}",
+    "role": "Rôle"
+  },
   "Validation": {
     "required": "Ce champ est obligatoire",
     "email": "Adresse e-mail invalide",
