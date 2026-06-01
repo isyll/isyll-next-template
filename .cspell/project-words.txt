@@ -26,6 +26,8 @@ datasource
 postgres
 postgresql
 timestamptz
+nginx
+initdb
 jsdom
 vitest
 playwright
