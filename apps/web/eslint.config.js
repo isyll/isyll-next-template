@@ -1,4 +1,5 @@
-import { nextJsConfig } from "@workspace/eslint-config/next-js"
+import { nextJsConfig } from '@workspace/eslint-config/next-js'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
-/** @type {import("eslint").Linter.Config} */
-export default nextJsConfig
+// e2e specs are type-checked and run by Playwright's own toolchain.
+export default defineConfig(globalIgnores(['e2e/**']), ...nextJsConfig)

@@ -1,0 +1,25 @@
+name: Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Target base URL
+        required: false
+        default: http://localhost:3000
+
+permissions:
+  contents: read
+
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: grafana/setup-k6-action@v1
+      - uses: grafana/run-k6-action@v1
+        with:
+          path: tests/load/script.ts
+        env:
+          BASE_URL: ${{ inputs.base_url }}

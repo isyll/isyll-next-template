@@ -1,0 +1,46 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - '/'
+      - '/apps/*'
+      - '/packages/*'
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps)'
+    labels:
+      - dependencies
+      - javascript
+    groups:
+      production-minor-patch:
+        applies-to: version-updates
+        dependency-type: production
+        patterns: ['*']
+        update-types: [minor, patch]
+      development-minor-patch:
+        applies-to: version-updates
+        dependency-type: development
+        patterns: ['*']
+        update-types: [minor, patch]
+      major-updates:
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: [major]
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: 'ci(deps)'
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      github-actions:
+        patterns: ['*']

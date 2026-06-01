@@ -1,0 +1,31 @@
+{
+  "name": "@workspace/auth",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "BetterAuth server + client: email/password and env-gated social providers.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./social": "./src/social.ts",
+    "./email": "./src/email.ts",
+    "./env": "./src/env.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "auth:generate": "better-auth generate --config ./src/auth.ts --output ../db/src/schema/auth.ts -y"
+  },
+  "dependencies": {
+    "@workspace/core": "workspace:*",
+    "@workspace/db": "workspace:*",
+    "better-auth": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  }
+}
