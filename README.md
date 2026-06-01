@@ -1,4 +1,4 @@
-# Isyll Next Template
+# Next Monorepo Template
 
 A server-first **Next.js 16** monorepo template (pnpm + Turborepo) for building
 modern, high-traffic web apps fast — strict TypeScript, authentication,
@@ -44,21 +44,22 @@ tests/load      k6 load tests
 
 ## Scripts
 
-| Command             | Description                                        |
-| ------------------- | -------------------------------------------------- |
-| `pnpm dev`          | Run all apps in watch mode                         |
-| `pnpm build`        | Production build                                   |
-| `pnpm check`        | lint + typecheck + test + build + spellcheck + fmt |
-| `pnpm lint`         | ESLint (type-aware) across the workspace           |
-| `pnpm typecheck`    | `tsc --noEmit` across the workspace                |
-| `pnpm test`         | Vitest unit/component tests                        |
-| `pnpm test:e2e`     | Playwright end-to-end tests                        |
-| `pnpm test:load`    | k6 load test (`BASE_URL` env)                      |
-| `pnpm ui:add <c>`   | Add a shadcn component to `packages/ui`            |
-| `pnpm db:generate`  | Generate a SQL migration from the schema           |
-| `pnpm db:migrate`   | Apply pending migrations                           |
-| `pnpm db:studio`    | Open Drizzle Studio                                |
-| `pnpm project:init` | Initialize the template for a new project          |
+| Command                      | Description                                        |
+| ---------------------------- | -------------------------------------------------- |
+| `pnpm dev`                   | Run all apps in watch mode                         |
+| `pnpm build`                 | Production build                                   |
+| `pnpm check`                 | lint + typecheck + test + build + spellcheck + fmt |
+| `pnpm lint`                  | ESLint (type-aware) across the workspace           |
+| `pnpm typecheck`             | `tsc --noEmit` across the workspace                |
+| `pnpm test`                  | Vitest unit/component tests                        |
+| `pnpm test:e2e`              | Playwright end-to-end tests                        |
+| `pnpm test:load`             | k6 load test (`BASE_URL` env)                      |
+| `pnpm ui:add <c>`            | Add a shadcn component to `packages/ui`            |
+| `pnpm db:migrate:new <name>` | Scaffold a numbered up/down SQL migration          |
+| `pnpm db:migrate`            | Apply pending migrations                           |
+| `pnpm db:rollback`           | Roll back the last migration                       |
+| `pnpm db:studio`             | Open Drizzle Studio                                |
+| `pnpm project:init`          | Initialize the template for a new project          |
 
 ## Conventions
 

@@ -28,7 +28,7 @@ export function proxy(request: NextRequest): NextResponse {
     return NextResponse.next()
   }
 
-  const sessionCookie = getSessionCookie(request, { cookiePrefix: 'isyll' })
+  const sessionCookie = getSessionCookie(request, { cookiePrefix: 'app' })
   if (!sessionCookie) {
     return NextResponse.redirect(new URL('/login', request.url))
   }

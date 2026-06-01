@@ -1,11 +1,12 @@
 /**
  * Bootstraps this template for a new project: renames the root package, updates
- * the app metadata / French messages / BetterAuth identity, the README title,
- * creates `.env`, and writes the `PROJECT.md` brief.
+ * the app metadata / French messages / BetterAuth identity, the GitHub owner
+ * references, the README title, creates `.env`, and writes the `PROJECT.md`
+ * brief.
  *
  * Usage:
  *   pnpm project:init [--name <kebab>] [--display-name <name>]
- *                     [--description <text>] [--yes]
+ *                     [--description <text>] [--owner <github-handle>] [--yes]
  */
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -15,11 +16,16 @@ import { parseArgs } from 'node:util'
 
 const ROOT = join(import.meta.dirname, '..')
 
+// Placeholders baked into the template that this script rewrites.
+const TEMPLATE_NAME = 'next-monorepo-template'
+const TEMPLATE_OWNER = 'isyll'
+
 const { values } = parseArgs({
   options: {
     name: { type: 'string' },
     'display-name': { type: 'string' },
     description: { type: 'string' },
+    owner: { type: 'string' },
     yes: { type: 'boolean', default: false },
     help: { type: 'boolean', default: false },
   },
@@ -27,7 +33,7 @@ const { values } = parseArgs({
 
 if (values.help) {
   console.log(
-    'Usage: pnpm project:init [--name <kebab>] [--display-name <name>] [--description <text>] [--yes]'
+    'Usage: pnpm project:init [--name <kebab>] [--display-name <name>] [--description <text>] [--owner <github-handle>] [--yes]'
   )
   process.exit(0)
 }
@@ -58,6 +64,7 @@ const displayName = values['display-name'] ?? (await ask('Display name', name))
 const description =
   values.description ??
   (await ask('One-line description', 'A modern web application.'))
+const owner = values.owner ?? (await ask('GitHub owner/org', TEMPLATE_OWNER))
 const cookiePrefix = name.split('-')[0] ?? name
 
 function replaceInFile(
@@ -74,25 +81,37 @@ function replaceInFile(
 }
 
 replaceInFile('package.json', [
-  ['"name": "isyll-next-template"', `"name": "${name}"`],
+  [`"name": "${TEMPLATE_NAME}"`, `"name": "${name}"`],
 ])
 
 replaceInFile('apps/web/messages/fr.json', [
-  ['"appName": "Isyll"', `"appName": "${displayName}"`],
-  ['"title": "Isyll — Modèle Next.js"', `"title": "${displayName}"`],
+  ['"appName": "App"', `"appName": "${displayName}"`],
+  ['"title": "App"', `"title": "${displayName}"`],
   [
     '"description": "Un modèle Next.js 16 ultra-puissant, orienté serveur."',
     `"description": "${description}"`,
   ],
 ])
 
+// End-user auth identity only — the admin instance keeps its own prefix.
 replaceInFile('packages/auth/src/auth.ts', [
-  ["appName: 'isyll-next-template'", `appName: '${name}'`],
-  ["cookiePrefix: 'isyll'", `cookiePrefix: '${cookiePrefix}'`],
+  ["appName: 'App'", `appName: '${displayName}'`],
+  ["cookiePrefix: 'app'", `cookiePrefix: '${cookiePrefix}'`],
 ])
 
-replaceInFile('apps/web/src/proxy.ts', [
-  ["{ cookiePrefix: 'isyll' }", `{ cookiePrefix: '${cookiePrefix}' }`],
+replaceInFile('apps/web/proxy.ts', [
+  ["{ cookiePrefix: 'app' }", `{ cookiePrefix: '${cookiePrefix}' }`],
+])
+
+// GitHub owner / repo references.
+if (owner !== TEMPLATE_OWNER) {
+  replaceInFile('.github/CODEOWNERS', [[`@${TEMPLATE_OWNER}`, `@${owner}`]])
+}
+replaceInFile('.github/ISSUE_TEMPLATE/config.yml', [
+  [
+    `github.com/${TEMPLATE_OWNER}/${TEMPLATE_NAME}`,
+    `github.com/${owner}/${name}`,
+  ],
 ])
 
 const readmePath = join(ROOT, 'README.md')
@@ -125,7 +144,7 @@ const projectBrief = `# ${displayName}
 
 ---
 
-Built on the isyll-next-template. See \`AGENTS.md\` for engineering conventions.
+Built on ${TEMPLATE_NAME}. See \`AGENTS.md\` for engineering conventions.
 `
 writeFileSync(join(ROOT, 'PROJECT.md'), projectBrief)
 

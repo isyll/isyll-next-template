@@ -1,10 +1,10 @@
 {
   "Metadata": {
-    "title": "Isyll — Modèle Next.js",
+    "title": "App",
     "description": "Un modèle Next.js 16 ultra-puissant, orienté serveur."
   },
   "Common": {
-    "appName": "Isyll",
+    "appName": "App",
     "loading": "Chargement…",
     "save": "Enregistrer",
     "cancel": "Annuler",

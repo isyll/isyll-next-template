@@ -16,7 +16,7 @@ const appUrl = process.env['BETTER_AUTH_URL'] ?? 'http://localhost:3000'
  * actions / `auth.api.*`.
  */
 export const auth = betterAuth({
-  appName: 'isyll-next-template',
+  appName: 'App',
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,
@@ -77,7 +77,7 @@ export const auth = betterAuth({
   trustedOrigins: [appUrl, 'https://appleid.apple.com'],
   advanced: {
     useSecureCookies: isProd,
-    cookiePrefix: 'isyll',
+    cookiePrefix: 'app',
     defaultCookieAttributes: {
       sameSite: 'lax',
       secure: isProd,

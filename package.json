@@ -1,5 +1,5 @@
 {
-  "name": "isyll-next-template",
+  "name": "next-monorepo-template",
   "version": "0.1.0",
   "private": true,
   "description": "Ultra-powerful, server-first Next.js 16 monorepo template.",

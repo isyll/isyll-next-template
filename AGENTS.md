@@ -10,7 +10,7 @@ repository. `CLAUDE.md` and `.github/copilot-instructions.md` defer to this file
 
 ## What this is
 
-`isyll-next-template` — a server-first Next.js 16 monorepo template (pnpm +
+`next-monorepo-template` — a server-first Next.js 16 monorepo template (pnpm +
 Turborepo) used as the base for new client/product projects. See `PROJECT.md`
 for the **current** project's brief (created by `pnpm project:init`).
 
