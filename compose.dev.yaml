@@ -1,0 +1,66 @@
+name: next-monorepo-template-dev
+
+# Fully containerized stack for trying the built image locally (no reverse
+# proxy). Uses the Postgres superuser for simplicity; production switches to
+# least-privilege roles (compose.prod.yaml).
+#   docker compose -f compose.dev.yaml up --build
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_stat_statements
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./infra/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d app']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrator:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      target: migrator
+    environment:
+      MIGRATION_DATABASE_URL: postgres://postgres:postgres@db:5432/app
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      target: runner
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://postgres:postgres@db:5432/app
+      ADMIN_DATABASE_URL: postgres://postgres:postgres@db:5432/app
+      BETTER_AUTH_SECRET: dev-insecure-secret-change-me-0000000000000000
+      ADMIN_AUTH_SECRET: dev-insecure-admin-secret-change-me-000000000
+      BETTER_AUTH_URL: http://localhost:3000
+      ADMIN_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:

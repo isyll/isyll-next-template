@@ -1,0 +1,49 @@
+name: next-monorepo-template
+
+# Local development: run Postgres (and a DB browser) in Docker while the
+# Next.js app runs on the host via `pnpm dev`. For a fully containerized stack
+# see compose.dev.yaml (built app, no proxy) and compose.prod.yaml (app behind
+# the nginx reverse proxy).
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      # Consumed by the role-bootstrap init script (compose.prod.yaml).
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-app}
+      MIGRATOR_DB_PASSWORD: ${MIGRATOR_DB_PASSWORD:-migrator}
+      ADMIN_DB_PASSWORD: ${ADMIN_DB_PASSWORD:-admin_service}
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_stat_statements
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./infra/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-app}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:5
+    restart: unless-stopped
+    ports:
+      - '${ADMINER_PORT:-8080}:8080'
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
