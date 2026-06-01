@@ -21,7 +21,8 @@
     "**/drizzle/**",
     "**/messages/*.d.json.ts",
     "pnpm-lock.yaml",
-    "**/*.snap"
+    "**/*.snap",
+    ".vscode/**"
   ],
   "files": ["**/*.{ts,tsx,js,jsx,mjs,cjs,md,mdx,json}"]
 }
