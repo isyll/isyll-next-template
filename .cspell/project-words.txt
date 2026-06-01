@@ -16,6 +16,7 @@ nuqs
 sonner
 cspell
 commitlint
+markdownlint
 dependabot
 codegen
 signin
@@ -58,7 +59,6 @@ serverless
 middleware
 nextcookies
 appname
-isyll-next-template
 workspace
 monorepo
 camelCase
