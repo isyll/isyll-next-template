@@ -1,0 +1,7 @@
+# Default owner for everything in the repo.
+* @isyll
+
+# Tooling / CI
+/.github/        @isyll
+/turbo.json      @isyll
+/pnpm-workspace.yaml @isyll
