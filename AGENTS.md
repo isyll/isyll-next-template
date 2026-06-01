@@ -77,3 +77,5 @@ tests/load                    k6 load tests
 - **Create a conventional commit after each completed task.**
 - **Never** add `Co-Authored-By` trailers or AI attribution to commits.
 - Run `pnpm check` before considering work done.
+- **Branches.** Open PRs against `develop` — CI (lint/typecheck/test/build) and
+  E2E run there. `main` is the production branch (deploy target only).
