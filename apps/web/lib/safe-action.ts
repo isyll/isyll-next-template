@@ -1,11 +1,7 @@
 import 'server-only'
 
 import { auth } from '@workspace/auth'
-import {
-  ForbiddenError,
-  normalizeError,
-  UnauthorizedError,
-} from '@workspace/core'
+import { normalizeError, UnauthorizedError } from '@workspace/core'
 import {
   createSafeActionClient,
   DEFAULT_SERVER_ERROR_MESSAGE,
@@ -38,12 +34,4 @@ export const authActionClient = actionClient.use(async ({ next }) => {
     throw new UnauthorizedError()
   }
   return next({ ctx: { user: session.user, session: session.session } })
-})
-
-/** Requires the `admin` role. */
-export const adminActionClient = authActionClient.use(({ next, ctx }) => {
-  if (ctx.user.role !== 'admin') {
-    throw new ForbiddenError()
-  }
-  return next({ ctx })
 })
