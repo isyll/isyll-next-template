@@ -8,6 +8,11 @@ allowBuilds:
   esbuild: true
   msw: false
 
+# better-auth's kysely-adapter uses DEFAULT_MIGRATION_TABLE, removed in
+# kysely 0.29.x — pin to the 0.28 line that still exports it.
+overrides:
+  kysely: 0.28.17
+
 # Single source of truth for every shared dependency version across the
 # monorepo. Reference with `"<pkg>": "catalog:"` in any package.json. This
 # guarantees one resolved version of React, Zod, TypeScript, etc. everywhere
@@ -63,6 +68,9 @@ catalog:
 
   # --- i18n ---
   next-intl: 4.13.0
+
+  # --- Env validation ---
+  '@t3-oss/env-nextjs': 0.13.11
 
   # --- Auth ---
   better-auth: 1.6.13
