@@ -4,8 +4,8 @@ description: Scaffold a server-first feature module following the conventions
 
 Scaffold a new feature module named from: $ARGUMENTS
 
-Follow the `post` feature as the reference pattern. Create under
-`apps/web/src/features/<feature>/`:
+Follow the server-first conventions in `AGENTS.md`. Create under
+`apps/web/features/<feature>/`:
 
 - `queries.ts` — `import 'server-only'` Data Access Layer using `@workspace/db`
   (Drizzle), with ownership checks. Return DTO/row types, never raw clients.
@@ -20,5 +20,5 @@ Also:
 - Add the table to `@workspace/db` (`src/schema`), relations, and drizzle-zod
   validators; run `pnpm db:generate` and commit the migration.
 - Add all user-facing strings to `messages/fr.json` (new namespace).
-- Wire the feature into a route under `apps/web/src/app/`.
+- Wire the feature into a route under `apps/web/app/`.
 - Run `pnpm check`, then commit: `feat(web): add <feature> feature`.

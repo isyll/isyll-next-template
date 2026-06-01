@@ -52,17 +52,6 @@
     "welcome": "Bienvenue, {name}",
     "signedInAs": "Connecté en tant que {email}"
   },
-  "Posts": {
-    "title": "Publications",
-    "empty": "Aucune publication pour le moment.",
-    "create": "Nouvelle publication",
-    "titleLabel": "Titre",
-    "contentLabel": "Contenu",
-    "published": "Publiée",
-    "draft": "Brouillon",
-    "created": "Publication créée",
-    "deleted": "Publication supprimée"
-  },
   "Validation": {
     "required": "Ce champ est obligatoire",
     "email": "Adresse e-mail invalide",
