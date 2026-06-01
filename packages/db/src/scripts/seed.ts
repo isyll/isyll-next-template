@@ -18,9 +18,11 @@ if (process.env['NODE_ENV'] === 'production') {
 const pool = new Pool({ connectionString, max: 1 })
 const db = drizzle({ client: pool, schema })
 
-// `reset` truncates every table in `schema` (FK-safe) before reseeding.
+// `reset` truncates every table (FK-safe); seed only the domain tables —
+// auth tables are populated through the BetterAuth sign-up flow.
+const seedSchema = { user: schema.user, post: schema.post }
 await reset(db, schema)
-await seed(db, schema)
+await seed(db, seedSchema)
 await pool.end()
 
 console.info('✅ Database seeded')

@@ -2,8 +2,22 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "globalDependencies": [".env", "tsconfig.json"],
-  "globalEnv": ["NODE_ENV", "CI"],
-  "globalPassThroughEnv": ["DATABASE_URL", "NEXT_PUBLIC_APP_URL"],
+  "globalEnv": ["NODE_ENV", "CI", "NEXT_PUBLIC_APP_URL"],
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "FACEBOOK_CLIENT_ID",
+    "FACEBOOK_CLIENT_SECRET",
+    "MICROSOFT_CLIENT_ID",
+    "MICROSOFT_CLIENT_SECRET",
+    "MICROSOFT_TENANT_ID",
+    "APPLE_CLIENT_ID",
+    "APPLE_CLIENT_SECRET",
+    "APPLE_APP_BUNDLE_IDENTIFIER"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
