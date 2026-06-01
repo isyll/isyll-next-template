@@ -1,0 +1,20 @@
+# Codex CLI configuration for this project. Codex reads its global config from
+# ~/.codex/config.toml; copy or merge this in (or symlink it) to grant Codex the
+# same access the other agents have. Shared task guidance lives in AGENTS.md,
+# which Codex loads automatically.
+
+# Prompt once per session for the first action, then trust the workspace.
+approval_policy = "on-request"
+
+# Read and write inside the repository; commands run sandboxed to the workspace.
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+# Needed for `pnpm install`, `git`/`gh`, and other network-backed tooling.
+network_access = true
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false
+
+# Trust this project's directory so routine commands don't re-prompt.
+[projects."."]
+trust_level = "trusted"

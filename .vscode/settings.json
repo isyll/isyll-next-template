@@ -44,5 +44,20 @@
   "files.exclude": {
     "**/.next": true,
     "**/.turbo": true
+  },
+
+  "chat.agent.enabled": true,
+  "chat.tools.terminal.autoApprove": {
+    "/^pnpm\\b/": true,
+    "/^(node|tsx|tsc)\\b/": true,
+    "/^git (status|diff|log|show|branch|remote|rev-parse|blame|describe|tag|fetch|pull|add|commit|push|switch|checkout|restore|stash|merge|rebase|cherry-pick)\\b/": true,
+    "/^gh\\b/": true,
+    "/^(ls|cat|head|tail|grep|rg|fd|find|wc|tree|which|stat|pwd|echo|sort|uniq|diff)\\b/": true,
+    "/^(mkdir|touch|cp|mv|chmod)\\b/": true,
+    "/^docker compose (config|ps)\\b/": true,
+    "rm": false,
+    "/\\brm\\s+-rf\\b/": false,
+    "/\\bsudo\\b/": false,
+    "/\\b(curl|wget)\\b/": false
   }
 }
