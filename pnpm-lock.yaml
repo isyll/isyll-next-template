@@ -242,6 +242,9 @@ importers:
       '@types/k6':
         specifier: 'catalog:'
         version: 2.0.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.4
       '@workspace/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config

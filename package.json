@@ -43,6 +43,7 @@
     "@cspell/dict-en_us": "catalog:",
     "@cspell/dict-fr-fr": "catalog:",
     "@types/k6": "catalog:",
+    "@types/node": "catalog:",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "cspell": "catalog:",

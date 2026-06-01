@@ -68,3 +68,7 @@ inlines
 nosniff
 serviceworker
 unbrand
+regen
+firefox
+openssl
+goja

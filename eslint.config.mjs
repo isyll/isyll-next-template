@@ -8,5 +8,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
  */
 export default defineConfig(
   globalIgnores(['apps/**', 'packages/**', 'tests/**', '**/node_modules/**']),
-  ...config
+  ...config,
+  // Repo scripts may log to the console.
+  { files: ['scripts/**/*.ts'], rules: { 'no-console': 'off' } }
 )
