@@ -5,3 +5,8 @@ node_modules/
 coverage/
 pnpm-lock.yaml
 .pnpm-store/
+.husky/_/
+**/messages/*.d.json.ts
+**/drizzle/**
+test-results/
+playwright-report/
