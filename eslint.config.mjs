@@ -7,6 +7,6 @@ import { defineConfig, globalIgnores } from 'eslint/config'
  * linted via `turbo run lint`, so they are ignored here.
  */
 export default defineConfig(
-  globalIgnores(['apps/**', 'packages/**', '**/node_modules/**']),
+  globalIgnores(['apps/**', 'packages/**', 'tests/**', '**/node_modules/**']),
   ...config
 )

@@ -64,9 +64,9 @@ export const config = defineConfig(
       eqeqeq: ['error', 'always', { null: 'ignore' }],
     },
   },
-  // Type-aware rules can't run on plain JS/config files (no TS program).
+  // Type-aware rules can't run on plain JS / standalone config files.
   {
-    files: ['**/*.{js,cjs,mjs}'],
+    files: ['**/*.{js,cjs,mjs}', '**/*.config.{ts,mts,cts}'],
     extends: [tseslint.configs.disableTypeChecked],
   },
   // Must be LAST: turn off stylistic rules that conflict with Prettier.
