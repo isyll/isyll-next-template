@@ -107,6 +107,7 @@ catalog:
   cspell: 10.0.1
   '@cspell/dict-fr-fr': 2.3.2
   '@cspell/dict-en_us': 4.4.35
+  markdownlint-cli2: 0.22.1
 
   # --- Testing ---
   vitest: 4.1.7

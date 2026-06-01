@@ -1,0 +1,32 @@
+{
+  // markdownlint-cli2 config. Lenient defaults for docs/READMEs: prose-hygiene
+  // rules stay on; formatting nitpicks that fight normal Markdown authoring
+  // (line length, inline HTML, bare URLs, forced code-fence languages) are off.
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD033": false,
+    "MD034": false,
+    "MD036": false,
+    "MD040": false,
+    "MD041": false,
+    "MD024": { "siblings_only": true },
+    "MD029": { "style": "one_or_ordered" },
+    "MD004": { "style": "dash" },
+    "MD007": { "indent": 2 }
+  },
+  "globs": ["**/*.md"],
+  "ignores": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/.turbo/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/drizzle/**",
+    "**/CHANGELOG.md",
+    "LICENSE",
+    "LICENSE.md"
+  ],
+  "gitignore": true
+}
