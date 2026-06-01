@@ -13,11 +13,10 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/scripts/migrate.ts",
-    "db:push": "drizzle-kit push",
-    "db:pull": "drizzle-kit pull",
-    "db:check": "drizzle-kit check",
+    "db:migrate": "tsx src/scripts/migrate.ts up",
+    "db:rollback": "tsx src/scripts/migrate.ts down",
+    "db:migrate:status": "tsx src/scripts/migrate.ts status",
+    "db:migrate:new": "tsx src/scripts/migrate.ts new",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/scripts/seed.ts"
   },

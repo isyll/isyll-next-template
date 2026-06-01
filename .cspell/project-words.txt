@@ -25,6 +25,7 @@ signout
 datasource
 postgres
 postgresql
+timestamptz
 jsdom
 vitest
 playwright

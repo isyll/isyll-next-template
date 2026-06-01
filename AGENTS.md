@@ -34,9 +34,11 @@ tests/load                    k6 load tests
 2. **Security.** Re-verify auth AND ownership inside every action/DAL — page or
    `proxy.ts` checks are not enough. Validate all input with Zod. Return DTOs,
    never raw rows.
-3. **DB access** only through `@workspace/db` (`server-only`). Schema changes →
-   edit `packages/db/src/schema`, then `pnpm db:generate` and commit the
-   migration in `packages/db/drizzle/`.
+3. **DB access** only through `@workspace/db` (`server-only`). Migrations are
+   hand-written pure SQL (up/down) under `packages/db/migrations/`. Schema
+   changes → `pnpm db:migrate:new <name>`, write the SQL, mirror it in the
+   Drizzle schema (`packages/db/src/schema`), then `pnpm db:migrate`. The
+   migration role is distinct from the app role (least privilege).
 4. **Env** is read via `@/env` (apps/web) or each package's validated env —
    never `process.env` directly in app code.
 5. **i18n.** All user-facing text lives in `apps/web/messages/fr.json`; add keys,
@@ -56,7 +58,8 @@ tests/load                    k6 load tests
 | Lint / types   | `pnpm lint` · `pnpm typecheck`         |
 | Test / e2e     | `pnpm test` · `pnpm test:e2e`          |
 | Add UI         | `pnpm ui:add <component>`              |
-| DB migrate     | `pnpm db:generate` · `pnpm db:migrate` |
+| DB migrate     | `pnpm db:migrate` · `pnpm db:rollback` |
+| New migration  | `pnpm db:migrate:new <name>`           |
 | Seed / studio  | `pnpm db:seed` · `pnpm db:studio`      |
 | Regen auth SQL | `pnpm auth:generate`                   |
 | New project    | `pnpm project:init`                    |
