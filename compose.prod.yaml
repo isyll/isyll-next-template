@@ -33,12 +33,16 @@ services:
     networks: [backend]
 
   migrator:
-    build:
-      context: .
-      dockerfile: infra/docker/web.Dockerfile
-      target: migrator
-    environment:
-      MIGRATION_DATABASE_URL: ${MIGRATION_DATABASE_URL:?set MIGRATION_DATABASE_URL}
+    image: migrate/migrate:v4.18.1
+    volumes:
+      - ./packages/db/migrations:/migrations:ro
+    command:
+      [
+        '-path=/migrations',
+        '-database',
+        '${MIGRATION_DATABASE_URL:?set MIGRATION_DATABASE_URL}',
+        'up',
+      ]
     depends_on:
       db:
         condition: service_healthy

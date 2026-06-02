@@ -78,6 +78,11 @@ catalog:
   better-auth: 1.6.13
   jose: 6.2.3
 
+  # --- Reference data (generated into migrations) ---
+  world-countries: 5.1.0
+  countries-and-timezones: 3.9.0
+  currency-codes: 2.2.0
+
   # --- Database (Drizzle + node-postgres) ---
   drizzle-orm: 0.45.2
   drizzle-kit: 0.31.10

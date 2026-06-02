@@ -15,9 +15,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx src/scripts/migrate.ts up",
-    "db:rollback": "tsx src/scripts/migrate.ts down",
-    "db:migrate:status": "tsx src/scripts/migrate.ts status",
+    "db:rollback": "tsx src/scripts/migrate.ts down 1",
+    "db:migrate:status": "tsx src/scripts/migrate.ts version",
     "db:migrate:new": "tsx src/scripts/migrate.ts new",
+    "db:reference:generate": "tsx src/scripts/generate-reference-migrations.ts",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/scripts/seed.ts"
   },
@@ -26,6 +27,7 @@
     "drizzle-orm": "catalog:",
     "drizzle-zod": "catalog:",
     "pg": "catalog:",
+    "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -33,11 +35,14 @@
     "@types/pg": "catalog:",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "countries-and-timezones": "catalog:",
+    "currency-codes": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-seed": "catalog:",
     "dotenv": "catalog:",
     "eslint": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "world-countries": "catalog:"
   }
 }
