@@ -97,6 +97,7 @@ catalog:
   '@tanstack/react-query': 5.100.14
   '@tanstack/react-query-devtools': 5.100.14
   nuqs: 2.8.9
+  zustand: 5.0.14
   server-only: 0.0.1
 
   # --- Forms ---
