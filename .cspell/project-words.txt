@@ -26,6 +26,9 @@ datasource
 postgres
 postgresql
 timestamptz
+trgm
+citext
+rolname
 nginx
 initdb
 jsdom
