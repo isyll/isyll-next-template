@@ -47,8 +47,11 @@
   "devDependencies": {
     "@commitlint/cli": "catalog:",
     "@commitlint/config-conventional": "catalog:",
+    "@clack/prompts": "catalog:",
     "@commitlint/types": "catalog:",
     "@cspell/dict-en_us": "catalog:",
+    "commander": "catalog:",
+    "picocolors": "catalog:",
     "@cspell/dict-fr-fr": "catalog:",
     "@types/k6": "catalog:",
     "@types/node": "catalog:",

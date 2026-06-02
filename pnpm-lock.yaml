@@ -9,6 +9,9 @@ catalogs:
     '@base-ui/react':
       specifier: 1.5.0
       version: 1.5.0
+    '@clack/prompts':
+      specifier: 1.5.0
+      version: 1.5.0
     '@commitlint/cli':
       specifier: 21.0.2
       version: 21.0.2
@@ -245,6 +248,9 @@ importers:
 
   .:
     devDependencies:
+      '@clack/prompts':
+        specifier: 'catalog:'
+        version: 1.5.0
       '@commitlint/cli':
         specifier: 'catalog:'
         version: 21.0.2(@types/node@24.12.4)(conventional-commits-parser@6.4.0)(typescript@6.0.3)
@@ -272,6 +278,9 @@ importers:
       '@workspace/typescript-config':
         specifier: workspace:*
         version: link:packages/typescript-config
+      commander:
+        specifier: 'catalog:'
+        version: 15.0.0
       cspell:
         specifier: 'catalog:'
         version: 10.0.1
@@ -287,6 +296,9 @@ importers:
       markdownlint-cli2:
         specifier: 'catalog:'
         version: 0.22.1
+      picocolors:
+        specifier: 'catalog:'
+        version: 1.1.1
       prettier:
         specifier: 'catalog:'
         version: 3.8.3
@@ -952,6 +964,14 @@ packages:
   '@bramus/specificity@2.4.2':
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
+
+  '@clack/core@1.4.0':
+    resolution: {integrity: sha512-7Wctjq6f7c1CPz8sPpkwUnz8yRgVANkpNupb81q432FjcJg4l+Sw7XANdNSdWfAKq0IHI0JTcUeK5dxs/HrGPw==}
+    engines: {node: '>= 20.12.0'}
+
+  '@clack/prompts@1.5.0':
+    resolution: {integrity: sha512-wKh+wTjmrUoUdkZg8KpJO5X+p9PWV+KE9mePseq9UYWkukgTKsGS47RRL2HstwVcvDQH+PenrPJWII8+MfiiyA==}
+    engines: {node: '>= 20.12.0'}
 
   '@commitlint/cli@21.0.2':
     resolution: {integrity: sha512-YMmfLbqBg+ZRvvmPhc+cilSQFrh/AgzVgCT1U/OifmUZEwPbvCtA8rN//YNaF9d5eoZphxVMGYtmwA2QgQORgg==}
@@ -6419,6 +6439,18 @@ snapshots:
   '@bramus/specificity@2.4.2':
     dependencies:
       css-tree: 3.2.1
+
+  '@clack/core@1.4.0':
+    dependencies:
+      fast-wrap-ansi: 0.2.2
+      sisteransi: 1.0.5
+
+  '@clack/prompts@1.5.0':
+    dependencies:
+      '@clack/core': 1.4.0
+      fast-string-width: 3.0.2
+      fast-wrap-ansi: 0.2.2
+      sisteransi: 1.0.5
 
   '@commitlint/cli@21.0.2(@types/node@24.12.4)(conventional-commits-parser@6.4.0)(typescript@6.0.3)':
     dependencies:
