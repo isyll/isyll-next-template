@@ -27,6 +27,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: true,
+  // Emit a self-contained server bundle (apps/web/.next/standalone) so the
+  // production Docker image stays small. See infra/docker/web.Dockerfile.
+  output: 'standalone',
   // Workspace packages are shipped as raw TS and transpiled by Next.
   transpilePackages: [
     '@workspace/ui',

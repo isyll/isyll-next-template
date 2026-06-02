@@ -6,6 +6,7 @@
   "description": "BetterAuth server + client: email/password and env-gated social providers.",
   "exports": {
     ".": "./src/index.ts",
+    "./admin": "./src/admin-auth.ts",
     "./social": "./src/social.ts",
     "./email": "./src/email.ts",
     "./env": "./src/env.ts"

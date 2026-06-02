@@ -7,6 +7,8 @@ allowBuilds:
   unrs-resolver: true
   esbuild: true
   msw: false
+  '@parcel/watcher': true
+  '@swc/core': true
 
 # better-auth's kysely-adapter uses DEFAULT_MIGRATION_TABLE, removed in
 # kysely 0.29.x — pin to the 0.28 line that still exports it.
@@ -105,6 +107,7 @@ catalog:
   cspell: 10.0.1
   '@cspell/dict-fr-fr': 2.3.2
   '@cspell/dict-en_us': 4.4.35
+  markdownlint-cli2: 0.22.1
 
   # --- Testing ---
   vitest: 4.1.7

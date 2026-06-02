@@ -1,10 +1,10 @@
 {
   "Metadata": {
-    "title": "Isyll — Modèle Next.js",
+    "title": "App",
     "description": "Un modèle Next.js 16 ultra-puissant, orienté serveur."
   },
   "Common": {
-    "appName": "Isyll",
+    "appName": "App",
     "loading": "Chargement…",
     "save": "Enregistrer",
     "cancel": "Annuler",
@@ -52,16 +52,21 @@
     "welcome": "Bienvenue, {name}",
     "signedInAs": "Connecté en tant que {email}"
   },
-  "Posts": {
-    "title": "Publications",
-    "empty": "Aucune publication pour le moment.",
-    "create": "Nouvelle publication",
-    "titleLabel": "Titre",
-    "contentLabel": "Contenu",
-    "published": "Publiée",
-    "draft": "Brouillon",
-    "created": "Publication créée",
-    "deleted": "Publication supprimée"
+  "Admin": {
+    "title": "Administration",
+    "loginTitle": "Connexion administrateur",
+    "loginSubtitle": "Espace réservé aux administrateurs",
+    "registerTitle": "Créer un administrateur",
+    "registerSubtitle": "Disponible uniquement lorsque les inscriptions sont activées",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "name": "Nom complet",
+    "signIn": "Se connecter",
+    "signUp": "Créer",
+    "signOut": "Se déconnecter",
+    "created": "Administrateur créé",
+    "welcome": "Connecté en tant que {email}",
+    "role": "Rôle"
   },
   "Validation": {
     "required": "Ce champ est obligatoire",

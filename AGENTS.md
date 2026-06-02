@@ -10,14 +10,14 @@ repository. `CLAUDE.md` and `.github/copilot-instructions.md` defer to this file
 
 ## What this is
 
-`isyll-next-template` — a server-first Next.js 16 monorepo template (pnpm +
+`next-monorepo-template` — a server-first Next.js 16 monorepo template (pnpm +
 Turborepo) used as the base for new client/product projects. See `PROJECT.md`
 for the **current** project's brief (created by `pnpm project:init`).
 
 ## Layout
 
 ```text
-apps/web                      Next.js 16 app (App Router, src/)
+apps/web                      Next.js 16 app (App Router, no src/ — app code at the package root)
 packages/core                 framework-agnostic: Result, AppError, DTOs, env
 packages/db                   Drizzle ORM + PostgreSQL (schema, migrations, DTOs)
 packages/auth                 BetterAuth server + env-gated social providers
@@ -28,15 +28,23 @@ tests/load                    k6 load tests
 
 ## Golden rules
 
-1. **Server-first.** Default to Server Components + Server Actions. The only API
-   route is `/api/auth/[...all]`. Use `next-safe-action` (`actionClient`,
-   `authActionClient`, `adminActionClient` in `apps/web/src/lib/safe-action.ts`).
+1. **Server-first.** Default to Server Components + Server Actions. The API
+   routes are the two BetterAuth catch-alls (`/api/auth/[...all]` for users,
+   `/admin/api/auth/[...all]` for admins). Use `next-safe-action`:
+   `actionClient` / `authActionClient` (`apps/web/lib/safe-action.ts`) for user
+   actions, `adminActionClient` (`apps/web/lib/admin-safe-action.ts`) for admin
+   actions.
 2. **Security.** Re-verify auth AND ownership inside every action/DAL — page or
    `proxy.ts` checks are not enough. Validate all input with Zod. Return DTOs,
-   never raw rows.
-3. **DB access** only through `@workspace/db` (`server-only`). Schema changes →
-   edit `packages/db/src/schema`, then `pnpm db:generate` and commit the
-   migration in `packages/db/drizzle/`.
+   never raw rows. Admins are a **separate, isolated system**: their own
+   BetterAuth instance (`@workspace/auth/admin`), their own DB schema/role
+   (`@workspace/db/admin`), their own cookies. End users have no `role` column;
+   never mix the two.
+3. **DB access** only through `@workspace/db` (`server-only`). Migrations are
+   hand-written pure SQL (up/down) under `packages/db/migrations/`. Schema
+   changes → `pnpm db:migrate:new <name>`, write the SQL, mirror it in the
+   Drizzle schema (`packages/db/src/schema`), then `pnpm db:migrate`. The
+   migration role is distinct from the app role (least privilege).
 4. **Env** is read via `@/env` (apps/web) or each package's validated env —
    never `process.env` directly in app code.
 5. **i18n.** All user-facing text lives in `apps/web/messages/fr.json`; add keys,
@@ -56,7 +64,8 @@ tests/load                    k6 load tests
 | Lint / types   | `pnpm lint` · `pnpm typecheck`         |
 | Test / e2e     | `pnpm test` · `pnpm test:e2e`          |
 | Add UI         | `pnpm ui:add <component>`              |
-| DB migrate     | `pnpm db:generate` · `pnpm db:migrate` |
+| DB migrate     | `pnpm db:migrate` · `pnpm db:rollback` |
+| New migration  | `pnpm db:migrate:new <name>`           |
 | Seed / studio  | `pnpm db:seed` · `pnpm db:studio`      |
 | Regen auth SQL | `pnpm auth:generate`                   |
 | New project    | `pnpm project:init`                    |
@@ -68,3 +77,5 @@ tests/load                    k6 load tests
 - **Create a conventional commit after each completed task.**
 - **Never** add `Co-Authored-By` trailers or AI attribution to commits.
 - Run `pnpm check` before considering work done.
+- **Branches.** Open PRs against `develop` — CI (lint/typecheck/test/build) and
+  E2E run there. `main` is the production branch (deploy target only).

@@ -1,4 +1,4 @@
-# Isyll Next Template
+# Next Monorepo Template
 
 > The base project. Replaced per-project by `pnpm project:init`.
 
@@ -11,15 +11,19 @@ that AI agents have accurate context.
 
 ## Domain model
 
-The example domain is a single `post` entity owned by an authenticated `user`
-(see `@workspace/db`). Replace it with your real entities.
+Out of the box there are only the authentication entities (see `@workspace/db`):
+end users (`user`/`session`/`account`/`verification` in `public`) and a fully
+isolated administrator set (`admin` schema). Add your real domain tables as
+pure-SQL migrations under `packages/db/migrations/`.
 
 ## Constraints & decisions
 
 - Server-first: Server Components + Server Actions; avoid API routes.
 - French-only i18n for now (next-intl, cookie-based, no `[locale]` segment).
-- PostgreSQL via Drizzle; BetterAuth for authentication.
+- PostgreSQL via pure-SQL migrations; Drizzle ORM for typed queries.
+- Two isolated auth systems: end users and admins never share tables, roles,
+  cookies, or BetterAuth instances.
 
 ---
 
-Built on the isyll-next-template. See `AGENTS.md` for engineering conventions.
+Built on next-monorepo-template. See `AGENTS.md` for engineering conventions.

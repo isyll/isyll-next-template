@@ -11,8 +11,13 @@
   ],
   "globalPassThroughEnv": [
     "DATABASE_URL",
+    "MIGRATION_DATABASE_URL",
+    "ADMIN_DATABASE_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
+    "ADMIN_AUTH_SECRET",
+    "ADMIN_AUTH_URL",
+    "ADMIN_ALLOW_SIGNUP",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
     "FACEBOOK_CLIENT_ID",
@@ -61,19 +66,16 @@
     "clean": {
       "cache": false
     },
-    "db:generate": {
-      "cache": false
-    },
     "db:migrate": {
       "cache": false
     },
-    "db:push": {
+    "db:rollback": {
       "cache": false
     },
-    "db:pull": {
+    "db:migrate:status": {
       "cache": false
     },
-    "db:check": {
+    "db:migrate:new": {
       "cache": false
     },
     "db:studio": {

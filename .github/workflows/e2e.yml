@@ -3,7 +3,7 @@ name: E2E
 on:
   workflow_dispatch: {}
   push:
-    branches: [main]
+    branches: [develop]
 
 permissions:
   contents: read
@@ -37,7 +37,7 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @workspace/db db:migrate

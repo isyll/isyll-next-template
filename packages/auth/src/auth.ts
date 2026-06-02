@@ -16,18 +16,12 @@ const appUrl = process.env['BETTER_AUTH_URL'] ?? 'http://localhost:3000'
  * actions / `auth.api.*`.
  */
 export const auth = betterAuth({
-  appName: 'isyll-next-template',
+  appName: 'App',
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,
     usePlural: false,
   }),
-  user: {
-    additionalFields: {
-      // Role is set server-side only (never accepted from sign-up input).
-      role: { type: 'string', input: false },
-    },
-  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -60,11 +54,15 @@ export const auth = betterAuth({
       trustedProviders: ['google', 'microsoft', 'apple'],
     },
   },
+  // Classic stateful sessions: the cookie holds only an opaque token and the
+  // session row is read from the database on every request (cookieCache off),
+  // so sign-out / revocation takes effect immediately. No JWT, no bearer
+  // access/refresh tokens. Long-lived and rolling, like a typical website.
   session: {
-    expiresIn: 60 * 60 * 24 * 7,
-    updateAge: 60 * 60 * 24,
-    freshAge: 60 * 5,
-    cookieCache: { enabled: true, maxAge: 60 * 5 },
+    expiresIn: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24 * 7,
+    freshAge: 60 * 60,
+    cookieCache: { enabled: false },
   },
   rateLimit: {
     enabled: true,
@@ -79,7 +77,7 @@ export const auth = betterAuth({
   trustedOrigins: [appUrl, 'https://appleid.apple.com'],
   advanced: {
     useSecureCookies: isProd,
-    cookiePrefix: 'isyll',
+    cookiePrefix: 'app',
     defaultCookieAttributes: {
       sameSite: 'lax',
       secure: isProd,
