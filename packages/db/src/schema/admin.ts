@@ -1,27 +1,32 @@
-import { boolean, pgSchema, text, timestamp } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  pgSchema,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 /**
- * Administrator identity, deliberately isolated from end users. These tables
- * live in a dedicated `admin` Postgres schema, are reached through a separate
- * connection (`ADMIN_DATABASE_URL`, role `admin_service`) and back a separate
- * BetterAuth instance. The authoritative DDL is the pure-SQL migration
- * `migrations/0004_admin.sql`; this Drizzle mapping must mirror it.
+ * Administrators (operators) are deliberately isolated from end users: their
+ * tables live in a dedicated `admin` Postgres schema, reached through a
+ * separate connection (`ADMIN_DATABASE_URL`, role `admin_service`) and a
+ * separate BetterAuth instance. The authoritative DDL is the pure-SQL admin
+ * migrations under `migrations/`; this Drizzle mapping mirrors them.
+ *
+ * Access is permission-based (PBAC): operators hold roles, roles hold
+ * permissions. Permission keys are defined in code and synced to the database.
  */
 export const adminSchema = pgSchema('admin')
 
-/** Closed set of admin privilege levels (Postgres ENUM `admin.admin_role`). */
-export const adminRole = adminSchema.enum('admin_role', [
-  'super_admin',
-  'admin',
-])
-
-export const adminUser = adminSchema.table('user', {
+export const operator = adminSchema.table('operator', {
   id: text('id').primaryKey(),
-  name: text('name').notNull(),
   email: text('email').notNull().unique(),
+  name: text('name').notNull(),
   emailVerified: boolean('email_verified').notNull().default(true),
   image: text('image'),
-  role: adminRole('role').notNull().default('admin'),
+  isActive: boolean('is_active').notNull().default(true),
+  lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -30,12 +35,12 @@ export const adminUser = adminSchema.table('user', {
     .defaultNow(),
 })
 
-export const adminSession = adminSchema.table('session', {
+export const operatorSession = adminSchema.table('operator_session', {
   id: text('id').primaryKey(),
   token: text('token').notNull().unique(),
   userId: text('user_id')
     .notNull()
-    .references(() => adminUser.id, { onDelete: 'cascade' }),
+    .references(() => operator.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
@@ -47,13 +52,13 @@ export const adminSession = adminSchema.table('session', {
     .defaultNow(),
 })
 
-export const adminAccount = adminSchema.table('account', {
+export const operatorAccount = adminSchema.table('operator_account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
   userId: text('user_id')
     .notNull()
-    .references(() => adminUser.id, { onDelete: 'cascade' }),
+    .references(() => operator.id, { onDelete: 'cascade' }),
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
   idToken: text('id_token'),
@@ -73,7 +78,7 @@ export const adminAccount = adminSchema.table('account', {
     .defaultNow(),
 })
 
-export const adminVerification = adminSchema.table('verification', {
+export const operatorVerification = adminSchema.table('operator_verification', {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
@@ -86,10 +91,58 @@ export const adminVerification = adminSchema.table('verification', {
     .defaultNow(),
 })
 
+export const permission = adminSchema.table('permission', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  key: text('key').notNull().unique(),
+  description: text('description'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+})
+
+export const role = adminSchema.table('role', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull().unique(),
+  description: text('description'),
+  isSystem: boolean('is_system').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+})
+
+export const rolePermission = adminSchema.table(
+  'role_permission',
+  {
+    roleId: uuid('role_id')
+      .notNull()
+      .references(() => role.id, { onDelete: 'cascade' }),
+    permissionId: uuid('permission_id')
+      .notNull()
+      .references(() => permission.id, { onDelete: 'cascade' }),
+  },
+  (table) => [primaryKey({ columns: [table.roleId, table.permissionId] })]
+)
+
+export const operatorRole = adminSchema.table(
+  'operator_role',
+  {
+    operatorId: text('operator_id')
+      .notNull()
+      .references(() => operator.id, { onDelete: 'cascade' }),
+    roleId: uuid('role_id')
+      .notNull()
+      .references(() => role.id, { onDelete: 'cascade' }),
+  },
+  (table) => [primaryKey({ columns: [table.operatorId, table.roleId] })]
+)
+
 /** Schema map consumed by the admin BetterAuth drizzle adapter. */
 export const adminAuthSchema = {
-  user: adminUser,
-  session: adminSession,
-  account: adminAccount,
-  verification: adminVerification,
+  user: operator,
+  session: operatorSession,
+  account: operatorAccount,
+  verification: operatorVerification,
 }
