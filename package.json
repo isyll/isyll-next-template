@@ -33,6 +33,8 @@
     "db:migrate:status": "turbo run db:migrate:status",
     "db:migrate:new": "pnpm --filter @workspace/db db:migrate:new",
     "db:reference:generate": "pnpm --filter @workspace/db db:reference:generate",
+    "sql:lint": "pnpm --filter @workspace/db sql:lint",
+    "sql:fix": "pnpm --filter @workspace/db sql:fix",
     "db:studio": "turbo run db:studio",
     "db:seed": "turbo run db:seed",
     "auth:generate": "turbo run auth:generate",

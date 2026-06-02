@@ -19,6 +19,8 @@
     "db:migrate:status": "tsx src/scripts/migrate.ts version",
     "db:migrate:new": "tsx src/scripts/migrate.ts new",
     "db:reference:generate": "tsx src/scripts/generate-reference-migrations.ts",
+    "sql:lint": "sqlfluff lint migrations",
+    "sql:fix": "sqlfluff fix migrations",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/scripts/seed.ts"
   },
