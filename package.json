@@ -36,6 +36,8 @@
     "db:studio": "turbo run db:studio",
     "db:seed": "turbo run db:seed",
     "auth:generate": "turbo run auth:generate",
+    "admin:sync-permissions": "pnpm --filter @workspace/auth admin:sync-permissions",
+    "admin:create-operator": "pnpm --filter @workspace/auth admin:create-operator",
     "ui:add": "pnpm dlx shadcn@latest add -c apps/web",
     "project:init": "tsx scripts/init-project.ts",
     "prepare": "husky"

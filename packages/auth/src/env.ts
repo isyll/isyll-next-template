@@ -8,17 +8,17 @@ import * as z from 'zod'
  * admin access.
  */
 export const authEnvSchema = z.object({
-  BETTER_AUTH_SECRET: z
+  AUTH_USER_SECRET: z
     .string()
-    .min(32, 'BETTER_AUTH_SECRET must be at least 32 characters')
+    .min(32, 'AUTH_USER_SECRET must be at least 32 characters')
     .optional(),
-  BETTER_AUTH_URL: z.url().optional(),
+  AUTH_USER_URL: z.url().optional(),
 
-  ADMIN_AUTH_SECRET: z
+  AUTH_ADMIN_SECRET: z
     .string()
-    .min(32, 'ADMIN_AUTH_SECRET must be at least 32 characters')
+    .min(32, 'AUTH_ADMIN_SECRET must be at least 32 characters')
     .optional(),
-  ADMIN_AUTH_URL: z.url().optional(),
+  AUTH_ADMIN_URL: z.url().optional(),
 
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),

@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { auth } from '@workspace/auth'
+import { userAuth } from '@workspace/auth'
 import { normalizeError, UnauthorizedError } from '@workspace/core'
 import {
   createSafeActionClient,
@@ -29,7 +29,7 @@ export const actionClient = createSafeActionClient({
 
 /** Requires an authenticated session; injects `ctx.user` / `ctx.session`. */
 export const authActionClient = actionClient.use(async ({ next }) => {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await userAuth.api.getSession({ headers: await headers() })
   if (!session) {
     throw new UnauthorizedError()
   }

@@ -1,10 +1,10 @@
-import { auth } from '@workspace/auth'
+import { userAuth } from '@workspace/auth'
 import { getTranslations } from 'next-intl/server'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export default async function DashboardPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await userAuth.api.getSession({ headers: await headers() })
   if (!session) {
     redirect('/login')
   }

@@ -150,6 +150,8 @@ writeFileSync(join(ROOT, 'PROJECT.md'), projectBrief)
 
 console.log(`\n✅ Initialized "${displayName}" (${name}).`)
 console.log('Next steps:')
-console.log('  1. Set secrets in .env (BETTER_AUTH_SECRET, DATABASE_URL, ...).')
+console.log(
+  '  1. Set secrets in .env (AUTH_USER_SECRET, AUTH_ADMIN_SECRET, DATABASE_URL, ...).'
+)
 console.log('  2. pnpm db:migrate && pnpm db:seed')
 console.log('  3. pnpm dev')
