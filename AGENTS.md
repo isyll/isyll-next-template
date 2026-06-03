@@ -68,19 +68,20 @@ tests/load                    k6 load tests
 
 ## Commands
 
-| Task          | Command                                |
-| ------------- | -------------------------------------- |
-| Dev           | `pnpm dev`                             |
-| Full check    | `pnpm check`                           |
-| Lint / types  | `pnpm lint` · `pnpm typecheck`         |
-| Test / e2e    | `pnpm test` · `pnpm test:e2e`          |
-| Add UI        | `pnpm ui:add <component>`              |
-| DB migrate    | `pnpm db:migrate` · `pnpm db:rollback` |
-| New migration | `pnpm db:migrate:new <name>`           |
-| SQL lint      | `pnpm sql:lint` · `pnpm sql:fix`       |
-| Seed / studio | `pnpm db:seed` · `pnpm db:studio`      |
-| New operator  | `pnpm admin:create-operator`           |
-| New project   | `pnpm project:init`                    |
+| Task          | Command                                            |
+| ------------- | -------------------------------------------------- |
+| Dev           | `pnpm dev`                                         |
+| Full check    | `pnpm check`                                       |
+| Lint / types  | `pnpm lint` · `pnpm typecheck`                     |
+| Test / e2e    | `pnpm test` · `pnpm test:e2e`                      |
+| Add UI        | `pnpm ui:add <component>`                          |
+| DB migrate    | `pnpm db:migrate` · `pnpm db:rollback`             |
+| New migration | `pnpm db:migrate:new <name>`                       |
+| SQL lint      | `pnpm sql:lint` · `pnpm sql:fix`                   |
+| Seed / studio | `pnpm db:seed` · `pnpm db:studio`                  |
+| New operator  | `pnpm admin:create-operator`                       |
+| New project   | `pnpm project:init`                                |
+| Bump version  | `pnpm version:bump <patch\|minor\|major\|v=x.y.z>` |
 
 ## Commit rules (STRICT)
 
