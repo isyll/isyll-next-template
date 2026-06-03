@@ -1,11 +1,15 @@
+import { sql } from 'drizzle-orm'
 import {
   boolean,
   pgSchema,
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
+
+import { softDelete } from './_helpers'
 
 /**
  * Administrators (operators) are deliberately isolated from end users: their
@@ -20,21 +24,30 @@ import {
  */
 export const adminSchema = pgSchema('admin')
 
-export const operators = adminSchema.table('operators', {
-  id: text('id').primaryKey(),
-  email: text('email').notNull().unique(),
-  name: text('name').notNull(),
-  emailVerified: boolean('email_verified').notNull().default(true),
-  image: text('image'),
-  isActive: boolean('is_active').notNull().default(true),
-  lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-})
+export const operators = adminSchema.table(
+  'operators',
+  {
+    id: text('id').primaryKey(),
+    email: text('email').notNull(),
+    name: text('name').notNull(),
+    emailVerified: boolean('email_verified').notNull().default(true),
+    image: text('image'),
+    isActive: boolean('is_active').notNull().default(true),
+    lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+    ...softDelete,
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('operators_email_unique')
+      .on(table.email)
+      .where(sql`${table.deletedAt} is null`),
+  ]
+)
 
 export const operatorSessions = adminSchema.table('operator_sessions', {
   id: text('id').primaryKey(),
@@ -104,18 +117,27 @@ export const permissions = adminSchema.table('permissions', {
     .defaultNow(),
 })
 
-export const roles = adminSchema.table('roles', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  name: text('name').notNull().unique(),
-  description: text('description'),
-  isSystem: boolean('is_system').notNull().default(false),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-})
+export const roles = adminSchema.table(
+  'roles',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    isSystem: boolean('is_system').notNull().default(false),
+    ...softDelete,
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('roles_name_unique')
+      .on(table.name)
+      .where(sql`${table.deletedAt} is null`),
+  ]
+)
 
 export const rolePermissions = adminSchema.table(
   'role_permissions',

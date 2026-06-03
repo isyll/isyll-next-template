@@ -1,4 +1,5 @@
 export { db, type DB } from './client'
 export * as schema from './schema'
 export * from './validators'
+export * from './lib/soft-delete'
 export { getDbEnv, type DbEnv } from './env'

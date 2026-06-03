@@ -17,10 +17,14 @@ CREATE TABLE admin.operators (
   image text,
   is_active boolean NOT NULL DEFAULT true,
   last_login_at timestamptz,
+  deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT operators_email_unique UNIQUE (email)
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Email is unique among live (not soft-deleted) operators.
+CREATE UNIQUE INDEX operators_email_unique ON admin.operators (email)
+WHERE deleted_at IS null;
 
 CREATE TRIGGER operators_set_updated_at BEFORE UPDATE ON admin.operators
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

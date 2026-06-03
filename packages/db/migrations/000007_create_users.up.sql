@@ -5,10 +5,14 @@ CREATE TABLE app.users (
   email public.email_address NOT NULL,
   email_verified boolean NOT NULL DEFAULT false,
   image text,
+  deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT users_email_unique UNIQUE (email)
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Email is unique among live (not soft-deleted) users, so the address frees up
+-- once an account is soft-deleted.
+CREATE UNIQUE INDEX users_email_unique ON app.users (email) WHERE deleted_at IS null;
 
 CREATE INDEX users_name_trgm_idx ON app.users USING gin (name gin_trgm_ops);
 

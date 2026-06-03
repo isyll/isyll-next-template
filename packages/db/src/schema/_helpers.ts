@@ -13,3 +13,13 @@ export const timestamps = {
     .defaultNow()
     .$onUpdate(() => new Date()),
 }
+
+/**
+ * Spread into entity tables that support soft-delete. A `null` value means the
+ * row is live; a timestamp means it was soft-deleted at that instant. Filter
+ * queries with `notDeleted()` / `onlyDeleted()` and remove rows with
+ * `softDeletePatch()` (see `@workspace/db` soft-delete helpers).
+ */
+export const softDelete = {
+  deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'date' }),
+}

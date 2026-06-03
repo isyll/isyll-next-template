@@ -74,7 +74,11 @@ async function createOperator(options: CreateOperatorOptions): Promise<void> {
         description: 'Full access to every console feature',
         isSystem: true,
       })
-      .onConflictDoUpdate({ target: roles.name, set: { isSystem: true } })
+      .onConflictDoUpdate({
+        target: roles.name,
+        targetWhere: sql`deleted_at is null`,
+        set: { isSystem: true },
+      })
       .returning()
     if (!superRole) throw new Error('Failed to create the super role')
 

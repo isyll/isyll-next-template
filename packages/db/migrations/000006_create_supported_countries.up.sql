@@ -2,11 +2,13 @@ CREATE TABLE public.supported_countries (
   country_code char(2) PRIMARY KEY REFERENCES public.countries (iso2) ON DELETE CASCADE,
   launch_date date,
   is_active boolean NOT NULL DEFAULT true,
+  deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX supported_countries_is_active_idx ON public.supported_countries (is_active);
+CREATE INDEX supported_countries_is_active_idx ON public.supported_countries (is_active)
+WHERE deleted_at IS null;
 
 CREATE TRIGGER supported_countries_set_updated_at
 BEFORE UPDATE ON public.supported_countries

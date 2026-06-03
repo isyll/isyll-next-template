@@ -1,4 +1,13 @@
-import { boolean, pgSchema, text, timestamp } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
+import {
+  boolean,
+  pgSchema,
+  text,
+  timestamp,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core'
+
+import { softDelete } from './_helpers'
 
 /**
  * End-user site data lives in its own `app` Postgres schema (isolated from the
@@ -15,19 +24,29 @@ import { boolean, pgSchema, text, timestamp } from 'drizzle-orm/pg-core'
  */
 export const appSchema = pgSchema('app')
 
-export const users = appSchema.table('users', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  email: text('email').notNull().unique(),
-  emailVerified: boolean('email_verified').notNull().default(false),
-  image: text('image'),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-})
+export const users = appSchema.table(
+  'users',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    emailVerified: boolean('email_verified').notNull().default(false),
+    image: text('image'),
+    ...softDelete,
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    // Email is unique only among live rows; freed once an account is deleted.
+    uniqueIndex('users_email_unique')
+      .on(table.email)
+      .where(sql`${table.deletedAt} is null`),
+  ]
+)
 
 export const sessions = appSchema.table('sessions', {
   id: text('id').primaryKey(),
