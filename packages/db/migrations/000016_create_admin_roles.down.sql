@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS admin.role;
+DROP TABLE IF EXISTS admin.roles;

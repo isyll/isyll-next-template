@@ -11,10 +11,13 @@ that AI agents have accurate context.
 
 ## Domain model
 
-Out of the box there are only the authentication entities (see `@workspace/db`):
-end users (`user`/`session`/`account`/`verification` in `public`) and a fully
-isolated administrator set (`admin` schema). Add your real domain tables as
-pure-SQL migrations under `packages/db/migrations/`.
+Out of the box there are only the authentication entities (see `@workspace/db`),
+split across three schema-qualified Postgres schemas: global reference data in
+`public` (currencies/countries/timezones), end users in `app`
+(`users`/`sessions`/`accounts`/`verifications`, plus `audit_logs`), and a fully
+isolated administrator set in `admin` (`operators`/`roles`/`permissions`/…).
+Table names are plural. Add your real domain tables as pure-SQL migrations under
+`packages/db/migrations/`.
 
 ## Constraints & decisions
 

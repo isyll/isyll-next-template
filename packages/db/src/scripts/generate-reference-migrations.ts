@@ -17,16 +17,16 @@ function valuesBlock(rows: string[][]): string {
 
 function immutability(table: string): string {
   return `CREATE TRIGGER ${table}_immutable
-  BEFORE INSERT OR UPDATE OR DELETE ON ${table}
-  FOR EACH ROW EXECUTE FUNCTION prevent_row_mutation();
+BEFORE INSERT OR UPDATE OR DELETE ON public.${table}
+FOR EACH ROW EXECUTE FUNCTION public.prevent_row_mutation();
 
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
-    GRANT SELECT ON ${table} TO app;
+    GRANT SELECT ON public.${table} TO app;
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'admin_service') THEN
-    GRANT SELECT ON ${table} TO admin_service;
+    GRANT SELECT ON public.${table} TO admin_service;
   END IF;
 END;
 $$;
@@ -65,18 +65,18 @@ const currencyRows = currencyRecords.map((record) => [
 write(
   '000003',
   'create_currencies',
-  `CREATE TABLE currencies (
-  code         char(3) PRIMARY KEY,
+  `CREATE TABLE public.currencies (
+  code char(3) PRIMARY KEY,
   numeric_code char(3) NOT NULL,
-  name         text NOT NULL,
-  minor_units  smallint NOT NULL CHECK (minor_units >= 0)
+  name text NOT NULL,
+  minor_units smallint NOT NULL CHECK (minor_units >= 0)
 );
 
-INSERT INTO currencies (code, numeric_code, name, minor_units) VALUES
+INSERT INTO public.currencies (code, numeric_code, name, minor_units) VALUES
 ${valuesBlock(currencyRows)};
 
 ${immutability('currencies')}`,
-  `DROP TABLE IF EXISTS currencies;`
+  `DROP TABLE IF EXISTS public.currencies;`
 )
 
 // --- countries (ISO 3166) ---
@@ -105,30 +105,30 @@ const countryRows = [...worldCountries]
 write(
   '000004',
   'create_countries',
-  `CREATE TABLE countries (
-  iso2          char(2) PRIMARY KEY,
-  iso3          char(3) NOT NULL UNIQUE,
-  numeric_code  char(3) NOT NULL,
-  name          text NOT NULL,
+  `CREATE TABLE public.countries (
+  iso2 char(2) PRIMARY KEY,
+  iso3 char(3) NOT NULL UNIQUE,
+  numeric_code char(3) NOT NULL,
+  name text NOT NULL,
   official_name text NOT NULL,
-  region        text,
-  subregion     text,
-  capital       text,
-  calling_code  text,
-  flag_emoji    text,
-  tld           text,
-  currency_code char(3) REFERENCES currencies (code)
+  region text,
+  subregion text,
+  capital text,
+  calling_code text,
+  flag_emoji text,
+  tld text,
+  currency_code char(3) REFERENCES public.currencies (code)
 );
 
-CREATE INDEX countries_region_idx ON countries (region);
-CREATE INDEX countries_currency_code_idx ON countries (currency_code);
-CREATE INDEX countries_name_trgm_idx ON countries USING gin (name gin_trgm_ops);
+CREATE INDEX countries_region_idx ON public.countries (region);
+CREATE INDEX countries_currency_code_idx ON public.countries (currency_code);
+CREATE INDEX countries_name_trgm_idx ON public.countries USING gin (name gin_trgm_ops);
 
-INSERT INTO countries (iso2, iso3, numeric_code, name, official_name, region, subregion, capital, calling_code, flag_emoji, tld, currency_code) VALUES
+INSERT INTO public.countries (iso2, iso3, numeric_code, name, official_name, region, subregion, capital, calling_code, flag_emoji, tld, currency_code) VALUES
 ${valuesBlock(countryRows)};
 
 ${immutability('countries')}`,
-  `DROP TABLE IF EXISTS countries;`
+  `DROP TABLE IF EXISTS public.countries;`
 )
 
 // --- timezones (canonical IANA zones, linked to their primary country) ---
@@ -151,20 +151,20 @@ const timezoneRows = Object.values(ct.getAllTimezones({ deprecated: false }))
 write(
   '000005',
   'create_timezones',
-  `CREATE TABLE timezones (
-  name               text PRIMARY KEY,
-  country_code       char(2) NOT NULL REFERENCES countries (iso2),
+  `CREATE TABLE public.timezones (
+  name text PRIMARY KEY,
+  country_code char(2) NOT NULL REFERENCES public.countries (iso2),
   utc_offset_minutes integer NOT NULL,
   dst_offset_minutes integer NOT NULL
 );
 
-CREATE INDEX timezones_country_code_idx ON timezones (country_code);
+CREATE INDEX timezones_country_code_idx ON public.timezones (country_code);
 
-INSERT INTO timezones (name, country_code, utc_offset_minutes, dst_offset_minutes) VALUES
+INSERT INTO public.timezones (name, country_code, utc_offset_minutes, dst_offset_minutes) VALUES
 ${valuesBlock(timezoneRows)};
 
 ${immutability('timezones')}`,
-  `DROP TABLE IF EXISTS timezones;`
+  `DROP TABLE IF EXISTS public.timezones;`
 )
 
 console.info(

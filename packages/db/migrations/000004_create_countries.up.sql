@@ -1,23 +1,23 @@
-CREATE TABLE countries (
-  iso2          char(2) PRIMARY KEY,
-  iso3          char(3) NOT NULL UNIQUE,
-  numeric_code  char(3) NOT NULL,
-  name          text NOT NULL,
+CREATE TABLE public.countries (
+  iso2 char(2) PRIMARY KEY,
+  iso3 char(3) NOT NULL UNIQUE,
+  numeric_code char(3) NOT NULL,
+  name text NOT NULL,
   official_name text NOT NULL,
-  region        text,
-  subregion     text,
-  capital       text,
-  calling_code  text,
-  flag_emoji    text,
-  tld           text,
-  currency_code char(3) REFERENCES currencies (code)
+  region text,
+  subregion text,
+  capital text,
+  calling_code text,
+  flag_emoji text,
+  tld text,
+  currency_code char(3) REFERENCES public.currencies (code)
 );
 
-CREATE INDEX countries_region_idx ON countries (region);
-CREATE INDEX countries_currency_code_idx ON countries (currency_code);
-CREATE INDEX countries_name_trgm_idx ON countries USING gin (name gin_trgm_ops);
+CREATE INDEX countries_region_idx ON public.countries (region);
+CREATE INDEX countries_currency_code_idx ON public.countries (currency_code);
+CREATE INDEX countries_name_trgm_idx ON public.countries USING gin (name gin_trgm_ops);
 
-INSERT INTO countries (iso2, iso3, numeric_code, name, official_name, region, subregion, capital, calling_code, flag_emoji, tld, currency_code) VALUES
+INSERT INTO public.countries (iso2, iso3, numeric_code, name, official_name, region, subregion, capital, calling_code, flag_emoji, tld, currency_code) VALUES
   ('AD', 'AND', '020', 'Andorra', 'Principality of Andorra', 'Europe', 'Southern Europe', 'Andorra la Vella', '+376', '🇦🇩', '.ad', 'EUR'),
   ('AE', 'ARE', '784', 'United Arab Emirates', 'United Arab Emirates', 'Asia', 'Western Asia', 'Abu Dhabi', '+971', '🇦🇪', '.ae', 'AED'),
   ('AF', 'AFG', '004', 'Afghanistan', 'Islamic Republic of Afghanistan', 'Asia', 'Southern Asia', 'Kabul', '+93', '🇦🇫', '.af', 'AFN'),
@@ -270,16 +270,16 @@ INSERT INTO countries (iso2, iso3, numeric_code, name, official_name, region, su
   ('ZW', 'ZWE', '716', 'Zimbabwe', 'Republic of Zimbabwe', 'Africa', 'Eastern Africa', 'Harare', '+263', '🇿🇼', '.zw', 'BWP');
 
 CREATE TRIGGER countries_immutable
-  BEFORE INSERT OR UPDATE OR DELETE ON countries
-  FOR EACH ROW EXECUTE FUNCTION prevent_row_mutation();
+BEFORE INSERT OR UPDATE OR DELETE ON public.countries
+FOR EACH ROW EXECUTE FUNCTION public.prevent_row_mutation();
 
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
-    GRANT SELECT ON countries TO app;
+    GRANT SELECT ON public.countries TO app;
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'admin_service') THEN
-    GRANT SELECT ON countries TO admin_service;
+    GRANT SELECT ON public.countries TO admin_service;
   END IF;
 END;
 $$;

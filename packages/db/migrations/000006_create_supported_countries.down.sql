@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS supported_countries;
+DROP TABLE IF EXISTS public.supported_countries;

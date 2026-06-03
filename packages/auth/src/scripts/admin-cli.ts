@@ -3,12 +3,12 @@ import process from 'node:process'
 
 import {
   adminDb,
-  operator,
-  operatorAccount,
-  operatorRole,
-  permission,
-  role,
-  rolePermission,
+  operatorAccounts,
+  operatorRoles,
+  operators,
+  permissions,
+  rolePermissions,
+  roles,
 } from '@workspace/db/admin'
 import { Command } from 'commander'
 import { config } from 'dotenv'
@@ -24,10 +24,10 @@ const SUPER_ROLE_NAME = 'Super Administrator'
 
 async function syncPermissions(): Promise<void> {
   await adminDb
-    .insert(permission)
+    .insert(permissions)
     .values(ADMIN_PERMISSIONS.map((entry) => ({ ...entry })))
     .onConflictDoUpdate({
-      target: permission.key,
+      target: permissions.key,
       set: { description: sql`excluded.description` },
     })
   console.info(pc.green(`✓ Synced ${ADMIN_PERMISSIONS.length} permissions`))
@@ -50,14 +50,14 @@ async function createOperator(options: CreateOperatorOptions): Promise<void> {
   const hashedPassword = await ctx.password.hash(password)
   const operatorId = randomUUID()
 
-  await adminDb.insert(operator).values({
+  await adminDb.insert(operators).values({
     id: operatorId,
     email: options.email,
     name: options.name,
     emailVerified: true,
     isActive: true,
   })
-  await adminDb.insert(operatorAccount).values({
+  await adminDb.insert(operatorAccounts).values({
     id: randomUUID(),
     accountId: operatorId,
     providerId: 'credential',
@@ -68,29 +68,32 @@ async function createOperator(options: CreateOperatorOptions): Promise<void> {
   if (options.super) {
     await syncPermissions()
     const [superRole] = await adminDb
-      .insert(role)
+      .insert(roles)
       .values({
         name: SUPER_ROLE_NAME,
         description: 'Full access to every console feature',
         isSystem: true,
       })
-      .onConflictDoUpdate({ target: role.name, set: { isSystem: true } })
+      .onConflictDoUpdate({ target: roles.name, set: { isSystem: true } })
       .returning()
     if (!superRole) throw new Error('Failed to create the super role')
 
-    const permissions = await adminDb
-      .select({ id: permission.id })
-      .from(permission)
-    if (permissions.length > 0) {
+    const allPermissions = await adminDb
+      .select({ id: permissions.id })
+      .from(permissions)
+    if (allPermissions.length > 0) {
       await adminDb
-        .insert(rolePermission)
+        .insert(rolePermissions)
         .values(
-          permissions.map((p) => ({ roleId: superRole.id, permissionId: p.id }))
+          allPermissions.map((p) => ({
+            roleId: superRole.id,
+            permissionId: p.id,
+          }))
         )
         .onConflictDoNothing()
     }
     await adminDb
-      .insert(operatorRole)
+      .insert(operatorRoles)
       .values({ operatorId, roleId: superRole.id })
       .onConflictDoNothing()
   }
