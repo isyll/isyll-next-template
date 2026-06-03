@@ -12,7 +12,8 @@ function sql(value: string | null): string {
 }
 
 function valuesBlock(rows: string[][]): string {
-  return rows.map((row) => `  (${row.join(', ')})`).join(',\n')
+  // Rows are not indented, matching SQLFluff's layout for multi-row VALUES.
+  return rows.map((row) => `(${row.join(', ')})`).join(',\n')
 }
 
 function immutability(table: string): string {
