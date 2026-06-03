@@ -34,7 +34,7 @@
 
   "sqlfluff.dialect": "postgres",
   "sqlfluff.experimental.format.executeInTerminal": true,
-  "[sql]": { "editor.defaultFormatter": "dorzey.vscode-sqlfluff" },
+  "[sql]": { "editor.defaultFormatter": "sqlfluff.vscode-sqlfluff" },
 
   "files.eol": "\n",
   "search.exclude": {

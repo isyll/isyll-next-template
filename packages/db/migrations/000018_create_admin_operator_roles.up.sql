@@ -1,6 +1,6 @@
 CREATE TABLE admin.operator_role (
   operator_id text NOT NULL REFERENCES admin.operator (id) ON DELETE CASCADE,
-  role_id     uuid NOT NULL REFERENCES admin.role (id) ON DELETE CASCADE,
+  role_id uuid NOT NULL REFERENCES admin.role (id) ON DELETE CASCADE,
   PRIMARY KEY (operator_id, role_id)
 );
 

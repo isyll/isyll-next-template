@@ -1,7 +1,7 @@
 CREATE TABLE verification (
-  id         text PRIMARY KEY,
+  id text PRIMARY KEY,
   identifier text NOT NULL,
-  value      text NOT NULL,
+  value text NOT NULL,
   expires_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
@@ -11,7 +11,7 @@ CREATE INDEX verification_identifier_idx ON verification (identifier);
 CREATE INDEX verification_expires_at_idx ON verification (expires_at);
 
 CREATE TRIGGER verification_set_updated_at BEFORE UPDATE ON verification
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Maintenance helper: delete expired user sessions and verification tokens,
 -- returning the number of rows removed. Schedule from pg_cron or a job runner.

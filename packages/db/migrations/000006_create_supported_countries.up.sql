@@ -1,16 +1,16 @@
 CREATE TABLE supported_countries (
   country_code char(2) PRIMARY KEY REFERENCES countries (iso2) ON DELETE CASCADE,
-  launch_date  date,
-  is_active    boolean NOT NULL DEFAULT true,
-  created_at   timestamptz NOT NULL DEFAULT now(),
-  updated_at   timestamptz NOT NULL DEFAULT now()
+  launch_date date,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX supported_countries_is_active_idx ON supported_countries (is_active);
 
 CREATE TRIGGER supported_countries_set_updated_at
-  BEFORE UPDATE ON supported_countries
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+BEFORE UPDATE ON supported_countries
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 DO $$
 BEGIN

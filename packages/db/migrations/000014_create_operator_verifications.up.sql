@@ -1,7 +1,7 @@
 CREATE TABLE admin.operator_verification (
-  id         text PRIMARY KEY,
+  id text PRIMARY KEY,
   identifier text NOT NULL,
-  value      text NOT NULL,
+  value text NOT NULL,
   expires_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
@@ -10,7 +10,7 @@ CREATE TABLE admin.operator_verification (
 CREATE INDEX operator_verification_identifier_idx ON admin.operator_verification (identifier);
 
 CREATE TRIGGER operator_verification_set_updated_at BEFORE UPDATE ON admin.operator_verification
-  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 DO $$
 BEGIN

@@ -1,5 +1,5 @@
 CREATE TABLE admin.role_permission (
-  role_id       uuid NOT NULL REFERENCES admin.role (id) ON DELETE CASCADE,
+  role_id uuid NOT NULL REFERENCES admin.role (id) ON DELETE CASCADE,
   permission_id uuid NOT NULL REFERENCES admin.permission (id) ON DELETE CASCADE,
   PRIMARY KEY (role_id, permission_id)
 );

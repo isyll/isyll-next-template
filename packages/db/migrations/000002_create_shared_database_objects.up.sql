@@ -23,4 +23,4 @@ $$;
 
 -- Validated, case-insensitive email type reused by every account table.
 CREATE DOMAIN email_address AS citext
-  CHECK (VALUE ~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$');
+CHECK (value ~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$');

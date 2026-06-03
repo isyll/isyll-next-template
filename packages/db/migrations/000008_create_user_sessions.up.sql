@@ -1,7 +1,7 @@
 CREATE TABLE session (
-  id         text PRIMARY KEY,
-  token      text NOT NULL,
-  user_id    text NOT NULL REFERENCES "user" (id) ON DELETE CASCADE,
+  id text PRIMARY KEY,
+  token text NOT NULL,
+  user_id text NOT NULL REFERENCES "user" (id) ON DELETE CASCADE,
   expires_at timestamptz NOT NULL,
   ip_address text,
   user_agent text,
@@ -14,7 +14,7 @@ CREATE INDEX session_user_id_idx ON session (user_id);
 CREATE INDEX session_expires_at_idx ON session (expires_at);
 
 CREATE TRIGGER session_set_updated_at BEFORE UPDATE ON session
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 DO $$
 BEGIN
