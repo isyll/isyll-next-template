@@ -18,11 +18,11 @@ if (process.env['NODE_ENV'] === 'production') {
 const pool = new Pool({ connectionString, max: 1 })
 const db = drizzle({ client: pool, schema })
 
-// `reset` truncates every table (FK-safe). Seeded users are sample rows only:
-// real accounts (with credentials) are created through the BetterAuth sign-up
-// flow, which also populates the `account`/`session` tables. `email` is refined
-// so generated values satisfy the `email_address` domain CHECK.
-await reset(db, schema)
+// Only the `user` table is reset/seeded: reference tables hold immutable
+// standards data from the migrations, and real accounts (with credentials) are
+// created through the BetterAuth sign-up flow. `email` is refined so generated
+// values satisfy the `email_address` domain CHECK.
+await reset(db, { user: schema.user })
 await seed(db, { user: schema.user }).refine((funcs) => ({
   user: {
     columns: {

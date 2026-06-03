@@ -1,4 +1,4 @@
-import { auth } from '@workspace/auth'
+import { userAuth } from '@workspace/auth'
 import { getTranslations } from 'next-intl/server'
 import { headers } from 'next/headers'
 import Link from 'next/link'
@@ -13,7 +13,7 @@ export async function SiteHeader() {
   const [tCommon, tNav, session] = await Promise.all([
     getTranslations('Common'),
     getTranslations('Nav'),
-    auth.api.getSession({ headers: await headers() }),
+    userAuth.api.getSession({ headers: await headers() }),
   ])
 
   return (

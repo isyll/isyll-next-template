@@ -1,4 +1,4 @@
-export { auth, type Session } from './auth'
+export { userAuth, type UserSession } from './auth'
 export {
   buildSocialProviders,
   enabledSocialProviders,

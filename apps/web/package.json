@@ -37,7 +37,8 @@
     "react-hook-form": "catalog:",
     "server-only": "catalog:",
     "sonner": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",

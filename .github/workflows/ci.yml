@@ -17,8 +17,9 @@ permissions:
 env:
   HUSKY: 0
   SKIP_ENV_VALIDATION: '1'
-  # Dummy secret so BetterAuth doesn't error during `next build`. Never a real value.
-  BETTER_AUTH_SECRET: ci-build-dummy-secret-0000000000000000
+  # Dummy secrets so BetterAuth doesn't error during `next build`. Never real values.
+  AUTH_USER_SECRET: ci-build-dummy-user-secret-00000000000000
+  AUTH_ADMIN_SECRET: ci-build-dummy-admin-secret-0000000000000
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 

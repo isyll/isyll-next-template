@@ -32,6 +32,10 @@
   "tailwindCSS.classFunctions": ["cn", "cva"],
   "files.associations": { "*.css": "tailwindcss" },
 
+  "sqlfluff.dialect": "postgres",
+  "sqlfluff.experimental.format.executeInTerminal": true,
+  "[sql]": { "editor.defaultFormatter": "sqlfluff.vscode-sqlfluff" },
+
   "files.eol": "\n",
   "search.exclude": {
     "**/node_modules": true,

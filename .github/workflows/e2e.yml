@@ -11,7 +11,9 @@ permissions:
 env:
   HUSKY: 0
   DATABASE_URL: postgres://postgres:postgres@localhost:5432/app
-  BETTER_AUTH_SECRET: e2e-dummy-secret-00000000000000000000
+  MIGRATION_DATABASE_URL: postgres://postgres:postgres@localhost:5432/app?sslmode=disable
+  AUTH_USER_SECRET: e2e-dummy-user-secret-000000000000000000
+  AUTH_ADMIN_SECRET: e2e-dummy-admin-secret-00000000000000000
   NEXT_PUBLIC_APP_URL: http://localhost:3000
 
 jobs:
@@ -40,6 +42,10 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Install golang-migrate
+        run: |
+          curl -fsSL https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz | tar xz
+          sudo mv migrate /usr/local/bin/migrate
       - run: pnpm --filter @workspace/db db:migrate
       - run: pnpm --filter web exec playwright install --with-deps chromium
       - run: pnpm --filter web test:e2e

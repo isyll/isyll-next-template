@@ -12,13 +12,9 @@ export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl
 
   if (pathname.startsWith('/admin')) {
-    // The admin auth API and the login/register pages must stay reachable
+    // The admin auth API and the operator login page must stay reachable
     // without a session.
-    if (
-      pathname === '/admin/login' ||
-      pathname === '/admin/register' ||
-      pathname.startsWith('/admin/api')
-    ) {
+    if (pathname === '/admin/login' || pathname.startsWith('/admin/api')) {
       return NextResponse.next()
     }
     const adminCookie = getSessionCookie(request, { cookiePrefix: 'admin' })

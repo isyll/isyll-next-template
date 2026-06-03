@@ -26,6 +26,12 @@ datasource
 postgres
 postgresql
 timestamptz
+trgm
+citext
+rolname
+PBAC
+picocolors
+sqlfluff
 nginx
 initdb
 jsdom

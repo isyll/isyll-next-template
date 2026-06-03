@@ -33,12 +33,16 @@ services:
     networks: [backend]
 
   migrator:
-    build:
-      context: .
-      dockerfile: infra/docker/web.Dockerfile
-      target: migrator
-    environment:
-      MIGRATION_DATABASE_URL: ${MIGRATION_DATABASE_URL:?set MIGRATION_DATABASE_URL}
+    image: migrate/migrate:v4.18.1
+    volumes:
+      - ./packages/db/migrations:/migrations:ro
+    command:
+      [
+        '-path=/migrations',
+        '-database',
+        '${MIGRATION_DATABASE_URL:?set MIGRATION_DATABASE_URL}',
+        'up',
+      ]
     depends_on:
       db:
         condition: service_healthy
@@ -54,10 +58,10 @@ services:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
       ADMIN_DATABASE_URL: ${ADMIN_DATABASE_URL:?set ADMIN_DATABASE_URL}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL}
-      ADMIN_AUTH_SECRET: ${ADMIN_AUTH_SECRET:?set ADMIN_AUTH_SECRET}
-      ADMIN_AUTH_URL: ${ADMIN_AUTH_URL:?set ADMIN_AUTH_URL}
+      AUTH_USER_SECRET: ${AUTH_USER_SECRET:?set AUTH_USER_SECRET}
+      AUTH_USER_URL: ${AUTH_USER_URL:?set AUTH_USER_URL}
+      AUTH_ADMIN_SECRET: ${AUTH_ADMIN_SECRET:?set AUTH_ADMIN_SECRET}
+      AUTH_ADMIN_URL: ${AUTH_ADMIN_URL:?set AUTH_ADMIN_URL}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?set NEXT_PUBLIC_APP_URL}
     depends_on:
       db:

@@ -27,12 +27,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV SKIP_ENV_VALIDATION=1
 RUN pnpm turbo run build --filter=web
 
-# 4. One-shot migration runner (pure-SQL migrations via the runner script).
-FROM installer AS migrator
-WORKDIR /app/packages/db
-CMD ["pnpm", "run", "db:migrate"]
-
-# 5. Minimal runtime image.
+# 4. Minimal runtime image. (Migrations run via the official migrate/migrate
+# image — see compose.prod.yaml — not from this image.)
 FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

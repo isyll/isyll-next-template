@@ -6,13 +6,11 @@
 @source '../../../apps/**/*.{ts,tsx}';
 @source '../**/*.{ts,tsx}';
 
-/* ===========================================================================
- * THEME TOKENS — three tiers:
- *   1. PRIMITIVES  (--brand-*)  ← the ONLY block to edit when rebranding
- *   2. SEMANTIC    (:root/.dark) ← role tokens, mostly mapped to primitives
- *   3. @theme inline            ← exposes semantics as Tailwind utilities
- * Colours are oklch (wide gamut, perceptually-uniform lightness).
- * ======================================================================== */
+/*
+ * Theme tokens in three tiers: brand primitives (--brand-*, the only block to
+ * edit when rebranding), semantic role tokens (:root/.dark), and the @theme
+ * inline block exposing them as Tailwind utilities. Colours are oklch.
+ */
 
 @theme inline {
   --font-sans: var(--font-sans);
@@ -61,12 +59,12 @@
 }
 
 :root {
-  /* ---- 1. PRIMITIVES — rebrand here (and in .dark below) ---------------- */
+  /* Brand primitives — rebrand here (and in .dark below). */
   --brand: oklch(0.21 0.006 285.885);
   --brand-foreground: oklch(0.985 0 0);
   --brand-ring: oklch(0.705 0.015 286.067);
 
-  /* ---- 2. SEMANTIC ------------------------------------------------------ */
+  /* Semantic role tokens. */
   --radius: 0.875rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -102,12 +100,12 @@
 }
 
 .dark {
-  /* ---- 1. PRIMITIVES (dark) --------------------------------------------- */
+  /* Brand primitives (dark). */
   --brand: oklch(0.92 0.004 286.32);
   --brand-foreground: oklch(0.21 0.006 285.885);
   --brand-ring: oklch(0.552 0.016 285.938);
 
-  /* ---- 2. SEMANTIC (dark) ----------------------------------------------- */
+  /* Semantic role tokens (dark). */
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);

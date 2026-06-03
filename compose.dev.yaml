@@ -29,12 +29,16 @@ services:
       retries: 5
 
   migrator:
-    build:
-      context: .
-      dockerfile: infra/docker/web.Dockerfile
-      target: migrator
-    environment:
-      MIGRATION_DATABASE_URL: postgres://postgres:postgres@db:5432/app
+    image: migrate/migrate:v4.18.1
+    volumes:
+      - ./packages/db/migrations:/migrations:ro
+    command:
+      [
+        '-path=/migrations',
+        '-database',
+        'postgres://postgres:postgres@db:5432/app?sslmode=disable',
+        'up',
+      ]
     depends_on:
       db:
         condition: service_healthy
@@ -49,10 +53,10 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgres://postgres:postgres@db:5432/app
       ADMIN_DATABASE_URL: postgres://postgres:postgres@db:5432/app
-      BETTER_AUTH_SECRET: dev-insecure-secret-change-me-0000000000000000
-      ADMIN_AUTH_SECRET: dev-insecure-admin-secret-change-me-000000000
-      BETTER_AUTH_URL: http://localhost:3000
-      ADMIN_AUTH_URL: http://localhost:3000
+      AUTH_USER_SECRET: dev-insecure-user-secret-change-me-00000000000
+      AUTH_ADMIN_SECRET: dev-insecure-admin-secret-change-me-000000000
+      AUTH_USER_URL: http://localhost:3000
+      AUTH_ADMIN_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
     ports:
       - '3000:3000'

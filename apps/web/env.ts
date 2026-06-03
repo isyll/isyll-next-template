@@ -15,11 +15,20 @@ export const env = createEnv({
     DATABASE_URL: z
       .string()
       .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string'),
-    BETTER_AUTH_SECRET: z
+    ADMIN_DATABASE_URL: z
+      .string()
+      .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string')
+      .optional(),
+    AUTH_USER_SECRET: z
       .string()
       .min(32, 'Must be at least 32 characters')
       .optional(),
-    BETTER_AUTH_URL: z.url().optional(),
+    AUTH_USER_URL: z.url().optional(),
+    AUTH_ADMIN_SECRET: z
+      .string()
+      .min(32, 'Must be at least 32 characters')
+      .optional(),
+    AUTH_ADMIN_URL: z.url().optional(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     FACEBOOK_CLIENT_ID: z.string().optional(),

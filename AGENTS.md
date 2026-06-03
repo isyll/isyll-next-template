@@ -36,10 +36,11 @@ tests/load                    k6 load tests
    actions.
 2. **Security.** Re-verify auth AND ownership inside every action/DAL — page or
    `proxy.ts` checks are not enough. Validate all input with Zod. Return DTOs,
-   never raw rows. Admins are a **separate, isolated system**: their own
-   BetterAuth instance (`@workspace/auth/admin`), their own DB schema/role
-   (`@workspace/db/admin`), their own cookies. End users have no `role` column;
-   never mix the two.
+   never raw rows. Operators (admins) are a **separate, isolated system**: their
+   own BetterAuth instance (`@workspace/auth/admin`), DB schema + connection role
+   (`@workspace/db/admin`), secret and cookies. Operators are provisioned (no
+   self-signup); access is **PBAC** (`adminActionWithPermission`). Never mix the
+   two systems.
 3. **DB access** only through `@workspace/db` (`server-only`). Migrations are
    hand-written pure SQL (up/down) under `packages/db/migrations/`. Schema
    changes → `pnpm db:migrate:new <name>`, write the SQL, mirror it in the
@@ -57,18 +58,19 @@ tests/load                    k6 load tests
 
 ## Commands
 
-| Task           | Command                                |
-| -------------- | -------------------------------------- |
-| Dev            | `pnpm dev`                             |
-| Full check     | `pnpm check`                           |
-| Lint / types   | `pnpm lint` · `pnpm typecheck`         |
-| Test / e2e     | `pnpm test` · `pnpm test:e2e`          |
-| Add UI         | `pnpm ui:add <component>`              |
-| DB migrate     | `pnpm db:migrate` · `pnpm db:rollback` |
-| New migration  | `pnpm db:migrate:new <name>`           |
-| Seed / studio  | `pnpm db:seed` · `pnpm db:studio`      |
-| Regen auth SQL | `pnpm auth:generate`                   |
-| New project    | `pnpm project:init`                    |
+| Task          | Command                                |
+| ------------- | -------------------------------------- |
+| Dev           | `pnpm dev`                             |
+| Full check    | `pnpm check`                           |
+| Lint / types  | `pnpm lint` · `pnpm typecheck`         |
+| Test / e2e    | `pnpm test` · `pnpm test:e2e`          |
+| Add UI        | `pnpm ui:add <component>`              |
+| DB migrate    | `pnpm db:migrate` · `pnpm db:rollback` |
+| New migration | `pnpm db:migrate:new <name>`           |
+| SQL lint      | `pnpm sql:lint` · `pnpm sql:fix`       |
+| Seed / studio | `pnpm db:seed` · `pnpm db:studio`      |
+| New operator  | `pnpm admin:create-operator`           |
+| New project   | `pnpm project:init`                    |
 
 ## Commit rules (STRICT)
 
