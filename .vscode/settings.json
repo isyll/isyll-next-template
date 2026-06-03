@@ -1,0 +1,67 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "prettier.requireConfig": true,
+  "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "typescript.tsserver.maxTsServerMemory": 4096,
+
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[yaml]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
+  "tailwindCSS.classFunctions": ["cn", "cva"],
+  "files.associations": { "*.css": "tailwindcss" },
+
+  "sqlfluff.dialect": "postgres",
+  "sqlfluff.experimental.format.executeInTerminal": true,
+  "[sql]": { "editor.defaultFormatter": "sqlfluff.vscode-sqlfluff" },
+
+  "files.eol": "\n",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.turbo": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "pnpm-lock.yaml": true
+  },
+  "files.exclude": {
+    "**/.next": true,
+    "**/.turbo": true
+  },
+
+  "chat.agent.enabled": true,
+  "chat.tools.terminal.autoApprove": {
+    "/^pnpm\\b/": true,
+    "/^(node|tsx|tsc)\\b/": true,
+    "/^git (status|diff|log|show|branch|remote|rev-parse|blame|describe|tag|fetch|pull|add|commit|push|switch|checkout|restore|stash|merge|rebase|cherry-pick)\\b/": true,
+    "/^gh\\b/": true,
+    "/^(ls|cat|head|tail|grep|rg|fd|find|wc|tree|which|stat|pwd|echo|sort|uniq|diff)\\b/": true,
+    "/^(mkdir|touch|cp|mv|chmod)\\b/": true,
+    "/^docker compose (config|ps)\\b/": true,
+    "rm": false,
+    "/\\brm\\s+-rf\\b/": false,
+    "/\\bsudo\\b/": false,
+    "/\\b(curl|wget)\\b/": false
+  }
+}

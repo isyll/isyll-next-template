@@ -1,6 +1,6 @@
 # GitHub Copilot instructions
 
-This is **isyll-next-template** — an ultra-powerful, server-first Next.js 16
+This is **next-monorepo-template** — an ultra-powerful, server-first Next.js 16
 monorepo template (pnpm + Turborepo). Follow these rules in every suggestion.
 
 ## Stack

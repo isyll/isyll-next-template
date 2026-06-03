@@ -1,0 +1,33 @@
+# Keep the build context small and reproducible. Everything not needed to
+# install + build is excluded; node_modules/.next are rebuilt in the image.
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/build
+**/coverage
+**/playwright-report
+**/test-results
+
+.git
+.github
+.husky
+.vscode
+.idea
+.cspell
+
+**/*.log
+**/.DS_Store
+
+# Secrets and local env never enter an image.
+.env
+.env.*
+!.env.example
+
+# Docs / infra not needed by the app build.
+*.md
+infra/nginx
+infra/postgres
+compose*.yaml
+.dockerignore
+Dockerfile*

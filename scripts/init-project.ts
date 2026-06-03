@@ -1,36 +1,44 @@
 /**
- * Bootstraps this template for a new project: renames the root package, updates
- * the app metadata / French messages / BetterAuth identity, the README title,
- * creates `.env`, and writes the `PROJECT.md` brief.
- *
- * Usage:
- *   pnpm project:init [--name <kebab>] [--display-name <name>]
- *                     [--description <text>] [--yes]
+ * Bootstraps this template for a new project: renames the package, rewrites the
+ * app/auth identity and GitHub owner references, generates auth secrets into a
+ * fresh `.env`, and writes the `PROJECT.md` brief. Runs interactively (@clack)
+ * or fully from flags (`--yes`).
  */
+import { randomBytes } from 'node:crypto'
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { createInterface } from 'node:readline/promises'
-import { parseArgs } from 'node:util'
+
+import { cancel, confirm, intro, isCancel, outro, text } from '@clack/prompts'
+import { Command } from 'commander'
+import pc from 'picocolors'
 
 const ROOT = join(import.meta.dirname, '..')
+const TEMPLATE_NAME = 'next-monorepo-template'
+const TEMPLATE_OWNER = 'isyll'
 
-const { values } = parseArgs({
-  options: {
-    name: { type: 'string' },
-    'display-name': { type: 'string' },
-    description: { type: 'string' },
-    yes: { type: 'boolean', default: false },
-    help: { type: 'boolean', default: false },
-  },
-})
+const program = new Command()
+program
+  .name('project:init')
+  .description('Initialize this template for a new project')
+  .option('--name <kebab>', 'package name (kebab-case)')
+  .option('--display-name <name>', 'human-facing application name')
+  .option('--description <text>', 'one-line description')
+  .option('--owner <handle>', 'GitHub owner/org')
+  .option('--repo <name>', 'GitHub repository name')
+  .option('--cookie-prefix <prefix>', 'end-user session cookie prefix')
+  .option('-y, --yes', 'accept defaults without prompting', false)
+  .parse()
 
-if (values.help) {
-  console.log(
-    'Usage: pnpm project:init [--name <kebab>] [--display-name <name>] [--description <text>] [--yes]'
-  )
-  process.exit(0)
-}
+const flags = program.opts<{
+  name?: string
+  displayName?: string
+  description?: string
+  owner?: string
+  repo?: string
+  cookiePrefix?: string
+  yes?: boolean
+}>()
 
 function toKebab(value: string): string {
   return value
@@ -40,25 +48,40 @@ function toKebab(value: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-async function ask(question: string, fallback: string): Promise<string> {
-  if (values.yes) return fallback
-  const rl = createInterface({ input: process.stdin, output: process.stdout })
-  try {
-    const answer = (await rl.question(`${question} (${fallback}): `)).trim()
-    return answer.length > 0 ? answer : fallback
-  } finally {
-    rl.close()
-  }
+function bail(): never {
+  cancel('Initialization cancelled.')
+  process.exit(0)
 }
 
+async function prompt(message: string, fallback: string): Promise<string> {
+  if (flags.yes) return fallback
+  const answer = await text({
+    message,
+    placeholder: fallback,
+    defaultValue: fallback,
+  })
+  if (isCancel(answer)) bail()
+  const value = answer.trim()
+  return value.length > 0 ? value : fallback
+}
+
+intro(pc.cyan('next-monorepo-template · project setup'))
+
 const name = toKebab(
-  values.name ?? (await ask('Project name (kebab-case)', 'my-app'))
+  flags.name ?? (await prompt('Package name (kebab-case)', 'my-app'))
 )
-const displayName = values['display-name'] ?? (await ask('Display name', name))
+const displayName = flags.displayName ?? (await prompt('Display name', name))
 const description =
-  values.description ??
-  (await ask('One-line description', 'A modern web application.'))
-const cookiePrefix = name.split('-')[0] ?? name
+  flags.description ??
+  (await prompt('One-line description', 'A modern web application.'))
+const owner = flags.owner ?? (await prompt('GitHub owner/org', TEMPLATE_OWNER))
+const repo = toKebab(
+  flags.repo ?? (await prompt('GitHub repository name', name))
+)
+const cookiePrefix = toKebab(
+  flags.cookiePrefix ??
+    (await prompt('Session cookie prefix', name.split('-')[0] ?? name))
+)
 
 function replaceInFile(
   relPath: string,
@@ -74,25 +97,35 @@ function replaceInFile(
 }
 
 replaceInFile('package.json', [
-  ['"name": "isyll-next-template"', `"name": "${name}"`],
+  [`"name": "${TEMPLATE_NAME}"`, `"name": "${name}"`],
 ])
 
 replaceInFile('apps/web/messages/fr.json', [
-  ['"appName": "Isyll"', `"appName": "${displayName}"`],
-  ['"title": "Isyll — Modèle Next.js"', `"title": "${displayName}"`],
+  ['"appName": "App"', `"appName": "${displayName}"`],
+  ['"title": "App"', `"title": "${displayName}"`],
   [
     '"description": "Un modèle Next.js 16 ultra-puissant, orienté serveur."',
     `"description": "${description}"`,
   ],
 ])
 
+// End-user auth identity only — the admin (operator) instance keeps its own.
 replaceInFile('packages/auth/src/auth.ts', [
-  ["appName: 'isyll-next-template'", `appName: '${name}'`],
-  ["cookiePrefix: 'isyll'", `cookiePrefix: '${cookiePrefix}'`],
+  ["appName: 'App'", `appName: '${displayName}'`],
+  ["cookiePrefix: 'app'", `cookiePrefix: '${cookiePrefix}'`],
+])
+replaceInFile('apps/web/proxy.ts', [
+  ["{ cookiePrefix: 'app' }", `{ cookiePrefix: '${cookiePrefix}' }`],
 ])
 
-replaceInFile('apps/web/src/proxy.ts', [
-  ["{ cookiePrefix: 'isyll' }", `{ cookiePrefix: '${cookiePrefix}' }`],
+if (owner !== TEMPLATE_OWNER) {
+  replaceInFile('.github/CODEOWNERS', [[`@${TEMPLATE_OWNER}`, `@${owner}`]])
+}
+replaceInFile('.github/ISSUE_TEMPLATE/config.yml', [
+  [
+    `github.com/${TEMPLATE_OWNER}/${TEMPLATE_NAME}`,
+    `github.com/${owner}/${repo}`,
+  ],
 ])
 
 const readmePath = join(ROOT, 'README.md')
@@ -105,6 +138,11 @@ const envExample = join(ROOT, '.env.example')
 const envPath = join(ROOT, '.env')
 if (existsSync(envExample) && !existsSync(envPath)) {
   copyFileSync(envExample, envPath)
+  const secret = (): string => randomBytes(32).toString('base64')
+  const env = readFileSync(envPath, 'utf8')
+    .replace(/^AUTH_USER_SECRET=.*$/m, `AUTH_USER_SECRET=${secret()}`)
+    .replace(/^AUTH_ADMIN_SECRET=.*$/m, `AUTH_ADMIN_SECRET=${secret()}`)
+  writeFileSync(envPath, env)
 }
 
 const projectBrief = `# ${displayName}
@@ -125,12 +163,21 @@ const projectBrief = `# ${displayName}
 
 ---
 
-Built on the isyll-next-template. See \`AGENTS.md\` for engineering conventions.
+Built on ${TEMPLATE_NAME}. See \`AGENTS.md\` for engineering conventions.
 `
 writeFileSync(join(ROOT, 'PROJECT.md'), projectBrief)
 
-console.log(`\n✅ Initialized "${displayName}" (${name}).`)
-console.log('Next steps:')
-console.log('  1. Set secrets in .env (BETTER_AUTH_SECRET, DATABASE_URL, ...).')
-console.log('  2. pnpm db:migrate && pnpm db:seed')
-console.log('  3. pnpm dev')
+if (!flags.yes) {
+  const proceed = await confirm({
+    message: `Initialize ${pc.bold(displayName)} (${name}) owned by ${owner}/${repo}?`,
+  })
+  if (isCancel(proceed) || !proceed) bail()
+}
+
+outro(
+  pc.green(`Initialized ${displayName}.`) +
+    '\n  1. Review generated secrets in .env' +
+    '\n  2. pnpm db:migrate && pnpm db:seed' +
+    '\n  3. pnpm admin:create-operator --email you@example.com --name "You" --super' +
+    '\n  4. pnpm dev'
+)

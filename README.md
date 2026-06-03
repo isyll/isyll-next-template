@@ -1,77 +1,90 @@
-# Isyll Next Template
+# Next Monorepo Template
 
-A server-first **Next.js 16** monorepo template (pnpm + Turborepo) for building
-modern, high-traffic web apps fast — strict TypeScript, authentication,
-database, i18n and a complete quality/CI toolchain out of the box.
+A server-first **Next.js 16** monorepo (pnpm + Turborepo) for building modern,
+high-traffic products fast: strict TypeScript, two fully isolated authentication
+systems, pure-SQL migrations with embedded ISO reference data, i18n, Docker +
+Nginx infrastructure, and a complete quality/CI toolchain.
 
 > New project? Run `pnpm project:init` (or the `/start-project` agent command)
-> to rename and record the brief in `PROJECT.md`.
+> to rename everything, generate secrets, and record the brief in `PROJECT.md`.
 
 ## Stack
 
 - **Next.js 16** App Router · **React 19** · **TypeScript 6** (strict, type-aware)
 - **Tailwind CSS 4** · **shadcn/ui** (Base UI) with swappable theme tokens
-- **BetterAuth** — email/password + env-gated Google / Facebook / Microsoft / Apple
-- **Drizzle ORM** + **PostgreSQL** — SQL migrations, seed, typed DTOs
-- **next-intl** (French) · **TanStack Query** · **next-safe-action** · **Zod 4**
-- **ESLint 10** · **Prettier** · **commitlint** · **husky** · **cspell**
+- **BetterAuth** — separate end-user and operator (admin) instances
+- **Drizzle ORM** (typed queries) + **golang-migrate** (pure-SQL up/down migrations)
+- **PostgreSQL** with least-privilege roles, immutable reference data, PBAC
+- **next-intl** · **TanStack Query** · **next-safe-action** · **Zod 4** · **Zustand**
+- **Docker** (multi-stage) + **Nginx** reverse proxy · least-privilege Postgres
+- **ESLint 10** · **Prettier** · **SQLFluff** · **commitlint** · **husky** · **cspell**
 - **Vitest** · **Playwright** · **k6** · **GitHub Actions** · **Dependabot**
 
 ## Quick start
 
 ```bash
 pnpm install
-cp .env.example .env            # set DATABASE_URL, BETTER_AUTH_SECRET, ...
-pnpm db:migrate                 # apply migrations (needs a running Postgres)
-pnpm db:seed                    # optional: seed demo data
-pnpm dev                        # http://localhost:3000
+docker compose up -d                 # local Postgres + Adminer
+pnpm project:init                    # rename, generate .env secrets
+pnpm db:migrate                      # apply migrations (needs golang-migrate)
+pnpm db:seed                         # optional sample users
+pnpm admin:create-operator --email you@example.com --name "You" --super
+pnpm dev                             # http://localhost:3000
 ```
 
-Generate a secret: `openssl rand -base64 32`. Social providers are optional —
-a provider is enabled only when its credentials are present in `.env`.
+Migrations run through [golang-migrate](https://github.com/golang-migrate/migrate)
+(`brew install golang-migrate`, or `docker compose -f compose.prod.yaml run --rm
+migrator`). Social providers are optional — each is enabled only when its
+credentials are present in `.env`.
+
+## Architecture
+
+- **Two isolated auth systems.** End users (`@workspace/auth`, `public` schema,
+  cookie `app`) and operators (`@workspace/auth/admin`, `admin` schema, cookie
+  `admin`) never share tables, roles, secrets, cookies, or code paths. Operators
+  are provisioned — never self-service — and access is **PBAC** (operators →
+  roles → permissions). The whole `/admin` surface is blocked by Nginx in prod.
+- **Database.** Pure-SQL `up.sql`/`down.sql` migrations, one table each. ISO
+  reference data (currencies, countries, timezones) is embedded and immutable.
+  The app, migrator, and operator service each connect with a distinct role.
+- **Server-first.** Server Components + Server Actions; re-verify auth and
+  ownership in every action via the safe-action clients.
 
 ## Workspace
 
 ```text
-apps/web        Next.js app (App Router, server-first)
-packages/core   Result / AppError / DTO + pagination primitives, env validation
-packages/db     Drizzle schema, client, validators, migrations, seed
-packages/auth   BetterAuth server + social provider gating
+apps/web        Next.js app (App Router, server-first, no src/)
+packages/core   Result / AppError / DTO primitives, env validation
+packages/db     Drizzle schema + client, pure-SQL migrations, reference data
+packages/auth   BetterAuth end-user + operator instances, PBAC, operator CLI
 packages/ui     shadcn/ui (Base UI) components + theme tokens
 packages/*-config   shared ESLint / TypeScript configs
+infra/          Docker image, Nginx config, Postgres role + extension bootstrap
 tests/load      k6 load tests
 ```
 
+## Documentation
+
+- [docs/architecture.md](./docs/architecture.md) — layout, conventions, request flow
+- [docs/database.md](./docs/database.md) — migrations, reference data, roles, Drizzle
+- [docs/auth.md](./docs/auth.md) — user vs operator auth, PBAC, operator provisioning
+- [docs/infrastructure.md](./docs/infrastructure.md) — Docker, Nginx, environment
+- [AGENTS.md](./AGENTS.md) — the canonical guide for AI agents
+
 ## Scripts
 
-| Command             | Description                                        |
-| ------------------- | -------------------------------------------------- |
-| `pnpm dev`          | Run all apps in watch mode                         |
-| `pnpm build`        | Production build                                   |
-| `pnpm check`        | lint + typecheck + test + build + spellcheck + fmt |
-| `pnpm lint`         | ESLint (type-aware) across the workspace           |
-| `pnpm typecheck`    | `tsc --noEmit` across the workspace                |
-| `pnpm test`         | Vitest unit/component tests                        |
-| `pnpm test:e2e`     | Playwright end-to-end tests                        |
-| `pnpm test:load`    | k6 load test (`BASE_URL` env)                      |
-| `pnpm ui:add <c>`   | Add a shadcn component to `packages/ui`            |
-| `pnpm db:generate`  | Generate a SQL migration from the schema           |
-| `pnpm db:migrate`   | Apply pending migrations                           |
-| `pnpm db:studio`    | Open Drizzle Studio                                |
-| `pnpm project:init` | Initialize the template for a new project          |
-
-## Conventions
-
-- **Server-first**: Server Components + Server Actions; the only API route is
-  the BetterAuth handler. Re-verify auth and ownership inside every action.
-- **Theming**: edit the `--brand-*` block in
-  `packages/ui/src/styles/globals.css` to rebrand in one place.
-- **i18n**: all UI text lives in `apps/web/messages/fr.json`.
-- **Commits**: Conventional Commits (strict), enforced by commitlint + husky.
-- **Cache Components**: opt in via `cacheComponents: true` in `next.config.ts`
-  once you wrap dynamic reads in `<Suspense>`.
-
-See [`AGENTS.md`](./AGENTS.md) for the full guide used by AI agents.
+| Command                        | Description                                        |
+| ------------------------------ | -------------------------------------------------- |
+| `pnpm dev`                     | Run all apps in watch mode                         |
+| `pnpm check`                   | lint + typecheck + test + build + spellcheck + fmt |
+| `pnpm test` · `test:e2e`       | Vitest · Playwright                                |
+| `pnpm db:migrate` · `rollback` | Apply / roll back SQL migrations                   |
+| `pnpm db:migrate:new <name>`   | Scaffold a numbered up/down migration              |
+| `pnpm db:reference:generate`   | Regenerate the ISO reference-data migrations       |
+| `pnpm sql:lint` · `sql:fix`    | SQLFluff lint / fix the migrations                 |
+| `pnpm admin:sync-permissions`  | Sync the PBAC permission catalogue to the database |
+| `pnpm admin:create-operator`   | Provision an operator account                      |
+| `pnpm project:init`            | Initialize the template for a new project          |
 
 ## License
 

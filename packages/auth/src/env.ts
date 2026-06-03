@@ -3,15 +3,22 @@ import * as z from 'zod'
 
 /**
  * Auth-related environment. All social credentials are optional — a missing
- * pair simply disables that provider. BetterAuth itself reads
- * BETTER_AUTH_SECRET / BETTER_AUTH_URL directly from the environment.
+ * pair simply disables that provider. The admin instance is configured
+ * independently (own secret + URL) so a compromised user secret never grants
+ * admin access.
  */
 export const authEnvSchema = z.object({
-  BETTER_AUTH_SECRET: z
+  AUTH_USER_SECRET: z
     .string()
-    .min(32, 'BETTER_AUTH_SECRET must be at least 32 characters')
+    .min(32, 'AUTH_USER_SECRET must be at least 32 characters')
     .optional(),
-  BETTER_AUTH_URL: z.url().optional(),
+  AUTH_USER_URL: z.url().optional(),
+
+  AUTH_ADMIN_SECRET: z
+    .string()
+    .min(32, 'AUTH_ADMIN_SECRET must be at least 32 characters')
+    .optional(),
+  AUTH_ADMIN_URL: z.url().optional(),
 
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),

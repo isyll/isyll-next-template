@@ -7,27 +7,24 @@ import { sendAuthEmail } from './email'
 import { buildSocialProviders } from './social'
 
 const isProd = process.env['NODE_ENV'] === 'production'
-const appUrl = process.env['BETTER_AUTH_URL'] ?? 'http://localhost:3000'
+const userUrl = process.env['AUTH_USER_URL'] ?? 'http://localhost:3000'
 
 /**
- * Server-side BetterAuth instance. BETTER_AUTH_SECRET / BETTER_AUTH_URL are
- * read from the environment by BetterAuth directly. The only API route this
- * needs is the catch-all handler mounted in the app; everything else is server
- * actions / `auth.api.*`.
+ * End-user BetterAuth instance. Completely separate from `adminAuth`
+ * (`@workspace/auth/admin`): its own secret (AUTH_USER_SECRET), URL, cookies
+ * and database tables. The only API route it needs is the catch-all handler
+ * mounted at /api/auth; everything else goes through server actions /
+ * `userAuth.api.*`.
  */
-export const auth = betterAuth({
-  appName: 'isyll-next-template',
+export const userAuth = betterAuth({
+  appName: 'App',
+  baseURL: userUrl,
+  secret: process.env['AUTH_USER_SECRET'],
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,
     usePlural: false,
   }),
-  user: {
-    additionalFields: {
-      // Role is set server-side only (never accepted from sign-up input).
-      role: { type: 'string', input: false },
-    },
-  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -60,11 +57,15 @@ export const auth = betterAuth({
       trustedProviders: ['google', 'microsoft', 'apple'],
     },
   },
+  // Classic stateful sessions: the cookie holds only an opaque token and the
+  // session row is read from the database on every request (cookieCache off),
+  // so sign-out / revocation takes effect immediately. No JWT, no bearer
+  // access/refresh tokens. Long-lived and rolling, like a typical website.
   session: {
-    expiresIn: 60 * 60 * 24 * 7,
-    updateAge: 60 * 60 * 24,
-    freshAge: 60 * 5,
-    cookieCache: { enabled: true, maxAge: 60 * 5 },
+    expiresIn: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24 * 7,
+    freshAge: 60 * 60,
+    cookieCache: { enabled: false },
   },
   rateLimit: {
     enabled: true,
@@ -76,10 +77,10 @@ export const auth = betterAuth({
       '/forget-password': { window: 60, max: 3 },
     },
   },
-  trustedOrigins: [appUrl, 'https://appleid.apple.com'],
+  trustedOrigins: [userUrl, 'https://appleid.apple.com'],
   advanced: {
     useSecureCookies: isProd,
-    cookiePrefix: 'isyll',
+    cookiePrefix: 'app',
     defaultCookieAttributes: {
       sameSite: 'lax',
       secure: isProd,
@@ -90,4 +91,4 @@ export const auth = betterAuth({
   plugins: [nextCookies()],
 })
 
-export type Session = typeof auth.$Infer.Session
+export type UserSession = typeof userAuth.$Infer.Session

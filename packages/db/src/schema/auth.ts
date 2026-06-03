@@ -1,12 +1,14 @@
 import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 /**
- * BetterAuth core schema (provider: pg, usePlural: false).
+ * BetterAuth core schema (provider: pg, usePlural: false) for end users.
  *
- * Field (property) names MUST match BetterAuth's expectations; column names are
- * derived as snake_case by the Drizzle client's `casing` option. Regenerate
- * with `pnpm auth:generate` after adding any BetterAuth plugin that introduces
- * tables (twoFactor, organization, passkey, ...).
+ * This is the Drizzle mapping the ORM/BetterAuth adapter queries against; the
+ * authoritative DDL lives in the pure-SQL migrations under `migrations/`. The
+ * two MUST stay in sync. Field (property) names match BetterAuth's
+ * expectations; column names are derived as snake_case by the client's
+ * `casing` option. There is no `role` here — privileged access is handled by
+ * the isolated admin auth system, never by a column on end users.
  */
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -14,8 +16,6 @@ export const user = pgTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
   image: text('image'),
-  // Custom additional field — see auth `user.additionalFields`.
-  role: text('role').notNull().default('user'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),

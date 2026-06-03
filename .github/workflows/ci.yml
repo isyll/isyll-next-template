@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [develop]
   pull_request:
+    branches: [develop]
     types: [opened, synchronize, reopened]
 
 concurrency:
@@ -16,8 +17,9 @@ permissions:
 env:
   HUSKY: 0
   SKIP_ENV_VALIDATION: '1'
-  # Dummy secret so BetterAuth doesn't error during `next build`. Never a real value.
-  BETTER_AUTH_SECRET: ci-build-dummy-secret-0000000000000000
+  # Dummy secrets so BetterAuth doesn't error during `next build`. Never real values.
+  AUTH_USER_SECRET: ci-build-dummy-user-secret-00000000000000
+  AUTH_ADMIN_SECRET: ci-build-dummy-admin-secret-0000000000000
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
@@ -37,7 +39,7 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run ${{ matrix.task }}
@@ -55,7 +57,7 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec commitlint --from "origin/${{ github.base_ref }}" --to HEAD --verbose
