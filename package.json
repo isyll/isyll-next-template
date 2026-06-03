@@ -42,6 +42,7 @@
     "admin:create-operator": "pnpm --filter @workspace/auth admin:create-operator",
     "ui:add": "pnpm dlx shadcn@latest add -c apps/web",
     "project:init": "tsx scripts/init-project.ts",
+    "version:bump": "tsx scripts/bump-version.ts",
     "prepare": "husky"
   },
   "devDependencies": {
