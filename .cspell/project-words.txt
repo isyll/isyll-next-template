@@ -83,3 +83,5 @@ openssl
 goja
 depcruise
 gitleaks
+nonced
+subresource

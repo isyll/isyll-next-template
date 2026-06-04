@@ -8,7 +8,8 @@ const withNextIntl = createNextIntlPlugin({
   experimental: { createMessagesDeclaration: './messages/fr.json' },
 })
 
-// Baseline security headers. Per-request CSP nonce is set in proxy.ts.
+// Baseline (per-response) security headers. The Content-Security-Policy is set
+// per-request in proxy.ts because it carries a rotating nonce (see lib/csp.ts).
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
