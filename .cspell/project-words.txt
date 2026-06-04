@@ -81,3 +81,5 @@ regen
 firefox
 openssl
 goja
+depcruise
+gitleaks
