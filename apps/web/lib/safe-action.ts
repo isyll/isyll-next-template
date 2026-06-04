@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { userAuth } from '@workspace/auth'
-import { normalizeError, UnauthorizedError } from '@workspace/core'
+import { UnauthorizedError } from '@workspace/core'
 import {
   createSafeActionClient,
   DEFAULT_SERVER_ERROR_MESSAGE,
@@ -9,9 +9,12 @@ import {
 import { headers } from 'next/headers'
 import * as z from 'zod'
 
+import { reportError } from '@/lib/observability'
+
 /**
- * Server-action clients. Errors thrown in actions are normalized; only
- * operational AppErrors surface their message — everything else is masked.
+ * Server-action clients. Errors thrown in actions are normalized and reported
+ * through the observability choke-point; only operational AppErrors surface
+ * their message — everything else is masked.
  */
 export const actionClient = createSafeActionClient({
   defineMetadataSchema() {
@@ -19,8 +22,10 @@ export const actionClient = createSafeActionClient({
   },
   defaultValidationErrorsShape: 'flattened',
   handleServerError(error, utils) {
-    const normalized = normalizeError(error)
-    console.error(`[action:${utils.metadata.actionName}]`, normalized)
+    const normalized = reportError(error, {
+      scope: 'action',
+      action: utils.metadata.actionName,
+    })
     return normalized.isOperational
       ? normalized.message
       : DEFAULT_SERVER_ERROR_MESSAGE

@@ -12,6 +12,9 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(['development', 'test', 'production'])
       .default('development'),
+    LOG_LEVEL: z
+      .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+      .default('info'),
     DATABASE_URL: z
       .string()
       .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string'),

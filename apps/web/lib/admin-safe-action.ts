@@ -2,11 +2,7 @@ import 'server-only'
 
 import { adminAuth } from '@workspace/auth/admin'
 import type { AdminPermissionKey } from '@workspace/auth/permissions'
-import {
-  ForbiddenError,
-  normalizeError,
-  UnauthorizedError,
-} from '@workspace/core'
+import { ForbiddenError, UnauthorizedError } from '@workspace/core'
 import {
   createSafeActionClient,
   DEFAULT_SERVER_ERROR_MESSAGE,
@@ -15,6 +11,7 @@ import { headers } from 'next/headers'
 import * as z from 'zod'
 
 import { getOperatorPermissions } from '@/lib/admin-permissions'
+import { reportError } from '@/lib/observability'
 
 /**
  * Server-action client for operator-only actions. Completely separate from the
@@ -28,8 +25,10 @@ const baseAdminActionClient = createSafeActionClient({
   },
   defaultValidationErrorsShape: 'flattened',
   handleServerError(error, utils) {
-    const normalized = normalizeError(error)
-    console.error(`[admin-action:${utils.metadata.actionName}]`, normalized)
+    const normalized = reportError(error, {
+      scope: 'admin-action',
+      action: utils.metadata.actionName,
+    })
     return normalized.isOperational
       ? normalized.message
       : DEFAULT_SERVER_ERROR_MESSAGE

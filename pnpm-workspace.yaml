@@ -74,6 +74,9 @@ catalog:
   # --- Env validation ---
   '@t3-oss/env-nextjs': 0.13.11
 
+  # --- Observability ---
+  pino: 10.3.1
+
   # --- Auth ---
   better-auth: 1.6.13
   jose: 6.2.3
