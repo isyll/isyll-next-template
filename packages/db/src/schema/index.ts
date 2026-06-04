@@ -1,5 +1,6 @@
 export * from './_helpers'
 export * from './audit'
 export * from './auth'
+export * from './notifications'
 export * from './reference'
 export * from './relations'
