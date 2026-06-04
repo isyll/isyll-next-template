@@ -66,6 +66,41 @@ tests/load                    k6 load tests
 7. **Theming.** Use semantic tokens (`bg-primary`, `text-muted-foreground`).
    Rebrand by editing the `--brand-*` block in `packages/ui/src/styles/globals.css`.
 
+## Platform services (already built — use these, don't reinvent)
+
+All are concrete but env-gated: they degrade safely when the relevant env vars
+are absent (dev), so the template runs out of the box.
+
+- **Logging / errors.** `@/lib/logger` (pino, structured, secret-redacting,
+  server-only) and `@/lib/observability` → `reportError(err, ctx)`, the single
+  error choke-point. Server Actions already route errors through it. Add an
+  error tracker (Sentry, ...) in `reportError` — call sites never change.
+- **Rate limiting.** `@/lib/rate-limit` → `createRateLimiter` / `enforceRateLimit`
+  (Upstash Redis when configured, in-process fallback otherwise). Use
+  `rateLimitedActionClient` for sensitive/costly actions.
+- **Email.** `@workspace/auth/email` `sendAuthEmail` (Resend when
+  `RESEND_API_KEY` is set, console otherwise). Re-implement the one function to
+  swap providers.
+- **Background jobs.** `@/lib/jobs` (pg-boss, Postgres-backed) → `enqueue` from
+  actions, `work` in a worker process. No extra infra.
+- **Object storage.** `@/lib/storage` (S3/R2/MinIO, presigned URLs, server-only)
+  plus pure `@/lib/upload` helpers. Track files in `app.uploads` via its DAL.
+- **Notifications.** `app.notifications` table + DAL under
+  `apps/web/features/notifications`.
+
+## Enforcement & guardrails (these fail CI / block edits — don't fight them)
+
+- **Module boundaries** (`pnpm boundaries`, dependency-cruiser): `core` depends
+  on nothing internal; `db` → core only; `ui` stays presentational; `auth` →
+  core + db; packages never import the app; no cycles.
+- **Strict ESLint** (type-aware): no `any`, no non-null assertions, exhaustive
+  switches, and **no raw `process.env` in `apps/web`** (use `@/env`).
+- **Agent hooks** (`.claude/hooks/guard.mjs`): pre-block raw `process.env` in
+  app code and `"use client"` in data-access files before the edit lands.
+- **Coverage thresholds** on `@workspace/core` (95% lines/functions/statements,
+  90% branches) — add tests when you add foundation code.
+- **Security CI:** CodeQL SAST, gitleaks secret scan, dependency review.
+
 ## Commands
 
 | Task          | Command                                            |
@@ -73,6 +108,7 @@ tests/load                    k6 load tests
 | Dev           | `pnpm dev`                                         |
 | Full check    | `pnpm check`                                       |
 | Lint / types  | `pnpm lint` · `pnpm typecheck`                     |
+| Boundaries    | `pnpm boundaries`                                  |
 | Test / e2e    | `pnpm test` · `pnpm test:e2e`                      |
 | Add UI        | `pnpm ui:add <component>`                          |
 | DB migrate    | `pnpm db:migrate` · `pnpm db:rollback`             |

@@ -60,6 +60,19 @@ export const config = defineConfig(
         'error',
         { allowNumber: true, allowBoolean: true },
       ],
+      // Every `switch` over a union/enum must handle all cases (or have a
+      // default). Pairs with `assertNever` from @workspace/core for compile-time
+      // exhaustiveness — see AGENTS.md ("exhaustive switches").
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        {
+          considerDefaultExhaustiveForUnions: true,
+          requireDefaultForNonUnion: true,
+        },
+      ],
+      // `foo!` silently disables the null-safety that `noUncheckedIndexedAccess`
+      // and `strictNullChecks` buy us. Narrow with a guard or `invariant()`.
+      '@typescript-eslint/no-non-null-assertion': 'error',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       eqeqeq: ['error', 'always', { null: 'ignore' }],
     },
@@ -68,6 +81,12 @@ export const config = defineConfig(
   {
     files: ['**/*.{js,cjs,mjs}', '**/*.config.{ts,mts,cts}'],
     extends: [tseslint.configs.disableTypeChecked],
+  },
+  // `.cjs` files are CommonJS: parse them as such so `module`/`require`/
+  // `__dirname` resolve instead of tripping `no-undef`.
+  {
+    files: ['**/*.cjs'],
+    languageOptions: { sourceType: 'commonjs' },
   },
   // Must be LAST: turn off stylistic rules that conflict with Prettier.
   eslintConfigPrettier

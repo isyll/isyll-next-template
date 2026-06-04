@@ -81,3 +81,12 @@ regen
 firefox
 openssl
 goja
+depcruise
+gitleaks
+nonced
+subresource
+pino
+upstash
+ratelimit
+pgboss
+stringbool

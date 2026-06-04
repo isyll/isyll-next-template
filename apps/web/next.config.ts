@@ -8,7 +8,8 @@ const withNextIntl = createNextIntlPlugin({
   experimental: { createMessagesDeclaration: './messages/fr.json' },
 })
 
-// Baseline security headers. Per-request CSP nonce is set in proxy.ts.
+// Baseline (per-response) security headers. The Content-Security-Policy is set
+// per-request in proxy.ts because it carries a rotating nonce (see lib/csp.ts).
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -39,6 +40,10 @@ const nextConfig: NextConfig = {
   ],
   // Pin the monorepo root (silences the multi-lockfile inference warning).
   turbopack: { root: path.join(import.meta.dirname, '..', '..') },
+  // Keep these Node-only libs out of the bundle: pino's lazy transport/worker
+  // requires and pg-boss's dynamic SQL loading confuse bundlers. Resolved from
+  // node_modules at runtime instead.
+  serverExternalPackages: ['pino', 'pg-boss'],
   // Opt-in: Next 16 Cache Components (PPR + `use cache`). Requires wrapping
   // dynamic (cookies/headers/searchParams) reads in <Suspense>. See README.
   // cacheComponents: true,

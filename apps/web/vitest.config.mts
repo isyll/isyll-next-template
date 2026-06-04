@@ -1,9 +1,20 @@
+import { fileURLToPath } from 'node:url'
+
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [tsconfigPaths(), react()],
+  resolve: {
+    alias: {
+      // `import 'server-only'` throws outside a server bundle; stub it so server
+      // modules (logger, observability, ...) can be unit-tested under jsdom.
+      'server-only': fileURLToPath(
+        new URL('./test/server-only-stub.ts', import.meta.url)
+      ),
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

@@ -14,6 +14,8 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "db:migrate": "tsx src/scripts/migrate.ts up",
     "db:rollback": "tsx src/scripts/migrate.ts down 1",
     "db:migrate:status": "tsx src/scripts/migrate.ts version",
@@ -35,6 +37,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "countries-and-timezones": "catalog:",
@@ -45,6 +48,7 @@
     "eslint": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
+    "vitest": "catalog:",
     "world-countries": "catalog:"
   }
 }

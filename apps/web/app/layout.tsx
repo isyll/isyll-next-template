@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist_Mono, Inter } from 'next/font/google'
+import { headers } from 'next/headers'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getTranslations } from 'next-intl/server'
 import type { ReactNode } from 'react'
@@ -26,6 +27,8 @@ export default async function RootLayout({
   children: ReactNode
 }) {
   const locale = await getLocale()
+  // Per-request CSP nonce set by proxy.ts; forwarded to next-themes.
+  const nonce = (await headers()).get('x-nonce')
 
   return (
     <html
@@ -35,7 +38,7 @@ export default async function RootLayout({
     >
       <body className='font-sans antialiased'>
         <NextIntlClientProvider>
-          <Providers>{children}</Providers>
+          <Providers {...(nonce ? { nonce } : {})}>{children}</Providers>
         </NextIntlClientProvider>
       </body>
     </html>

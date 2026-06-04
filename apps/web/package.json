@@ -14,9 +14,13 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "catalog:",
+    "@aws-sdk/s3-request-presigner": "catalog:",
     "@hookform/resolvers": "catalog:",
     "@next-safe-action/adapter-tanstack-query": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
+    "@upstash/ratelimit": "catalog:",
+    "@upstash/redis": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@workspace/auth": "workspace:*",
@@ -32,6 +36,8 @@
     "next-safe-action": "catalog:",
     "next-themes": "catalog:",
     "nuqs": "catalog:",
+    "pg-boss": "catalog:",
+    "pino": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hook-form": "catalog:",
