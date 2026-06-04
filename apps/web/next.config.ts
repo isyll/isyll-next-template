@@ -40,9 +40,10 @@ const nextConfig: NextConfig = {
   ],
   // Pin the monorepo root (silences the multi-lockfile inference warning).
   turbopack: { root: path.join(import.meta.dirname, '..', '..') },
-  // Keep pino out of the server bundle: its lazy transport/worker `require`s
-  // confuse bundlers. It's resolved from node_modules at runtime instead.
-  serverExternalPackages: ['pino'],
+  // Keep these Node-only libs out of the bundle: pino's lazy transport/worker
+  // requires and pg-boss's dynamic SQL loading confuse bundlers. Resolved from
+  // node_modules at runtime instead.
+  serverExternalPackages: ['pino', 'pg-boss'],
   // Opt-in: Next 16 Cache Components (PPR + `use cache`). Requires wrapping
   // dynamic (cookies/headers/searchParams) reads in <Suspense>. See README.
   // cacheComponents: true,

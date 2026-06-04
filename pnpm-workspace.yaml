@@ -81,6 +81,9 @@ catalog:
   '@upstash/ratelimit': 2.0.8
   '@upstash/redis': 1.38.0
 
+  # --- Background jobs (Postgres-backed) ---
+  pg-boss: 12.18.2
+
   # --- Auth ---
   better-auth: 1.6.13
   jose: 6.2.3
