@@ -36,5 +36,24 @@ export const nextJsConfig = defineConfig(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
     },
+  },
+  // App code must read configuration through the validated `@/env` module, never
+  // `process.env` directly — that's the single place the server/client boundary
+  // and the schema are enforced (see AGENTS.md, golden rule #4). The env module
+  // itself and standalone config files are the only legitimate readers.
+  {
+    files: ['**/*.{ts,tsx}'],
+    ignores: ['**/env.ts', '**/*.config.{ts,mts,cts,js,mjs,cjs}'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'process',
+          property: 'env',
+          message:
+            'Import the validated `env` from `@/env` instead of reading `process.env` directly.',
+        },
+      ],
+    },
   }
 )

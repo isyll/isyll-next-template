@@ -9,7 +9,15 @@ import { ThemeProvider } from '@workspace/ui/components/theme-provider'
 
 import { getQueryClient } from '@/lib/query-client'
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({
+  children,
+  nonce,
+}: {
+  children: ReactNode
+  // Forwarded to next-themes so its inline anti-flash script carries the CSP
+  // nonce set in proxy.ts (a strict CSP would otherwise block it).
+  nonce?: string
+}) {
   const queryClient = getQueryClient()
 
   return (
@@ -19,6 +27,7 @@ export function Providers({ children }: { children: ReactNode }) {
         defaultTheme='system'
         enableSystem
         disableTransitionOnChange
+        {...(nonce ? { nonce } : {})}
       >
         {children}
         <Toaster />

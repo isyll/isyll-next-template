@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS admin.operator_session;
+DROP TABLE IF EXISTS admin.operator_sessions;

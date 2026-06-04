@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        task: [lint, typecheck, test, build, spellcheck]
+        task: [lint, typecheck, test, build, spellcheck, boundaries]
     steps:
       - uses: actions/checkout@v6
         with:

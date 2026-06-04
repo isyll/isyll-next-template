@@ -1,22 +1,26 @@
 -- Roles are created dynamically by operators with the necessary permission.
 -- `is_system` marks built-in roles that the UI should not allow deleting.
-CREATE TABLE admin.role (
+CREATE TABLE admin.roles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL UNIQUE
-  CONSTRAINT role_name_not_blank CHECK (length(btrim(name)) > 0),
+  name text NOT NULL
+  CONSTRAINT roles_name_not_blank CHECK (length(btrim(name)) > 0),
   description text,
   is_system boolean NOT NULL DEFAULT false,
+  deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TRIGGER role_set_updated_at BEFORE UPDATE ON admin.role
+-- Name is unique among live (not soft-deleted) roles.
+CREATE UNIQUE INDEX roles_name_unique ON admin.roles (name) WHERE deleted_at IS null;
+
+CREATE TRIGGER roles_set_updated_at BEFORE UPDATE ON admin.roles
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'admin_service') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON admin.role TO admin_service;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON admin.roles TO admin_service;
   END IF;
 END;
 $$;

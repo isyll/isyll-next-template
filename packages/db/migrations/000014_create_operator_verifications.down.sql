@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS admin.operator_verification;
+DROP TABLE IF EXISTS admin.operator_verifications;

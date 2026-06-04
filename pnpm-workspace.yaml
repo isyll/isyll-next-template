@@ -74,9 +74,26 @@ catalog:
   # --- Env validation ---
   '@t3-oss/env-nextjs': 0.13.11
 
+  # --- Observability ---
+  pino: 10.3.1
+
+  # --- Rate limiting / cache (Upstash, HTTP — edge-friendly) ---
+  '@upstash/ratelimit': 2.0.8
+  '@upstash/redis': 1.38.0
+
+  # --- Background jobs (Postgres-backed) ---
+  pg-boss: 12.18.2
+
+  # --- Object storage (S3-compatible: AWS S3, Cloudflare R2, MinIO, ...) ---
+  '@aws-sdk/client-s3': 3.1061.0
+  '@aws-sdk/s3-request-presigner': 3.1061.0
+
   # --- Auth ---
   better-auth: 1.6.13
   jose: 6.2.3
+
+  # --- Email (Resend) ---
+  resend: 6.12.4
 
   # --- Reference data (generated into migrations) ---
   world-countries: 5.1.0
@@ -133,3 +150,14 @@ catalog:
   '@testing-library/user-event': 14.6.1
   '@playwright/test': 1.60.0
   '@types/k6': 2.0.0
+
+minimumReleaseAgeExclude:
+  - '@aws-sdk/checksums@3.1000.1'
+  - '@aws-sdk/client-s3@3.1061.0'
+  - '@aws-sdk/middleware-bucket-endpoint@3.972.20'
+  - '@aws-sdk/middleware-expect-continue@3.972.16'
+  - '@aws-sdk/middleware-flexible-checksums@3.974.26'
+  - '@aws-sdk/middleware-location-constraint@3.972.13'
+  - '@aws-sdk/middleware-sdk-s3@3.972.47'
+  - '@aws-sdk/middleware-ssec@3.972.13'
+  - '@aws-sdk/s3-request-presigner@3.1061.0'

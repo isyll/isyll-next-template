@@ -75,7 +75,19 @@
       "Bash(docker compose ps:*)",
       "WebFetch",
       "WebSearch"
-    ],
-    "deny": ["Read(./.env)", "Read(./.env.*)", "Read(./**/.env)"]
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\""
+          }
+        ]
+      }
+    ]
   }
 }

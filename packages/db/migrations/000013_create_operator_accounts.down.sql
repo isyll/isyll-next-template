@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS admin.operator_account;
+DROP TABLE IF EXISTS admin.operator_accounts;

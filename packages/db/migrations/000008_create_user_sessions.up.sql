@@ -1,25 +1,25 @@
-CREATE TABLE session (
+CREATE TABLE app.sessions (
   id text PRIMARY KEY,
   token text NOT NULL,
-  user_id text NOT NULL REFERENCES "user" (id) ON DELETE CASCADE,
+  user_id text NOT NULL REFERENCES app.users (id) ON DELETE CASCADE,
   expires_at timestamptz NOT NULL,
   ip_address text,
   user_agent text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT session_token_unique UNIQUE (token)
+  CONSTRAINT sessions_token_unique UNIQUE (token)
 );
 
-CREATE INDEX session_user_id_idx ON session (user_id);
-CREATE INDEX session_expires_at_idx ON session (expires_at);
+CREATE INDEX sessions_user_id_idx ON app.sessions (user_id);
+CREATE INDEX sessions_expires_at_idx ON app.sessions (expires_at);
 
-CREATE TRIGGER session_set_updated_at BEFORE UPDATE ON session
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER sessions_set_updated_at BEFORE UPDATE ON app.sessions
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON session TO app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON app.sessions TO app;
   END IF;
 END;
 $$;

@@ -1,0 +1,25 @@
+# gitleaks configuration — extends the bundled default ruleset and allowlists
+# the template's intentional, non-secret placeholders so the scan stays
+# high-signal. Real credentials must never be committed; use .env (gitignored).
+
+title = "next-monorepo-template gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Template placeholders and local-only dev credentials"
+
+# Files that are expected to contain placeholder/sample values.
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''(^|/)\.gitleaks\.toml$''',
+]
+
+# Values that look secret-ish but are deliberate, non-sensitive placeholders:
+#  - the local Docker Postgres dev credentials (postgres/postgres)
+#  - the dummy auth secrets used only to let `next build` run in CI
+regexes = [
+  '''postgres:postgres@''',
+  '''ci-build-dummy-(user|admin)-secret-0+''',
+]

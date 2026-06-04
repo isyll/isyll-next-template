@@ -5,9 +5,14 @@ set -euo pipefail
 # extension script (00 sorts before 01). Establishes the least-privilege login
 # roles the app and migrations connect as:
 #
-#   app_migrator   owns DDL in `public`, may create the `admin` schema
-#   app            DML on the public user tables only
-#   admin_service  DML on the isolated `admin` schema only (granted in 0004)
+#   app_migrator   owns DDL, may create the `app` and `admin` schemas
+#   app            DML on the end-user `app` schema only (reads `public` refs)
+#   admin_service  DML on the isolated `admin` schema only (granted in 000011)
+#
+# Schema layout (created by the migrations, which run as app_migrator):
+#   public  global reference data (currencies/countries/timezones) + shared objects
+#   app     end-user site data (users/sessions/accounts/verifications) + audit logs
+#   admin   isolated operator (administrator) data
 #
 # Passwords come from the environment (compose). The migrations grant the
 # concrete table privileges; the default privileges here cover future tables.
@@ -30,10 +35,10 @@ psql -v ON_ERROR_STOP=1 \
 
 	GRANT USAGE ON SCHEMA public TO app, admin_service;
 
-	-- Future objects the migrator creates in public are usable by the app role
-	-- automatically (the migrations also grant explicitly).
+	-- `public` holds immutable reference data: future tables the migrator creates
+	-- there are readable by both service roles (the migrations also grant
+	-- explicitly). Read/write privileges on the end-user `app` schema are granted
+	-- by migration 000002 once that schema exists.
 	ALTER DEFAULT PRIVILEGES FOR ROLE app_migrator IN SCHEMA public
-	  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app;
-	ALTER DEFAULT PRIVILEGES FOR ROLE app_migrator IN SCHEMA public
-	  GRANT USAGE, SELECT ON SEQUENCES TO app;
+	  GRANT SELECT ON TABLES TO app, admin_service;
 EOSQL
