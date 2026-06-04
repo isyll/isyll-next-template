@@ -26,6 +26,7 @@
     "@workspace/db": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
+    "resend": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

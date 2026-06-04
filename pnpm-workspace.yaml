@@ -85,6 +85,9 @@ catalog:
   better-auth: 1.6.13
   jose: 6.2.3
 
+  # --- Email (Resend) ---
+  resend: 6.12.4
+
   # --- Reference data (generated into migrations) ---
   world-countries: 5.1.0
   countries-and-timezones: 3.9.0

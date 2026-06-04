@@ -30,6 +30,10 @@ export const authEnvSchema = z.object({
   APPLE_CLIENT_ID: z.string().optional(),
   APPLE_CLIENT_SECRET: z.string().optional(),
   APPLE_APP_BUNDLE_IDENTIFIER: z.string().optional(),
+
+  // Transactional email (Resend). Absent in dev → emails log to the console.
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.email().optional(),
 })
 
 export type AuthEnv = z.infer<typeof authEnvSchema>
