@@ -89,3 +89,4 @@ pino
 upstash
 ratelimit
 pgboss
+stringbool

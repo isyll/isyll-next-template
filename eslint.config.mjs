@@ -7,7 +7,13 @@ import { defineConfig, globalIgnores } from 'eslint/config'
  * linted via `turbo run lint`, so they are ignored here.
  */
 export default defineConfig(
-  globalIgnores(['apps/**', 'packages/**', 'tests/**', '**/node_modules/**']),
+  globalIgnores([
+    'apps/**',
+    'packages/**',
+    'tests/**',
+    '.claude/**',
+    '**/node_modules/**',
+  ]),
   ...config,
   // Repo scripts may log to the console.
   { files: ['scripts/**/*.ts'], rules: { 'no-console': 'off' } }
