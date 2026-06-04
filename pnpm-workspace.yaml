@@ -77,6 +77,10 @@ catalog:
   # --- Observability ---
   pino: 10.3.1
 
+  # --- Rate limiting / cache (Upstash, HTTP — edge-friendly) ---
+  '@upstash/ratelimit': 2.0.8
+  '@upstash/redis': 1.38.0
+
   # --- Auth ---
   better-auth: 1.6.13
   jose: 6.2.3

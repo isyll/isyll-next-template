@@ -10,6 +10,7 @@ import { headers } from 'next/headers'
 import * as z from 'zod'
 
 import { reportError } from '@/lib/observability'
+import { createRateLimiter, enforceRateLimit } from '@/lib/rate-limit'
 
 /**
  * Server-action clients. Errors thrown in actions are normalized and reported
@@ -40,3 +41,23 @@ export const authActionClient = actionClient.use(async ({ next }) => {
   }
   return next({ ctx: { user: session.user, session: session.session } })
 })
+
+// Per-user limiter for sensitive/expensive actions. Tune per project, or build
+// dedicated limiters (e.g. a stricter one for password changes) with
+// `createRateLimiter`.
+const perUserActionLimiter = createRateLimiter({
+  tokens: 20,
+  windowSeconds: 10,
+  prefix: 'action:user',
+})
+
+/**
+ * Like `authActionClient`, but additionally rate-limited per authenticated user.
+ * Use for actions that are sensitive or costly to run.
+ */
+export const rateLimitedActionClient = authActionClient.use(
+  async ({ next, ctx }) => {
+    await enforceRateLimit(perUserActionLimiter, ctx.user.id)
+    return next({ ctx })
+  }
+)

@@ -15,6 +15,10 @@ export const env = createEnv({
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
+    // Optional: when both are set, rate limiting uses Upstash Redis; otherwise
+    // it falls back to an in-process limiter (fine for dev / single instance).
+    UPSTASH_REDIS_REST_URL: z.url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
     DATABASE_URL: z
       .string()
       .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string'),
