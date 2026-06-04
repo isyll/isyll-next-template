@@ -1,11 +1,11 @@
-CREATE TABLE currencies (
+CREATE TABLE public.currencies (
   code char(3) PRIMARY KEY,
   numeric_code char(3) NOT NULL,
   name text NOT NULL,
   minor_units smallint NOT NULL CHECK (minor_units >= 0)
 );
 
-INSERT INTO currencies (code, numeric_code, name, minor_units) VALUES
+INSERT INTO public.currencies (code, numeric_code, name, minor_units) VALUES
 ('AED', '784', 'UAE Dirham', 2),
 ('AFN', '971', 'Afghani', 2),
 ('ALL', '008', 'Lek', 2),
@@ -187,16 +187,16 @@ INSERT INTO currencies (code, numeric_code, name, minor_units) VALUES
 ('ZWG', '924', 'Zimbabwe Gold', 2);
 
 CREATE TRIGGER currencies_immutable
-BEFORE INSERT OR UPDATE OR DELETE ON currencies
-FOR EACH ROW EXECUTE FUNCTION prevent_row_mutation();
+BEFORE INSERT OR UPDATE OR DELETE ON public.currencies
+FOR EACH ROW EXECUTE FUNCTION public.prevent_row_mutation();
 
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
-    GRANT SELECT ON currencies TO app;
+    GRANT SELECT ON public.currencies TO app;
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'admin_service') THEN
-    GRANT SELECT ON currencies TO admin_service;
+    GRANT SELECT ON public.currencies TO admin_service;
   END IF;
 END;
 $$;

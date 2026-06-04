@@ -4,6 +4,9 @@
 dialect = postgres
 templater = raw
 max_line_length = 100
+# The generated reference migrations (e.g. countries) exceed the default 20 kB
+# parser-lock guard; 0 disables it so every file is linted/fixed.
+large_file_skip_byte_limit = 0
 # Long generated INSERT rows and reserved-word identifiers ("user") are
 # intentional; PL/pgSQL bodies are opaque to the linter.
 exclude_rules = layout.long_lines, references.keywords, references.quoting

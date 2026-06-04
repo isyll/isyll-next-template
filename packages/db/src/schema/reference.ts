@@ -9,7 +9,7 @@ import {
   text,
 } from 'drizzle-orm/pg-core'
 
-import { timestamps } from './_helpers'
+import { softDelete, timestamps } from './_helpers'
 
 /**
  * Reference tables (`currencies`, `countries`, `timezones`) hold standards data
@@ -71,5 +71,6 @@ export const supportedCountries = pgTable('supported_countries', {
     .references(() => countries.iso2, { onDelete: 'cascade' }),
   launchDate: date('launch_date'),
   isActive: boolean('is_active').notNull().default(true),
+  ...softDelete,
   ...timestamps,
 })

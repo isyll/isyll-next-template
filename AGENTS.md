@@ -46,6 +46,16 @@ tests/load                    k6 load tests
    changes → `pnpm db:migrate:new <name>`, write the SQL, mirror it in the
    Drizzle schema (`packages/db/src/schema`), then `pnpm db:migrate`. The
    migration role is distinct from the app role (least privilege).
+   - **Three Postgres schemas, always schema-qualified** (`public.`, `app.`,
+     `admin.`) in every SQL statement: `public` = global reference data
+     (currencies/countries/timezones) + shared functions/domains; `app` =
+     end-user site data (users/sessions/accounts/verifications) + audit history;
+     `admin` = isolated operators. **Table names are plural.**
+   - **Soft-delete:** entity tables carry `deleted_at`; never hard-delete them.
+     Filter with `notDeleted(table)` and remove via `softDelete(...)`.
+   - **Audit + transactions:** mutations that must be atomic run inside
+     `withTransaction` / `withAdminTransaction` (sets the audit actor); watched
+     columns on audited tables are recorded automatically by a DB trigger.
 4. **Env** is read via `@/env` (apps/web) or each package's validated env —
    never `process.env` directly in app code.
 5. **i18n.** All user-facing text lives in `apps/web/messages/fr.json`; add keys,
@@ -58,19 +68,20 @@ tests/load                    k6 load tests
 
 ## Commands
 
-| Task          | Command                                |
-| ------------- | -------------------------------------- |
-| Dev           | `pnpm dev`                             |
-| Full check    | `pnpm check`                           |
-| Lint / types  | `pnpm lint` · `pnpm typecheck`         |
-| Test / e2e    | `pnpm test` · `pnpm test:e2e`          |
-| Add UI        | `pnpm ui:add <component>`              |
-| DB migrate    | `pnpm db:migrate` · `pnpm db:rollback` |
-| New migration | `pnpm db:migrate:new <name>`           |
-| SQL lint      | `pnpm sql:lint` · `pnpm sql:fix`       |
-| Seed / studio | `pnpm db:seed` · `pnpm db:studio`      |
-| New operator  | `pnpm admin:create-operator`           |
-| New project   | `pnpm project:init`                    |
+| Task          | Command                                            |
+| ------------- | -------------------------------------------------- |
+| Dev           | `pnpm dev`                                         |
+| Full check    | `pnpm check`                                       |
+| Lint / types  | `pnpm lint` · `pnpm typecheck`                     |
+| Test / e2e    | `pnpm test` · `pnpm test:e2e`                      |
+| Add UI        | `pnpm ui:add <component>`                          |
+| DB migrate    | `pnpm db:migrate` · `pnpm db:rollback`             |
+| New migration | `pnpm db:migrate:new <name>`                       |
+| SQL lint      | `pnpm sql:lint` · `pnpm sql:fix`                   |
+| Seed / studio | `pnpm db:seed` · `pnpm db:studio`                  |
+| New operator  | `pnpm admin:create-operator`                       |
+| New project   | `pnpm project:init`                                |
+| Bump version  | `pnpm version:bump <patch\|minor\|major\|v=x.y.z>` |
 
 ## Commit rules (STRICT)
 

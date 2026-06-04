@@ -1,8 +1,8 @@
-CREATE TABLE account (
+CREATE TABLE app.accounts (
   id text PRIMARY KEY,
   account_id text NOT NULL,
   provider_id text NOT NULL,
-  user_id text NOT NULL REFERENCES "user" (id) ON DELETE CASCADE,
+  user_id text NOT NULL REFERENCES app.users (id) ON DELETE CASCADE,
   access_token text,
   refresh_token text,
   id_token text,
@@ -12,18 +12,18 @@ CREATE TABLE account (
   password text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT account_provider_account_unique UNIQUE (provider_id, account_id)
+  CONSTRAINT accounts_provider_account_unique UNIQUE (provider_id, account_id)
 );
 
-CREATE INDEX account_user_id_idx ON account (user_id);
+CREATE INDEX accounts_user_id_idx ON app.accounts (user_id);
 
-CREATE TRIGGER account_set_updated_at BEFORE UPDATE ON account
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER accounts_set_updated_at BEFORE UPDATE ON app.accounts
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
-    GRANT SELECT, INSERT, UPDATE, DELETE ON account TO app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON app.accounts TO app;
   END IF;
 END;
 $$;

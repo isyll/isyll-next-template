@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 
+import { createTransactional } from './lib/transaction'
 import * as schema from './schema'
 
 /**
@@ -37,3 +38,10 @@ export const db = drizzle({
 })
 
 export type DB = typeof db
+
+/**
+ * Transaction helpers for the end-user database. Use `withTransaction` to run
+ * atomic, audited business logic and `getDb()` inside DAL helpers so they join
+ * an enclosing transaction. See `createTransactional`.
+ */
+export const { getDb, withTransaction } = createTransactional(db)

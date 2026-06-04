@@ -75,7 +75,6 @@
       "Bash(docker compose ps:*)",
       "WebFetch",
       "WebSearch"
-    ],
-    "deny": ["Read(./.env)", "Read(./.env.*)", "Read(./**/.env)"]
+    ]
   }
 }

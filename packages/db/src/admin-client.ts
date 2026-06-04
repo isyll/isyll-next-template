@@ -3,6 +3,7 @@ import 'server-only'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 
+import { createTransactional } from './lib/transaction'
 import * as adminSchema from './schema/admin'
 
 /**
@@ -34,3 +35,10 @@ export const adminDb = drizzle({
 })
 
 export type AdminDB = typeof adminDb
+
+/**
+ * Transaction helpers for the isolated admin database. Mirrors the end-user
+ * `withTransaction` / `getDb`, on the `admin_service` connection.
+ */
+export const { getDb: getAdminDb, withTransaction: withAdminTransaction } =
+  createTransactional(adminDb)

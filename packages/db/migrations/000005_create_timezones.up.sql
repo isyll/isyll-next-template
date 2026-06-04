@@ -1,13 +1,13 @@
-CREATE TABLE timezones (
+CREATE TABLE public.timezones (
   name text PRIMARY KEY,
-  country_code char(2) NOT NULL REFERENCES countries (iso2),
+  country_code char(2) NOT NULL REFERENCES public.countries (iso2),
   utc_offset_minutes integer NOT NULL,
   dst_offset_minutes integer NOT NULL
 );
 
-CREATE INDEX timezones_country_code_idx ON timezones (country_code);
+CREATE INDEX timezones_country_code_idx ON public.timezones (country_code);
 
-INSERT INTO timezones (name, country_code, utc_offset_minutes, dst_offset_minutes) VALUES
+INSERT INTO public.timezones (name, country_code, utc_offset_minutes, dst_offset_minutes) VALUES
 ('Africa/Abidjan', 'CI', 0, 0),
 ('Africa/Algiers', 'DZ', 60, 60),
 ('Africa/Bissau', 'GW', 0, 0),
@@ -322,16 +322,16 @@ INSERT INTO timezones (name, country_code, utc_offset_minutes, dst_offset_minute
 ('Pacific/Tongatapu', 'TO', 780, 780);
 
 CREATE TRIGGER timezones_immutable
-BEFORE INSERT OR UPDATE OR DELETE ON timezones
-FOR EACH ROW EXECUTE FUNCTION prevent_row_mutation();
+BEFORE INSERT OR UPDATE OR DELETE ON public.timezones
+FOR EACH ROW EXECUTE FUNCTION public.prevent_row_mutation();
 
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
-    GRANT SELECT ON timezones TO app;
+    GRANT SELECT ON public.timezones TO app;
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'admin_service') THEN
-    GRANT SELECT ON timezones TO admin_service;
+    GRANT SELECT ON public.timezones TO admin_service;
   END IF;
 END;
 $$;

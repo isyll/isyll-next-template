@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS timezones;
+DROP TABLE IF EXISTS public.timezones;

@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS admin.permission;
+DROP TABLE IF EXISTS admin.permissions;
