@@ -48,6 +48,14 @@ export const env = createEnv({
     APPLE_APP_BUNDLE_IDENTIFIER: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.email().optional(),
+    // Object storage (S3-compatible). All required together to enable uploads;
+    // S3_ENDPOINT/S3_FORCE_PATH_STYLE are for non-AWS providers (R2, MinIO).
+    S3_REGION: z.string().optional(),
+    S3_BUCKET: z.string().optional(),
+    S3_ACCESS_KEY_ID: z.string().optional(),
+    S3_SECRET_ACCESS_KEY: z.string().optional(),
+    S3_ENDPOINT: z.url().optional(),
+    S3_FORCE_PATH_STYLE: z.stringbool().optional(),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
