@@ -1,15 +1,15 @@
 import { Resend } from 'resend'
 
 /**
- * Transactional email for auth flows (verification, password reset).
+ * Low-level transactional email for BetterAuth auth flows (email verification,
+ * password reset). BetterAuth calls this directly — it sends plain-text emails
+ * as required by the auth hooks.
  *
- * Concrete provider: Resend. When `RESEND_API_KEY` is set, mail is sent for
- * real (from `EMAIL_FROM`, falling back to Resend's onboarding sender). With no
- * key configured it degrades gracefully: in development the message is logged
- * to the console so flows stay testable; in production it logs an error so the
- * misconfiguration is loud rather than silent.
+ * For rich HTML email templates (registration confirmation, new connection
+ * alert, etc.) use `@workspace/email` instead — those are published via the
+ * transactional outbox and rendered with React Email.
  *
- * Swap providers (SES, Postmark, ...) by re-implementing this one function.
+ * Swap providers (SES, Postmark, …) by re-implementing `sendAuthEmail`.
  */
 export interface SendAuthEmailParams {
   to: string

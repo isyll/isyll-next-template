@@ -4,6 +4,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
 import { sendAuthEmail } from './email'
+import { createAuthRedisStorage } from './redis'
 import { buildSocialProviders } from './social'
 
 const isProd = process.env['NODE_ENV'] === 'production'
@@ -57,10 +58,12 @@ export const userAuth = betterAuth({
       trustedProviders: ['google', 'microsoft', 'apple'],
     },
   },
-  // Classic stateful sessions: the cookie holds only an opaque token and the
-  // session row is read from the database on every request (cookieCache off),
-  // so sign-out / revocation takes effect immediately. No JWT, no bearer
-  // access/refresh tokens. Long-lived and rolling, like a typical website.
+  // Sessions are stored exclusively in Redis (fast TTL-based lookup).
+  // `storeSessionInDatabase` is intentionally omitted (defaults to falsy when
+  // `secondaryStorage` is provided) so the `app.sessions` table is not written
+  // to. The sessions table exists as a no-op fallback; in dev without Redis it
+  // gracefully falls back to the Drizzle adapter.
+  secondaryStorage: createAuthRedisStorage('user'),
   session: {
     expiresIn: 60 * 60 * 24 * 30,
     updateAge: 60 * 60 * 24 * 7,

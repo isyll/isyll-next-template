@@ -3,6 +3,8 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
+import { createAuthRedisStorage } from './redis'
+
 const isProd = process.env['NODE_ENV'] === 'production'
 const adminUrl = process.env['AUTH_ADMIN_URL'] ?? 'http://localhost:3000'
 
@@ -43,6 +45,9 @@ export const adminAuth = betterAuth({
     autoSignIn: false,
     revokeSessionsOnPasswordReset: true,
   },
+  // Operator sessions are stored exclusively in Redis with a short TTL.
+  // See notes in auth.ts; same strategy applies.
+  secondaryStorage: createAuthRedisStorage('admin'),
   session: {
     expiresIn: 60 * 60 * 12,
     updateAge: 60 * 60,
