@@ -9,3 +9,8 @@ export {
   type Transactional,
 } from './lib/transaction'
 export { getDbEnv, type DbEnv } from './env'
+export type {
+  OutboxEvent,
+  NewOutboxEvent,
+  OutboxEventStatus,
+} from './schema/events'
