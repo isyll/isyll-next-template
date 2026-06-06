@@ -29,9 +29,10 @@
     "APPLE_APP_BUNDLE_IDENTIFIER",
     "RESEND_API_KEY",
     "EMAIL_FROM",
-    "UPSTASH_REDIS_REST_URL",
-    "UPSTASH_REDIS_REST_TOKEN",
-    "LOG_LEVEL"
+    "REDIS_URL",
+    "LOG_LEVEL",
+    "RESEND_API_KEY",
+    "EMAIL_FROM"
   ],
   "tasks": {
     "build": {
