@@ -64,7 +64,39 @@
     "signOut": "Se déconnecter",
     "welcome": "Connecté en tant que {email}",
     "permissions": "Permissions",
+    "permissionsHint": "Vos permissions déterminent les sections accessibles.",
     "noPermissions": "Aucune permission attribuée."
+  },
+  "AdminNav": {
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs",
+    "operators": "Opérateurs",
+    "roles": "Rôles & permissions",
+    "monitoring": "Supervision"
+  },
+  "AdminUsers": {
+    "title": "Utilisateurs",
+    "subtitle": "Consultez et gérez les comptes des utilisateurs finaux.",
+    "search": "Rechercher",
+    "searchPlaceholder": "Nom ou adresse e-mail…",
+    "colUser": "Utilisateur",
+    "colStatus": "Statut",
+    "colLanguage": "Langue",
+    "colActions": "Actions",
+    "status": {
+      "active": "Actif",
+      "deactivated": "Désactivé"
+    },
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "forceLogout": "Déconnecter",
+    "deactivated": "Utilisateur désactivé.",
+    "reactivated": "Utilisateur réactivé.",
+    "loggedOut": "Sessions de l'utilisateur révoquées.",
+    "empty": "Aucun utilisateur trouvé.",
+    "summary": "Page {page} sur {pageCount} — {total} utilisateurs",
+    "previous": "Précédent",
+    "next": "Suivant"
   },
   "Validation": {
     "required": "Ce champ est obligatoire",

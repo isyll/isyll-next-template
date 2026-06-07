@@ -95,3 +95,33 @@ export function createAuthRedisStorage(
     },
   }
 }
+
+/**
+ * Force-logout: revoke every session of an end user by clearing them from
+ * Redis. BetterAuth keeps a per-user index (`active-sessions-<id>` → a list of
+ * `{ token }`) in secondary storage, with each session stored under its token;
+ * we delete both, namespaced like the user storage adapter. No-op (returns 0)
+ * when Redis is unconfigured — dev (DB sessions) should also clear the
+ * `app.sessions` rows. Returns the number of sessions revoked.
+ */
+export async function revokeUserSessions(userId: string): Promise<number> {
+  const redis = getAuthRedis()
+  if (!redis) return 0
+
+  const ns = (key: string) => `auth:user:${key}`
+  const indexKey = ns(`active-sessions-${userId}`)
+  const raw = await redis.get(indexKey)
+  if (!raw) return 0
+
+  let sessions: { token: string }[]
+  try {
+    sessions = JSON.parse(raw) as { token: string }[]
+  } catch {
+    sessions = []
+  }
+
+  const sessionKeys = sessions.map((session) => ns(session.token))
+  if (sessionKeys.length > 0) await redis.del(...sessionKeys)
+  await redis.del(indexKey)
+  return sessions.length
+}

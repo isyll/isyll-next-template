@@ -5,6 +5,7 @@ import {
   sendRegistrationConfirmation,
 } from '@workspace/email'
 import { betterAuth } from 'better-auth'
+import { eq } from 'drizzle-orm'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
@@ -79,6 +80,21 @@ export const userAuth = betterAuth({
           } catch (error) {
             console.error('[auth] failed to publish user.registered', error)
           }
+        },
+      },
+    },
+    session: {
+      create: {
+        // Block sign-in for deactivated (soft-deleted) users. Operators
+        // deactivate users from the admin console; this enforces it at login.
+        before: async (session) => {
+          const [row] = await db
+            .select({ deletedAt: schema.users.deletedAt })
+            .from(schema.users)
+            .where(eq(schema.users.id, session.userId))
+            .limit(1)
+          // Returning false aborts session creation (login); undefined allows it.
+          return row?.deletedAt ? false : undefined
         },
       },
     },
