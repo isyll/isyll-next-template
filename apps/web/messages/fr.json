@@ -98,6 +98,35 @@
     "previous": "Précédent",
     "next": "Suivant"
   },
+  "AdminOperators": {
+    "title": "Opérateurs",
+    "subtitle": "Gérez les opérateurs internes et leurs rôles.",
+    "colOperator": "Opérateur",
+    "colStatus": "Statut",
+    "colRoles": "Rôles",
+    "colActions": "Actions",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "addRole": "Ajouter un rôle…",
+    "removeRole": "Retirer le rôle {role}",
+    "statusUpdated": "Statut mis à jour.",
+    "roleAssigned": "Rôle attribué.",
+    "roleRemoved": "Rôle retiré."
+  },
+  "AdminRoles": {
+    "title": "Rôles & permissions",
+    "subtitle": "Créez des rôles et accordez-leur des permissions.",
+    "createTitle": "Nouveau rôle",
+    "name": "Nom",
+    "description": "Description",
+    "create": "Créer",
+    "delete": "Supprimer",
+    "system": "Système",
+    "created": "Rôle créé.",
+    "deleted": "Rôle supprimé."
+  },
   "Validation": {
     "required": "Ce champ est obligatoire",
     "email": "Adresse e-mail invalide",

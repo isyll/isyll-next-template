@@ -1,6 +1,6 @@
 'use client'
 
-import { LayoutDashboard, Users } from 'lucide-react'
+import { KeyRound, LayoutDashboard, ShieldCheck, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -15,7 +15,7 @@ import { cn } from '@workspace/ui/lib/utils'
  * the admin theme (see the `.admin` block in globals.css).
  */
 interface NavItem {
-  href: '/admin' | '/admin/users'
+  href: '/admin' | '/admin/users' | '/admin/operators' | '/admin/roles'
   labelKey: string
   icon: ComponentType<{ className?: string }>
   /** Required permission, or null for always-visible. */
@@ -34,6 +34,18 @@ const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'users',
     icon: Users,
     permission: 'users.read',
+  },
+  {
+    href: '/admin/operators',
+    labelKey: 'operators',
+    icon: ShieldCheck,
+    permission: 'operators.read',
+  },
+  {
+    href: '/admin/roles',
+    labelKey: 'roles',
+    icon: KeyRound,
+    permission: 'roles.read',
   },
 ]
 
