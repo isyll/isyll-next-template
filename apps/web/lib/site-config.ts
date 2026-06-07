@@ -12,6 +12,9 @@ import { env } from '@/env'
  *   5. `analytics.*` env vars in .env (never hardcode IDs here)
  *   6. `author.name` and `author.email`
  *   7. `ogImage` → replace public/og-image.png with your own 1200×630 image
+ *   8. `themeColor` → hex of your brand color (PWA manifest + browser chrome)
+ *
+ * `pnpm project:init` fills in name, description, author and links for you.
  */
 
 // env.NEXT_PUBLIC_APP_URL has a Zod default but can be undefined when
@@ -30,6 +33,14 @@ export const siteConfig = {
 
   /** <link rel="canonical"> base. Never has a trailing slash. */
   canonicalBase: APP_URL.replace(/\/$/, ''),
+
+  /**
+   * PWA manifest + browser-chrome colors (hex; the manifest can't read CSS
+   * vars). `themeColor` should be the hex of the `--brand` token in
+   * `packages/ui/src/styles/globals.css`. Default: indigo.
+   */
+  themeColor: '#4f46e5',
+  backgroundColor: '#ffffff',
 
   locale: {
     default: 'fr',

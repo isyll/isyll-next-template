@@ -79,6 +79,6 @@ export const config = {
   // Run on every document request so the CSP applies everywhere, but skip API
   // routes (JSON, no CSP needed) and static assets (served verbatim).
   matcher: [
-    '/((?!api/|admin/api/|_next/static|_next/image|favicon.ico|site.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|map|txt|xml|woff|woff2|ttf|otf)$).*)',
+    '/((?!api/|admin/api/|_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|map|txt|xml|woff|woff2|ttf|otf)$).*)',
   ],
 }
