@@ -6,8 +6,10 @@ import {
   Preview,
   Tailwind,
 } from '@react-email/components'
+import { DEFAULT_LOCALE } from '@workspace/core/i18n'
 import type { ReactNode } from 'react'
 
+import { emailMessages, type EmailLocale } from '../i18n'
 import { emailTokens } from '../tokens'
 
 interface EmailLayoutProps {
@@ -16,6 +18,8 @@ interface EmailLayoutProps {
   preview: string
   /** App name shown in header and footer. Defaults to "App". */
   appName?: string
+  /** Locale for the footer copy and the `<html lang>` attribute. */
+  locale?: EmailLocale
 }
 
 /**
@@ -23,7 +27,7 @@ interface EmailLayoutProps {
  *   - Tailwind CSS (scoped to email-safe utilities)
  *   - Consistent container sizing
  *   - Header with app name
- *   - Footer with legal / unsubscribe hints
+ *   - Localized footer with legal / unsubscribe hints
  *
  * Swap the `appName` prop when using from a project that has rebranded.
  */
@@ -31,9 +35,12 @@ export function EmailLayout({
   children,
   preview,
   appName = 'App',
+  locale = DEFAULT_LOCALE,
 }: EmailLayoutProps) {
+  const t = emailMessages(locale).common
+
   return (
-    <Html lang='fr' dir='ltr'>
+    <Html lang={locale} dir='ltr'>
       <Head />
       <Preview>{preview}</Preview>
       <Tailwind>
@@ -91,8 +98,7 @@ export function EmailLayout({
                   margin: '0 0 8px',
                 }}
               >
-                Vous recevez cet e-mail parce que vous avez un compte sur{' '}
-                {appName}.
+                {t.footerAccount(appName)}
               </p>
               <p
                 style={{
@@ -101,7 +107,7 @@ export function EmailLayout({
                   margin: '0',
                 }}
               >
-                © {new Date().getFullYear()} {appName}. Tous droits réservés.
+                {t.footerRights(appName, new Date().getFullYear())}
               </p>
             </div>
           </Container>

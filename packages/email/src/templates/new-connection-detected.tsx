@@ -1,8 +1,10 @@
 import { Hr, Section } from '@react-email/components'
+import { DEFAULT_LOCALE } from '@workspace/core/i18n'
 
 import { EmailButton } from '../components/email-button'
 import { EmailLayout } from '../components/email-layout'
 import { EmailHeading, EmailText } from '../components/email-typography'
+import { emailMessages, type EmailLocale } from '../i18n'
 import { emailTokens } from '../tokens'
 
 export interface NewConnectionDetectedProps {
@@ -18,17 +20,13 @@ export interface NewConnectionDetectedProps {
   securityUrl: string
   /** App name (defaults to "App" — override per project). */
   appName?: string
+  /** Recipient's language (defaults to the app default). */
+  locale?: EmailLocale
 }
 
 /**
  * Sent when a new sign-in is detected on an account. Lets the user review
- * and revoke unexpected sessions.
- *
- * HOW TO CUSTOMISE:
- *   1. Update `appName` to your product name (or pass it as a prop).
- *   2. Adjust the copy and the `securityUrl` to point to your session
- *      management page once it is built.
- *   3. Update `emailTokens` in `src/tokens.ts` to match your brand colours.
+ * and revoke unexpected sessions. Copy lives in `../i18n.ts`.
  */
 export function NewConnectionDetected({
   name,
@@ -37,27 +35,21 @@ export function NewConnectionDetected({
   detectedAt,
   securityUrl,
   appName = 'App',
+  locale = DEFAULT_LOCALE,
 }: NewConnectionDetectedProps) {
-  const formattedDate = new Date(detectedAt).toLocaleString('fr-FR', {
+  const m = emailMessages(locale).newConnection
+  const formattedDate = new Date(detectedAt).toLocaleString(locale, {
     dateStyle: 'full',
     timeStyle: 'short',
     timeZone: 'UTC',
   })
 
   return (
-    <EmailLayout
-      preview={`Nouvelle connexion détectée sur votre compte ${appName}`}
-      appName={appName}
-    >
-      <EmailHeading>Nouvelle connexion détectée</EmailHeading>
+    <EmailLayout preview={m.preview(appName)} appName={appName} locale={locale}>
+      <EmailHeading>{m.heading}</EmailHeading>
 
-      <EmailText>Bonjour {name},</EmailText>
-      <EmailText>
-        Une nouvelle connexion a été détectée sur votre compte{' '}
-        <strong>{appName}</strong>. Si c&apos;était vous, vous n&apos;avez rien
-        à faire. Si ce n&apos;était pas vous, sécurisez votre compte
-        immédiatement.
-      </EmailText>
+      <EmailText>{m.greeting(name)}</EmailText>
+      <EmailText>{m.body(appName)}</EmailText>
 
       {/* Connection details */}
       <Section
@@ -69,32 +61,28 @@ export function NewConnectionDetected({
         }}
       >
         <EmailText>
-          <strong>Date et heure :</strong> {formattedDate} (UTC)
+          <strong>{m.dateLabel} :</strong> {formattedDate} (UTC)
         </EmailText>
         {ipAddress ? (
           <EmailText>
-            <strong>Adresse IP :</strong> {ipAddress}
+            <strong>{m.ipLabel} :</strong> {ipAddress}
           </EmailText>
         ) : null}
         {userAgent ? (
           <EmailText small muted>
-            <strong>Appareil :</strong> {userAgent}
+            <strong>{m.deviceLabel} :</strong> {userAgent}
           </EmailText>
         ) : null}
       </Section>
 
-      <EmailButton href={securityUrl}>
-        Vérifier mes sessions actives
-      </EmailButton>
+      <EmailButton href={securityUrl}>{m.cta}</EmailButton>
 
       <Hr
         style={{ borderColor: emailTokens.colors.border, margin: '24px 0' }}
       />
 
       <EmailText muted small>
-        Si vous ne reconnaissez pas cette connexion, changez votre mot de passe
-        et contactez notre support. En cas d&apos;urgence, déconnectez toutes
-        les sessions depuis la page de sécurité de votre compte.
+        {m.warning}
       </EmailText>
     </EmailLayout>
   )
@@ -110,4 +98,5 @@ NewConnectionDetected.PreviewProps = {
   detectedAt: new Date().toISOString(),
   securityUrl: 'https://example.com/dashboard/security',
   appName: 'App',
+  locale: DEFAULT_LOCALE,
 } satisfies NewConnectionDetectedProps

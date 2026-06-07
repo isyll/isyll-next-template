@@ -1,12 +1,20 @@
 import { render } from '@react-email/components'
+import { DEFAULT_LOCALE } from '@workspace/core/i18n'
 import { Resend } from 'resend'
 
+import { emailMessages } from './i18n'
 import type {
   NewConnectionDetectedProps,
+  PasswordResetProps,
   RegistrationConfirmationProps,
 } from './templates'
-import { NewConnectionDetected, RegistrationConfirmation } from './templates'
+import {
+  NewConnectionDetected,
+  PasswordReset,
+  RegistrationConfirmation,
+} from './templates'
 
+export * from './i18n'
 export * from './templates'
 export * from './tokens'
 
@@ -69,31 +77,49 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
 // ─── Template senders ────────────────────────────────────────────────────────
 
 /**
- * Send the registration confirmation / email-verification email.
- * Triggered by the `user.email_verification_requested` domain event.
+ * Send the registration confirmation / email-verification email. Subject and
+ * body are localized via `props.locale` (defaults to the app default).
  */
 export async function sendRegistrationConfirmation(
   to: string,
   props: RegistrationConfirmationProps
 ): Promise<void> {
+  const appName = props.appName ?? 'App'
   await sendEmail({
     to,
-    subject: `Confirmez votre adresse e-mail — ${props.appName ?? 'App'}`,
+    subject: emailMessages(props.locale ?? DEFAULT_LOCALE).registration.subject(
+      appName
+    ),
     react: RegistrationConfirmation(props),
   })
 }
 
-/**
- * Send the new-connection-detected security alert.
- * Triggered by the `user.new_connection` domain event.
- */
+/** Send the password-reset email. Localized via `props.locale`. */
+export async function sendPasswordReset(
+  to: string,
+  props: PasswordResetProps
+): Promise<void> {
+  const appName = props.appName ?? 'App'
+  await sendEmail({
+    to,
+    subject: emailMessages(
+      props.locale ?? DEFAULT_LOCALE
+    ).passwordReset.subject(appName),
+    react: PasswordReset(props),
+  })
+}
+
+/** Send the new-connection-detected security alert. Localized via `props.locale`. */
 export async function sendNewConnectionAlert(
   to: string,
   props: NewConnectionDetectedProps
 ): Promise<void> {
+  const appName = props.appName ?? 'App'
   await sendEmail({
     to,
-    subject: `Nouvelle connexion détectée sur votre compte — ${props.appName ?? 'App'}`,
+    subject: emailMessages(
+      props.locale ?? DEFAULT_LOCALE
+    ).newConnection.subject(appName),
     react: NewConnectionDetected(props),
   })
 }

@@ -1,4 +1,6 @@
 export { NewConnectionDetected } from './new-connection-detected'
 export type { NewConnectionDetectedProps } from './new-connection-detected'
+export { PasswordReset } from './password-reset'
+export type { PasswordResetProps } from './password-reset'
 export { RegistrationConfirmation } from './registration-confirmation'
 export type { RegistrationConfirmationProps } from './registration-confirmation'
