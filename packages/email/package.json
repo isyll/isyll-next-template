@@ -1,0 +1,35 @@
+{
+  "name": "@workspace/email",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Transactional email templates (React Email + Resend).",
+  "exports": {
+    ".": "./src/index.ts",
+    "./templates": "./src/templates/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "email:preview": "email dev --dir src/templates --port 3030",
+    "email:export": "email export --dir src/templates --outDir dist/emails --pretty"
+  },
+  "dependencies": {
+    "@react-email/components": "catalog:",
+    "@react-email/tailwind": "catalog:",
+    "@workspace/core": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "resend": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "catalog:",
+    "react-email": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -30,7 +30,11 @@
 
   "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
   "tailwindCSS.classFunctions": ["cn", "cva"],
-  "files.associations": { "*.css": "tailwindcss" },
+  "files.associations": {
+    "*.css": "tailwindcss",
+    ".sqlfluff": "ini",
+    ".sqlfluffignore": "ignore"
+  },
 
   "sqlfluff.dialect": "postgres",
   "sqlfluff.experimental.format.executeInTerminal": true,

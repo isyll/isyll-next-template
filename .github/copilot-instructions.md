@@ -29,8 +29,8 @@ monorepo template (pnpm + Turborepo). Follow these rules in every suggestion.
 - Reference colours via semantic Tailwind tokens (`bg-primary`, `text-muted-foreground`).
 - Reuse the built **platform services** instead of reinventing: `@/lib/logger`
   and `@/lib/observability` (`reportError`), `@/lib/rate-limit`, `@/lib/jobs`
-  (pg-boss), `@/lib/storage` (S3), `@workspace/auth/email`, and the
-  notifications DAL. All are env-gated and degrade safely.
+  (pg-boss), `@/lib/storage` (S3), `@workspace/email` (localized React Email),
+  and the notifications DAL. All are env-gated and degrade safely.
 - Respect the architecture boundaries (`pnpm boundaries`): `core` depends on
   nothing internal, `db` → core only, `ui` stays presentational.
 

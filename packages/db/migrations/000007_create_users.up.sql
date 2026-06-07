@@ -5,6 +5,9 @@ CREATE TABLE app.users (
   email public.email_address NOT NULL,
   email_verified boolean NOT NULL DEFAULT false,
   image text,
+  -- Preferred language (BCP-47 short code) for the UI and transactional emails.
+  language text NOT NULL DEFAULT 'fr'
+  CONSTRAINT users_language_not_blank CHECK (length(btrim(language)) > 0),
   deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()

@@ -28,6 +28,20 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass redis --save 60 1000
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'redis', '--no-auth-warning', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   migrator:
     image: migrate/migrate:v4.18.1
     volumes:
@@ -53,6 +67,7 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgres://postgres:postgres@db:5432/app
       ADMIN_DATABASE_URL: postgres://postgres:postgres@db:5432/app
+      REDIS_URL: redis://:redis@redis:6379
       AUTH_USER_SECRET: dev-insecure-user-secret-change-me-00000000000
       AUTH_ADMIN_SECRET: dev-insecure-admin-secret-change-me-000000000
       AUTH_USER_URL: http://localhost:3000
@@ -63,8 +78,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       migrator:
         condition: service_completed_successfully
 
 volumes:
   db-data:
+  redis-data:

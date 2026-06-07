@@ -12,6 +12,7 @@ describe('userSelectSchema', () => {
         'emailVerified',
         'id',
         'image',
+        'language',
         'name',
         'updatedAt',
       ].sort()

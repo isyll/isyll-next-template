@@ -13,8 +13,9 @@ CREATE INDEX verifications_expires_at_idx ON app.verifications (expires_at);
 CREATE TRIGGER verifications_set_updated_at BEFORE UPDATE ON app.verifications
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- Maintenance helper: delete expired user sessions and verification tokens,
--- returning the number of rows removed. Schedule from pg_cron or a job runner.
+-- Maintenance helper: purge expired verification tokens. Sessions are stored
+-- in Redis (not PostgreSQL) so only the verifications table is cleaned here.
+-- Schedule from pg_cron or via the jobs worker.
 CREATE OR REPLACE FUNCTION app.purge_expired_user_auth()
 RETURNS bigint
 LANGUAGE plpgsql
@@ -22,9 +23,8 @@ AS $$
 DECLARE
   removed bigint;
 BEGIN
-  WITH s AS (DELETE FROM app.sessions WHERE expires_at < now() RETURNING 1),
-  v AS (DELETE FROM app.verifications WHERE expires_at < now() RETURNING 1)
-  SELECT (SELECT count(*) FROM s) + (SELECT count(*) FROM v) INTO removed;
+  DELETE FROM app.verifications WHERE expires_at < now();
+  GET DIAGNOSTICS removed = ROW_COUNT;
   RETURN removed;
 END;
 $$;

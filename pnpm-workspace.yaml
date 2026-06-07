@@ -77,9 +77,11 @@ catalog:
   # --- Observability ---
   pino: 10.3.1
 
-  # --- Rate limiting / cache (Upstash, HTTP — edge-friendly) ---
-  '@upstash/ratelimit': 2.0.8
-  '@upstash/redis': 1.38.0
+  # --- Redis (ioredis — full-featured, native TCP connection) ---
+  ioredis: 5.11.1
+  '@types/ioredis': 4.28.10
+
+  # --- Rate limiting (ioredis-backed, in-process fallback for dev) ---
 
   # --- Background jobs (Postgres-backed) ---
   pg-boss: 12.18.2
@@ -92,8 +94,11 @@ catalog:
   better-auth: 1.6.13
   jose: 6.2.3
 
-  # --- Email (Resend) ---
+  # --- Email (Resend + React Email) ---
   resend: 6.12.4
+  'react-email': 6.5.0
+  '@react-email/components': 1.0.12
+  '@react-email/tailwind': 2.0.7
 
   # --- Reference data (generated into migrations) ---
   world-countries: 5.1.0
@@ -161,3 +166,4 @@ minimumReleaseAgeExclude:
   - '@aws-sdk/middleware-sdk-s3@3.972.47'
   - '@aws-sdk/middleware-ssec@3.972.13'
   - '@aws-sdk/s3-request-presigner@3.1061.0'
+  - ioredis@5.11.1

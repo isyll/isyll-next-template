@@ -49,6 +49,32 @@ services:
     networks: [backend]
     restart: 'no'
 
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - /etc/redis/redis.conf
+      - --requirepass
+      - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+    volumes:
+      - ./infra/redis/redis.conf:/etc/redis/redis.conf:ro
+      - redis-data:/data
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'redis-cli',
+          '-a',
+          '${REDIS_PASSWORD}',
+          '--no-auth-warning',
+          'ping',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [backend]
+
   web:
     build:
       context: .
@@ -58,6 +84,7 @@ services:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
       ADMIN_DATABASE_URL: ${ADMIN_DATABASE_URL:?set ADMIN_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:?set REDIS_URL}
       AUTH_USER_SECRET: ${AUTH_USER_SECRET:?set AUTH_USER_SECRET}
       AUTH_USER_URL: ${AUTH_USER_URL:?set AUTH_USER_URL}
       AUTH_ADMIN_SECRET: ${AUTH_ADMIN_SECRET:?set AUTH_ADMIN_SECRET}
@@ -65,6 +92,8 @@ services:
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?set NEXT_PUBLIC_APP_URL}
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
@@ -74,21 +103,44 @@ services:
       - '3000'
 
   nginx:
-    image: nginx:1.27-alpine
+    # Nginx 1.30 mainline — includes HTTP/3 (QUIC), Brotli, and modern TLS.
+    # HTTP/3 requires publishing port 443 on UDP as well as TCP.
+    image: nginx:1.30-alpine
     restart: unless-stopped
     depends_on:
       - web
     ports:
       - '80:80'
-      # - '443:443'   # enable alongside TLS certs + the 443 block in default.conf
+      - '443:443'
+      # HTTP/3 (QUIC) runs over UDP — publish alongside TCP 443.
+      - '443:443/udp'
     volumes:
       - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
-      # - ./infra/nginx/certs:/etc/nginx/certs:ro
+      # Certbot writes certs here; Nginx reads them.
+      - certbot-certs:/etc/letsencrypt:ro
+      # ACME http-01 challenge files (Nginx serves them).
+      - certbot-www:/var/www/certbot:ro
     networks: [backend]
+
+  # One-shot: issues the initial certificate. Re-run manually when needed.
+  # docker compose -f compose.prod.yaml run --rm certbot certonly ...
+  certbot:
+    image: certbot/certbot:latest
+    entrypoint: /bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done'
+    volumes:
+      - certbot-certs:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    networks: [backend]
+    restart: unless-stopped
+    depends_on:
+      - nginx
 
 networks:
   backend:
 
 volumes:
   db-data:
+  redis-data:
+  certbot-certs:
+  certbot-www:

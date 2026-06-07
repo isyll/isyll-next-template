@@ -28,7 +28,7 @@
     "lint:md:fix": "markdownlint-cli2 --fix \"**/*.md\"",
     "boundaries": "depcruise --config .dependency-cruiser.cjs packages apps",
     "boundaries:graph": "depcruise --config .dependency-cruiser.cjs --output-type mermaid packages apps",
-    "check": "turbo run lint typecheck test build && pnpm run boundaries && pnpm run spellcheck && pnpm run format:check",
+    "check": "SKIP_ENV_VALIDATION=1 turbo run lint typecheck test build && pnpm run boundaries && pnpm run spellcheck && pnpm run format:check",
     "clean": "turbo run clean && rimraf .turbo",
     "db:migrate": "turbo run db:migrate",
     "db:rollback": "turbo run db:rollback",

@@ -45,7 +45,9 @@
     "noAccount": "Pas encore de compte ?",
     "haveAccount": "Vous avez déjà un compte ?",
     "signOut": "Se déconnecter",
-    "checkEmail": "Vérifiez votre boîte mail pour confirmer votre adresse."
+    "checkEmail": "Vérifiez votre boîte mail pour confirmer votre adresse.",
+    "panelTitle": "Concentrez-vous sur votre produit.",
+    "panelSubtitle": "L'authentification, la base de données, les e-mails et l'i18n sont déjà prêts. Connectez-vous pour commencer."
   },
   "Dashboard": {
     "title": "Tableau de bord",
@@ -77,5 +79,19 @@
     "forbidden": "Accès refusé.",
     "notFound": "Introuvable.",
     "invalidCredentials": "E-mail ou mot de passe incorrect."
+  },
+  "NotFound": {
+    "title": "Page introuvable",
+    "description": "Désolé, la page que vous cherchez n'existe pas ou a été déplacée.",
+    "back": "Retour à l'accueil"
+  },
+  "ErrorPage": {
+    "title": "Une erreur est survenue",
+    "description": "Quelque chose s'est mal passé. Veuillez réessayer ou contacter le support si le problème persiste.",
+    "retry": "Réessayer",
+    "back": "Retour à l'accueil"
+  },
+  "Loading": {
+    "message": "Chargement en cours…"
   }
 }
