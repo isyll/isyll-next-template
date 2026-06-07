@@ -76,8 +76,8 @@ are absent (dev), so the template runs out of the box.
   error choke-point. Server Actions already route errors through it. Add an
   error tracker (Sentry, ...) in `reportError` — call sites never change.
 - **Rate limiting.** `@/lib/rate-limit` → `createRateLimiter` / `enforceRateLimit`
-  (Upstash Redis when configured, in-process fallback otherwise). Use
-  `rateLimitedActionClient` for sensitive/costly actions.
+  (Redis/ioredis sliding window when `REDIS_URL` is set, in-process fallback
+  otherwise). Use `rateLimitedActionClient` for sensitive/costly actions.
 - **Email.** `@workspace/auth/email` `sendAuthEmail` (Resend when
   `RESEND_API_KEY` is set, console otherwise). Re-implement the one function to
   swap providers.

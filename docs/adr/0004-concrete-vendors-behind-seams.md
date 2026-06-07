@@ -17,7 +17,10 @@ degrades safely when not configured:
 
 - Logging: pino (`@/lib/logger`); errors funnel through `reportError`
   (`@/lib/observability`) — the one place to add Sentry et al.
-- Rate limiting: Upstash Redis with an in-process fallback (`@/lib/rate-limit`).
+- Rate limiting & session storage: Redis via ioredis (`REDIS_URL`), with an
+  in-process / database fallback (`@/lib/rate-limit`, `@/lib/redis`). Supersedes
+  the original Upstash REST choice — a self-hostable, protocol-level client suits
+  the Docker/Nginx deploy target better.
 - Email: Resend, console fallback in dev (`@workspace/auth/email`).
 - Jobs: pg-boss, reusing Postgres (`@/lib/jobs`).
 - Storage: AWS SDK (S3/R2/MinIO), presigned URLs (`@/lib/storage`).

@@ -15,8 +15,9 @@ export const env = createEnv({
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
-    // Redis (ioredis). Required in production for sessions, rate limiting,
-    // and the event queue. Falls back to in-process stubs in dev when absent.
+    // Redis (ioredis). Backs session storage and distributed rate limiting.
+    // Required in production; in dev it falls back to the database (sessions)
+    // and an in-process rate limiter. Use `rediss://` for TLS.
     REDIS_URL: z.url().optional(),
     DATABASE_URL: z
       .string()
