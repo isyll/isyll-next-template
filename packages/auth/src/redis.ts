@@ -9,8 +9,11 @@ import Redis from 'ioredis'
  * PostgreSQL. When `REDIS_URL` is absent, every operation is a no-op and
  * BetterAuth falls back to its primary database adapter.
  *
- * Call `createAuthRedisStorage()` once per BetterAuth instance.
- * The key-space prefix isolates user sessions from operator sessions.
+ * Mirrors the connection strategy of the web app's client (`apps/web/lib/redis`)
+ * — a package can't import the app, so the small client is duplicated. Use
+ * `rediss://` for TLS (ioredis enables it from the scheme). Call
+ * `createAuthRedisStorage()` once per BetterAuth instance; the key-space prefix
+ * isolates user sessions from operator sessions.
  */
 export interface AuthSecondaryStorage {
   get(key: string): Promise<string | null>
@@ -35,9 +38,12 @@ function getAuthRedis(): Redis | null {
 
   const client = new Redis(url, {
     lazyConnect: false,
+    enableReadyCheck: true,
     maxRetriesPerRequest: 3,
     connectionName: 'auth',
     retryStrategy: (times) => (times > 5 ? null : Math.min(times * 200, 2000)),
+    reconnectOnError: (err) =>
+      err.message.includes('READONLY') || err.message.includes('ECONNRESET'),
   })
 
   client.on('error', (err: Error) => {
