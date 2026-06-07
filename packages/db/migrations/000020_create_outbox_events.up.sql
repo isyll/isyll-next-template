@@ -1,29 +1,31 @@
--- Transactional outbox for reliable, exactly-once event publishing.
+-- Transactional outbox for reliable domain-event delivery.
 --
 -- How it works:
---   1. Business logic writes an event row in the SAME transaction as the
---      domain mutation (e.g. INSERT user + INSERT outbox_event). Atomicity
---      ensures the event is never lost, even if Redis or the worker is down.
---   2. The outbox worker polls this table, publishes the payload to a Redis
---      stream, and marks the row as 'processed'. On failure it increments
---      `attempts` and retries with exponential back-off.
---   3. Events that exhaust `max_attempts` are marked 'dead' and moved to the
---      Redis dead-letter queue (`dlq:{event_type}`) for manual inspection.
+--   1. Business logic writes an event row in the SAME transaction as the domain
+--      mutation (e.g. INSERT user + INSERT outbox_event). Atomicity guarantees
+--      the event is never lost and never fires on rollback.
+--   2. The outbox relay polls due rows (`status IN ('pending','failed')` AND
+--      `scheduled_at <= now()`) with FOR UPDATE SKIP LOCKED, runs the matching
+--      handler, and marks the row 'processed'. On failure it bumps `attempts`
+--      and reschedules `scheduled_at` with exponential back-off.
+--   3. Rows that exhaust `max_attempts` are marked 'dead' for manual inspection.
 --
--- Status values: pending → processing → processed | dead (after max retries).
--- All timestamps are UTC.
+-- No external broker: the relay and handlers are plain Postgres + app code.
+-- Status: pending → processing → processed | failed → … → dead. Timestamps UTC.
 CREATE TABLE app.outbox_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  -- Identifies what happened (e.g. 'user.registered', 'user.new_connection').
+  -- What happened (e.g. 'user.registered', 'user.new_connection').
   event_type text NOT NULL
   CONSTRAINT outbox_events_type_not_blank CHECK (length(btrim(event_type)) > 0),
 
   -- The primary entity involved (user_id, order_id, …).
   aggregate_id text NOT NULL,
-  aggregate_type text NOT NULL DEFAULT 'unknown',
+  aggregate_type text NOT NULL DEFAULT 'unknown'
+  CONSTRAINT outbox_events_aggregate_type_not_blank
+  CHECK (length(btrim(aggregate_type)) > 0),
 
-  -- Structured event payload (consumer-defined schema).
+  -- Structured event payload (matches the DomainEvent variant).
   payload jsonb NOT NULL DEFAULT '{}',
 
   -- Processing state.
@@ -31,28 +33,29 @@ CREATE TABLE app.outbox_events (
   CONSTRAINT outbox_events_status_check
   CHECK (status IN ('pending', 'processing', 'processed', 'failed', 'dead')),
 
-  -- Retry tracking.
-  attempts int NOT NULL DEFAULT 0,
-  max_attempts int NOT NULL DEFAULT 5,
+  -- Retry tracking (smallint: a handful of attempts, never more).
+  attempts smallint NOT NULL DEFAULT 0
+  CONSTRAINT outbox_events_attempts_non_negative CHECK (attempts >= 0),
+  max_attempts smallint NOT NULL DEFAULT 5
+  CONSTRAINT outbox_events_max_attempts_positive CHECK (max_attempts > 0),
 
-  -- Prevent duplicate processing across retries (set by the publisher).
+  -- Optional publisher-set key for at-most-once publishing (deduplication).
   idempotency_key text UNIQUE,
 
-  -- Scheduling (allows delayed / future events).
+  -- When the row becomes due; bumped forward on each retry (back-off).
   scheduled_at timestamptz NOT NULL DEFAULT now(),
 
-  -- Timestamps for observability.
+  -- Observability.
   processed_at timestamptz,
   failed_at timestamptz,
-  next_retry_at timestamptz,
   error_message text,
 
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Worker query: grab pending events in order, skip locked rows.
-CREATE INDEX outbox_events_pending_idx ON app.outbox_events (scheduled_at)
+-- Relay query: grab due events in order, skipping locked rows.
+CREATE INDEX outbox_events_due_idx ON app.outbox_events (scheduled_at)
 WHERE status IN ('pending', 'failed');
 
 -- Observability: look up all events for an aggregate.

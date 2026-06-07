@@ -3,6 +3,14 @@ export * as schema from './schema'
 export * from './validators'
 export * from './lib/soft-delete'
 export {
+  publishEvent,
+  buildOutboxEvent,
+  type DomainEvent,
+  type DomainEventType,
+  type UserRegisteredEvent,
+  type UserNewConnectionEvent,
+} from './lib/events'
+export {
   createTransactional,
   type Actor,
   type TransactionOptions,

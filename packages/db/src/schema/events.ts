@@ -1,26 +1,21 @@
-import { integer, jsonb, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { jsonb, smallint, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
 import { appSchema } from './auth'
 
 /**
- * Transactional outbox for reliable, exactly-once event delivery.
+ * Transactional outbox for reliable domain-event delivery.
  *
- * Pattern overview:
- *   1. A business mutation writes an outbox_event row IN THE SAME TRANSACTION
- *      as its domain change. Atomicity guarantees the event is never lost.
- *   2. The outbox worker (`apps/web/server/workers/outbox-worker.ts`) polls
- *      pending events, publishes each to the appropriate Redis stream, and
- *      marks the row 'processed'.
- *   3. Domain consumers (email sender, notification dispatcher, …) subscribe
- *      to Redis streams and process events asynchronously.
- *   4. On failure the worker retries with exponential back-off; after
- *      `max_attempts` the row is marked 'dead' and pushed to the Redis DLQ
- *      (`dlq:{event_type}`) for manual inspection.
+ * 1. A mutation writes an outbox row IN THE SAME TRANSACTION as its domain
+ *    change (via `publishEvent`). Atomicity guarantees the event is never lost
+ *    and never "phantom-fires" on rollback.
+ * 2. The outbox relay (`apps/web/server/workers/outbox-worker.ts`) polls due
+ *    rows with `FOR UPDATE SKIP LOCKED`, runs the registered handler, and marks
+ *    the row `processed`. On failure it reschedules with exponential back-off;
+ *    after `max_attempts` the row is marked `dead` for inspection.
  *
- * Business domains MUST publish through the outbox — never call external
- * services directly from mutations. See `apps/web/lib/events.ts`.
+ * The relay and handlers are plain Postgres + in-process code — no broker. See
+ * `packages/db/src/lib/events.ts` (publisher) and `apps/web/server/events`.
  */
-
 export type OutboxEventStatus =
   | 'pending'
   | 'processing'
@@ -31,39 +26,38 @@ export type OutboxEventStatus =
 export const outboxEvents = appSchema.table('outbox_events', {
   id: uuid('id').defaultRandom().primaryKey(),
 
-  /** Identifies what happened. Convention: '{domain}.{verb}' (e.g. 'user.registered'). */
+  /** What happened. Convention: '{aggregate}.{verb}' (e.g. 'user.registered'). */
   eventType: text('event_type').notNull(),
 
-  /** The primary entity involved (e.g. a user ID, order ID). */
+  /** The primary entity involved (e.g. a user ID). */
   aggregateId: text('aggregate_id').notNull(),
   aggregateType: text('aggregate_type').notNull().default('unknown'),
 
-  /** Structured event data. Shape is defined by each EventType. */
+  /** Structured event data. Shape is the matching `DomainEvent` variant. */
   payload: jsonb('payload')
     .$type<Record<string, unknown>>()
     .notNull()
     .default({}),
 
-  /** Processing state machine: pending → processing → processed | dead. */
+  /** State machine: pending → processing → processed | failed → … → dead. */
   status: text('status')
     .$type<OutboxEventStatus>()
     .notNull()
     .default('pending'),
 
-  attempts: integer('attempts').notNull().default(0),
-  maxAttempts: integer('max_attempts').notNull().default(5),
+  attempts: smallint('attempts').notNull().default(0),
+  maxAttempts: smallint('max_attempts').notNull().default(5),
 
-  /** Prevents duplicate processing across retries. Set by the publisher. */
+  /** Optional publisher-set key for at-most-once publishing (deduplication). */
   idempotencyKey: text('idempotency_key').unique(),
 
-  /** Allows scheduling future or delayed events. */
+  /** When the row becomes due. Bumped forward on each retry (back-off). */
   scheduledAt: timestamp('scheduled_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
 
   processedAt: timestamp('processed_at', { withTimezone: true }),
   failedAt: timestamp('failed_at', { withTimezone: true }),
-  nextRetryAt: timestamp('next_retry_at', { withTimezone: true }),
   errorMessage: text('error_message'),
 
   createdAt: timestamp('created_at', { withTimezone: true })
