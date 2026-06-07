@@ -1,5 +1,6 @@
 import path from 'node:path'
 
+import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 
@@ -58,4 +59,26 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withNextIntl(nextConfig)
+const config = withNextIntl(nextConfig)
+
+// Sentry build plugin (source maps, tunnel route, tree-shaking) — only applied
+// when SENTRY_DSN is set, so the default build is plugin-free. Runtime error
+// reporting is configured separately in the sentry.*.config files.
+export default process.env['SENTRY_DSN']
+  ? withSentryConfig(config, {
+      ...(process.env['SENTRY_ORG'] ? { org: process.env['SENTRY_ORG'] } : {}),
+      ...(process.env['SENTRY_PROJECT']
+        ? { project: process.env['SENTRY_PROJECT'] }
+        : {}),
+      ...(process.env['SENTRY_AUTH_TOKEN']
+        ? { authToken: process.env['SENTRY_AUTH_TOKEN'] }
+        : {}),
+      // Route Sentry requests through the app to dodge ad-blockers.
+      tunnelRoute: '/monitoring',
+      // Upload source maps only when a token is available (CI release step).
+      sourcemaps: { disable: !process.env['SENTRY_AUTH_TOKEN'] },
+      silent: !process.env['CI'],
+      widenClientFileUpload: true,
+      disableLogger: true,
+    })
+  : config

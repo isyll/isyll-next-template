@@ -122,3 +122,6 @@ sqids
 snowflakes
 ulidx
 TOTP
+ASIC
+Sentry
+sentry
