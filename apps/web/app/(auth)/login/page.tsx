@@ -19,34 +19,32 @@ export default async function LoginPage() {
   const providers = enabledSocialProviders()
 
   return (
-    <main className='flex min-h-svh items-center justify-center px-4 py-12'>
-      <Card className='w-full max-w-sm'>
-        <CardHeader>
-          <CardTitle>{t('loginTitle')}</CardTitle>
-          <CardDescription>{t('loginSubtitle')}</CardDescription>
-        </CardHeader>
-        <CardContent className='space-y-5'>
-          <LoginForm />
-          {providers.length > 0 ? (
-            <>
-              <div className='flex items-center gap-3'>
-                <span className='h-px flex-1 bg-border' />
-                <span className='text-xs text-muted-foreground'>
-                  {t('orContinueWith')}
-                </span>
-                <span className='h-px flex-1 bg-border' />
-              </div>
-              <SocialButtons providers={providers} />
-            </>
-          ) : null}
-        </CardContent>
-        <CardFooter className='justify-center text-sm text-muted-foreground'>
-          {t('noAccount')}&nbsp;
-          <Link href='/register' className='text-foreground underline'>
-            {t('signUp')}
-          </Link>
-        </CardFooter>
-      </Card>
-    </main>
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('loginTitle')}</CardTitle>
+        <CardDescription>{t('loginSubtitle')}</CardDescription>
+      </CardHeader>
+      <CardContent className='space-y-5'>
+        <LoginForm />
+        {providers.length > 0 ? (
+          <>
+            <div className='flex items-center gap-3'>
+              <span className='h-px flex-1 bg-border' />
+              <span className='text-xs text-muted-foreground'>
+                {t('orContinueWith')}
+              </span>
+              <span className='h-px flex-1 bg-border' />
+            </div>
+            <SocialButtons providers={providers} />
+          </>
+        ) : null}
+      </CardContent>
+      <CardFooter className='justify-center text-sm text-muted-foreground'>
+        {t('noAccount')}&nbsp;
+        <Link href='/register' className='text-foreground underline'>
+          {t('signUp')}
+        </Link>
+      </CardFooter>
+    </Card>
   )
 }

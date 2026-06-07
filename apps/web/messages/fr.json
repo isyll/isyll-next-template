@@ -45,7 +45,9 @@
     "noAccount": "Pas encore de compte ?",
     "haveAccount": "Vous avez déjà un compte ?",
     "signOut": "Se déconnecter",
-    "checkEmail": "Vérifiez votre boîte mail pour confirmer votre adresse."
+    "checkEmail": "Vérifiez votre boîte mail pour confirmer votre adresse.",
+    "panelTitle": "Concentrez-vous sur votre produit.",
+    "panelSubtitle": "L'authentification, la base de données, les e-mails et l'i18n sont déjà prêts. Connectez-vous pour commencer."
   },
   "Dashboard": {
     "title": "Tableau de bord",

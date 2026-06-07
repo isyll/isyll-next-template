@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 import { buttonVariants } from '@workspace/ui/components/button'
 
@@ -22,6 +23,8 @@ export default function ErrorPage({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const t = useTranslations('ErrorPage')
+
   useEffect(() => {
     // Log to your observability service here.
     console.error('[error-boundary]', error)
@@ -38,16 +41,11 @@ export default function ErrorPage({
       </div>
 
       <div className='max-w-md space-y-2'>
-        <h1 className='text-2xl font-semibold tracking-tight'>
-          Une erreur est survenue
-        </h1>
-        <p className='text-muted-foreground'>
-          Quelque chose s&apos;est mal passé. Veuillez réessayer ou contacter le
-          support si le problème persiste.
-        </p>
+        <h1 className='text-2xl font-semibold tracking-tight'>{t('title')}</h1>
+        <p className='text-muted-foreground'>{t('description')}</p>
         {error.digest ? (
           <p className='font-mono text-xs text-muted-foreground'>
-            Référence : {error.digest}
+            {error.digest}
           </p>
         ) : null}
       </div>
@@ -59,10 +57,10 @@ export default function ErrorPage({
           }}
           className={buttonVariants({ variant: 'default' })}
         >
-          Réessayer
+          {t('retry')}
         </button>
         <Link href='/' className={buttonVariants({ variant: 'outline' })}>
-          Retour à l&apos;accueil
+          {t('back')}
         </Link>
       </div>
     </main>
