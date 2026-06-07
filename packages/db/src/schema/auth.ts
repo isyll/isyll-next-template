@@ -18,9 +18,15 @@ import { softDelete } from './_helpers'
  * the Drizzle mapping the ORM/BetterAuth adapter queries against; the
  * authoritative DDL lives in the pure-SQL migrations under `migrations/`. The
  * two MUST stay in sync. Table names are plural; column names are derived as
- * snake_case by the client's `casing` option. There is no `role` here —
- * privileged access is handled by the isolated admin auth system, never by a
- * column on end users.
+ * snake_case by the client's `casing` option.
+ *
+ * Sessions are stored in Redis (not PostgreSQL). `storeSessionInDatabase` is
+ * not set in the BetterAuth config — the sessions table is kept as a no-op
+ * fallback for dev environments without Redis.
+ *
+ * `access_token` / `refresh_token` / `id_token` in the accounts table are
+ * OAUTH PROVIDER TOKENS (e.g. a Google access token) — they are NOT application
+ * JWTs. Application sessions are opaque tokens stored in Redis.
  */
 export const appSchema = pgSchema('app')
 
@@ -32,6 +38,10 @@ export const users = appSchema.table(
     email: text('email').notNull(),
     emailVerified: boolean('email_verified').notNull().default(false),
     image: text('image'),
+    // Preferred language (BCP-47 short code); drives localized emails. Set
+    // server-side from the request locale at sign-up — see the `language`
+    // additionalField + create hook in `@workspace/auth`.
+    language: text('language').notNull().default('fr'),
     ...softDelete,
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
@@ -48,6 +58,12 @@ export const users = appSchema.table(
   ]
 )
 
+/**
+ * Sessions table retained for BetterAuth adapter compatibility (schema
+ * introspection). The application does NOT read/write sessions here; sessions
+ * live in Redis via `secondaryStorage`. This table is intentionally empty in
+ * normal operation.
+ */
 export const sessions = appSchema.table('sessions', {
   id: text('id').primaryKey(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
@@ -72,6 +88,7 @@ export const accounts = appSchema.table('accounts', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
+  // OAuth provider tokens — null for email+password accounts.
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
   idToken: text('id_token'),
@@ -82,6 +99,7 @@ export const accounts = appSchema.table('accounts', {
     withTimezone: true,
   }),
   scope: text('scope'),
+  // Hashed password for the 'credential' provider; null for social accounts.
   password: text('password'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()

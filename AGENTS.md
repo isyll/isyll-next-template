@@ -76,17 +76,24 @@ are absent (dev), so the template runs out of the box.
   error choke-point. Server Actions already route errors through it. Add an
   error tracker (Sentry, ...) in `reportError` — call sites never change.
 - **Rate limiting.** `@/lib/rate-limit` → `createRateLimiter` / `enforceRateLimit`
-  (Upstash Redis when configured, in-process fallback otherwise). Use
-  `rateLimitedActionClient` for sensitive/costly actions.
-- **Email.** `@workspace/auth/email` `sendAuthEmail` (Resend when
-  `RESEND_API_KEY` is set, console otherwise). Re-implement the one function to
-  swap providers.
+  (Redis/ioredis sliding window when `REDIS_URL` is set, in-process fallback
+  otherwise). Use `rateLimitedActionClient` for sensitive/costly actions.
+- **Email.** `@workspace/email` (React Email templates + Resend; console
+  fallback in dev). Localized via `locale` (copy in `packages/email/src/i18n.ts`,
+  built on `@workspace/core/i18n`). BetterAuth sends verification / password-reset
+  emails through it in the user's `language`. Swap providers by re-implementing
+  `sendEmail`.
 - **Background jobs.** `@/lib/jobs` (pg-boss, Postgres-backed) → `enqueue` from
   actions, `work` in a worker process. No extra infra.
 - **Object storage.** `@/lib/storage` (S3/R2/MinIO, presigned URLs, server-only)
   plus pure `@/lib/upload` helpers. Track files in `app.uploads` via its DAL.
 - **Notifications.** `app.notifications` table + DAL under
   `apps/web/features/notifications`.
+- **Domain events (outbox).** `publishEvent` (`@workspace/db`) writes a typed
+  event to `app.outbox_events` in the same transaction as your change; the relay
+  (`pnpm --filter web worker:outbox`) dispatches it to handlers in
+  `apps/web/server/events`. Use for reliable side effects (email, notifications,
+  webhooks). See `docs/events.md`.
 
 ## Enforcement & guardrails (these fail CI / block edits — don't fight them)
 

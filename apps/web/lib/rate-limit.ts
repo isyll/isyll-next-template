@@ -1,20 +1,19 @@
 import 'server-only'
 
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
 import { RateLimitError } from '@workspace/core'
 
-import { env } from '@/env'
+import { getRedis } from '@/lib/redis'
 
 /**
- * Application-level rate limiting for Server Actions and route handlers. This is
- * separate from (and complementary to) BetterAuth's own auth-endpoint limiter.
+ * Application-level rate limiting for Server Actions and route handlers. This
+ * is separate from (and complementary to) BetterAuth's own auth-endpoint rate
+ * limiter.
  *
- * Concrete vendor: Upstash (HTTP Redis — works on every runtime incl. edge).
- * When `UPSTASH_REDIS_REST_URL` + `_TOKEN` are set, limits are distributed and
- * survive restarts. Otherwise it falls back to an in-process limiter — correct
- * for local dev and single-instance deploys, but NOT shared across instances,
- * so configure Upstash in production.
+ * Concrete implementation: sliding-window counter backed by ioredis. When
+ * `REDIS_URL` is set, limits are distributed and survive restarts. Without
+ * Redis it falls back to an in-process fixed-window limiter — correct for local
+ * dev and single-instance deploys, but NOT shared across instances. Always
+ * configure `REDIS_URL` in production.
  */
 export interface RateLimitResult {
   readonly success: boolean
@@ -37,8 +36,10 @@ export interface RateLimitConfig {
   prefix?: string
 }
 
-/** Fixed-window in-process limiter (fallback when Upstash isn't configured). */
-class InMemoryRateLimiter implements RateLimiter {
+// ─── In-process fallback ─────────────────────────────────────────────────────
+
+/** Fixed-window in-process limiter (fallback when Redis isn't configured). */
+export class InMemoryRateLimiter implements RateLimiter {
   private readonly hits = new Map<string, { count: number; resetAt: number }>()
 
   constructor(
@@ -71,43 +72,83 @@ class InMemoryRateLimiter implements RateLimiter {
   }
 }
 
-function createUpstashLimiter(
-  url: string,
-  token: string,
-  config: RateLimitConfig
-): RateLimiter {
-  const ratelimit = new Ratelimit({
-    redis: new Redis({ url, token }),
-    limiter: Ratelimit.slidingWindow(
-      config.tokens,
-      `${config.windowSeconds} s`
-    ),
-    prefix: config.prefix ?? 'ratelimit',
-    analytics: false,
-  })
-  return {
-    async limit(identifier) {
-      const { success, limit, remaining, reset } =
-        await ratelimit.limit(identifier)
-      return { success, limit, remaining, reset }
-    },
+// ─── Redis sliding-window limiter ────────────────────────────────────────────
+
+/**
+ * Sliding-window rate limiter backed by ioredis.
+ *
+ * Algorithm: sorted-set per identifier; each request is a member with a score
+ * equal to its timestamp. Old entries outside the window are pruned atomically
+ * (ZREMRANGEBYSCORE + ZADD + EXPIRE in a pipeline). O(log N) per call.
+ */
+class RedisRateLimiter implements RateLimiter {
+  constructor(
+    private readonly tokens: number,
+    private readonly windowMs: number,
+    private readonly prefix: string
+  ) {}
+
+  async limit(identifier: string): Promise<RateLimitResult> {
+    const redis = getRedis()
+    if (!redis) {
+      // Should not happen — only created when Redis is available.
+      return {
+        success: true,
+        limit: this.tokens,
+        remaining: this.tokens - 1,
+        reset: Date.now() + this.windowMs,
+      }
+    }
+
+    const key = `${this.prefix}:${identifier}`
+    const now = Date.now()
+    const windowStart = now - this.windowMs
+    const resetAt = now + this.windowMs
+
+    const pipeline = redis.pipeline()
+    // Remove entries older than the window.
+    pipeline.zremrangebyscore(key, '-inf', windowStart)
+    // Add current request.
+    pipeline.zadd(key, now, `${now}-${Math.random()}`)
+    // Count entries in the window.
+    pipeline.zcard(key)
+    // Set TTL so the key expires automatically.
+    pipeline.pexpire(key, this.windowMs)
+
+    const results = await pipeline.exec()
+    // zcard result is at index 2 of the pipeline.
+    const rawCount = results?.[2]?.[1]
+    const count = typeof rawCount === 'number' ? rawCount : 1
+    const remaining = Math.max(0, this.tokens - count)
+
+    return {
+      success: count <= this.tokens,
+      limit: this.tokens,
+      remaining,
+      reset: resetAt,
+    }
   }
 }
 
-/** Build a rate limiter, backed by Upstash when configured, else in-process. */
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+/** Build a rate limiter, backed by Redis when configured, else in-process. */
 export function createRateLimiter(config: RateLimitConfig): RateLimiter {
-  const url = env.UPSTASH_REDIS_REST_URL
-  const token = env.UPSTASH_REDIS_REST_TOKEN
-  if (url && token) {
-    return createUpstashLimiter(url, token, config)
+  const redis = getRedis()
+  const prefix = config.prefix ?? 'ratelimit'
+  if (redis) {
+    return new RedisRateLimiter(
+      config.tokens,
+      config.windowSeconds * 1000,
+      prefix
+    )
   }
   return new InMemoryRateLimiter(config.tokens, config.windowSeconds * 1000)
 }
 
 /**
  * Consume one token for `identifier`, throwing an operational `RateLimitError`
- * (HTTP 429, safe to surface) when the limit is exceeded. Use inside Server
- * Actions / route handlers.
+ * (HTTP 429, safe to surface) when the limit is exceeded.
  */
 export async function enforceRateLimit(
   limiter: RateLimiter,
@@ -119,5 +160,3 @@ export async function enforceRateLimit(
   }
   return result
 }
-
-export { InMemoryRateLimiter }

@@ -15,10 +15,10 @@ export const env = createEnv({
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
-    // Optional: when both are set, rate limiting uses Upstash Redis; otherwise
-    // it falls back to an in-process limiter (fine for dev / single instance).
-    UPSTASH_REDIS_REST_URL: z.url().optional(),
-    UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+    // Redis (ioredis). Backs session storage and distributed rate limiting.
+    // Required in production; in dev it falls back to the database (sessions)
+    // and an in-process rate limiter. Use `rediss://` for TLS.
+    REDIS_URL: z.url().optional(),
     DATABASE_URL: z
       .string()
       .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string'),
@@ -59,9 +59,18 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
+    // Analytics & search console (set to activate the respective integrations).
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
+    NEXT_PUBLIC_GTM_ID: z.string().optional(),
+    NEXT_PUBLIC_GSC_VERIFICATION: z.string().optional(),
+    NEXT_PUBLIC_BING_VERIFICATION: z.string().optional(),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_APP_URL: process.env['NEXT_PUBLIC_APP_URL'],
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env['NEXT_PUBLIC_GA_MEASUREMENT_ID'],
+    NEXT_PUBLIC_GTM_ID: process.env['NEXT_PUBLIC_GTM_ID'],
+    NEXT_PUBLIC_GSC_VERIFICATION: process.env['NEXT_PUBLIC_GSC_VERIFICATION'],
+    NEXT_PUBLIC_BING_VERIFICATION: process.env['NEXT_PUBLIC_BING_VERIFICATION'],
   },
   emptyStringAsUndefined: true,
   skipValidation: Boolean(process.env['SKIP_ENV_VALIDATION']),

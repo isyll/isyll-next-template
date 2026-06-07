@@ -38,9 +38,10 @@ nonce (`lib/csp.ts`): production uses `'nonce-…' 'strict-dynamic'` with **no**
 ## Rate limiting
 
 `@/lib/rate-limit` provides app-level limits for Server Actions (separate from
-BetterAuth's own endpoint limiter). It uses Upstash Redis when
-`UPSTASH_REDIS_REST_URL`/`_TOKEN` are set, and an in-process fallback otherwise
-— **configure Upstash in production** so limits are shared across instances.
+BetterAuth's own endpoint limiter). It uses Redis (ioredis) when `REDIS_URL` is
+set — a sliding-window algorithm over a sorted set — and an in-process fallback
+otherwise. **Configure `REDIS_URL` in production** so limits are shared across
+instances.
 `rateLimitedActionClient` applies a per-user limit; build dedicated limiters for
 hot paths (login, password reset, expensive endpoints).
 

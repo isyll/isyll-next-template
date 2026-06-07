@@ -43,6 +43,7 @@ program
   .option('--description <text>', 'one-line description')
   .option('--owner <handle>', 'GitHub owner/org')
   .option('--repo <name>', 'GitHub repository name')
+  .option('--author-email <email>', 'contact email (security.txt, author)')
   .option('--cookie-prefix <prefix>', 'end-user session cookie prefix')
   .option('--app-url <url>', 'public application URL')
   .option('--db-url <url>', 'PostgreSQL connection string')
@@ -62,6 +63,7 @@ const flags = program.opts<{
   description?: string
   owner?: string
   repo?: string
+  authorEmail?: string
   cookiePrefix?: string
   appUrl?: string
   dbUrl?: string
@@ -180,6 +182,8 @@ const displayName = flags.displayName ?? (await prompt('Display name', name))
 const description =
   flags.description ??
   (await prompt('One-line description', 'A modern web application.'))
+const authorEmail =
+  flags.authorEmail ?? (await prompt('Contact email', 'contact@example.com'))
 
 // --- 2. Repository ----------------------------------------------------------
 note('GitHub owner and repository.', 'Step 2 · Repository')
@@ -236,11 +240,25 @@ replaceInFile('apps/web/messages/fr.json', [
 ])
 // End-user auth identity only — the admin (operator) instance keeps its own.
 replaceInFile('packages/auth/src/auth.ts', [
-  ["appName: 'App'", `appName: '${displayName}'`],
+  ["const APP_NAME = 'App'", `const APP_NAME = '${displayName}'`],
   ["cookiePrefix: 'app'", `cookiePrefix: '${cookiePrefix}'`],
 ])
 replaceInFile('apps/web/proxy.ts', [
   ["{ cookiePrefix: 'app' }", `{ cookiePrefix: '${cookiePrefix}' }`],
+])
+// SEO / site metadata — the single source of truth for titles, OG, manifest.
+replaceInFile('apps/web/lib/site-config.ts', [
+  ["name: 'App',\n  tagline:", `name: '${displayName}',\n  tagline:`],
+  ["name: 'App',\n    email:", `name: '${displayName}',\n    email:`],
+  ["email: 'contact@example.com'", `email: '${authorEmail}'`],
+  [
+    "'Monorepo Next.js 16, React 19, TypeScript strict, BetterAuth, Drizzle et i18n — prêt pour la production.'",
+    `'${description}'`,
+  ],
+])
+// AI-agent guide brand line (keep the engineering conventions, swap the name).
+replaceInFile('.github/copilot-instructions.md', [
+  [`**${TEMPLATE_NAME}**`, `**${displayName}**`],
 ])
 if (owner !== TEMPLATE_OWNER) {
   replaceInFile('.github/CODEOWNERS', [[`@${TEMPLATE_OWNER}`, `@${owner}`]])
@@ -365,6 +383,8 @@ const nextSteps = [
     ? '  • pnpm db:migrate && pnpm db:seed'
     : '  • Database bootstrap handled above (re-run steps as needed)',
   '  • pnpm admin:create-operator --email you@example.com --name "You" --super',
+  '  • Rebrand: edit --brand-* in packages/ui/src/styles/globals.css +',
+  '    siteConfig.themeColor (see docs/theming.md); replace public/og-image.png',
   '  • pnpm dev',
 ].join('\n')
 

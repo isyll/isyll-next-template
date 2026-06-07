@@ -28,6 +28,7 @@ await seed(db, { users: schema.users }).refine((funcs) => ({
     columns: {
       email: funcs.email(),
       name: funcs.fullName(),
+      language: funcs.valuesFromArray({ values: ['fr'] }),
     },
   },
 }))

@@ -7,9 +7,17 @@
 @source '../**/*.{ts,tsx}';
 
 /*
- * Theme tokens in three tiers: brand primitives (--brand-*, the only block to
- * edit when rebranding), semantic role tokens (:root/.dark), and the @theme
- * inline block exposing them as Tailwind utilities. Colours are oklch.
+ * Theme tokens in three tiers:
+ *   1. Brand primitives (--brand-*) — THE ONLY BLOCK TO EDIT WHEN REBRANDING.
+ *   2. Semantic role tokens (:root / .dark) — map the brand + neutrals to roles
+ *      (primary, background, border, …); components only ever use these.
+ *   3. The @theme inline block — exposes every token as a Tailwind utility
+ *      (bg-primary, text-muted-foreground, …).
+ *
+ * Colours are oklch(L C H): L = lightness 0–1, C = chroma (saturation, ~0–0.4),
+ * H = hue 0–360. To rebrand, change only the --brand-* hue/lightness in both
+ * :root and .dark below; everything downstream inherits it. The default is a
+ * vivid indigo (hue 277). See `docs/theming.md`.
  */
 
 @theme inline {
@@ -59,10 +67,10 @@
 }
 
 :root {
-  /* Brand primitives — rebrand here (and in .dark below). */
-  --brand: oklch(0.21 0.006 285.885);
+  /* Brand primitives — REBRAND HERE (and in .dark below). Default: indigo. */
+  --brand: oklch(0.55 0.22 277);
   --brand-foreground: oklch(0.985 0 0);
-  --brand-ring: oklch(0.705 0.015 286.067);
+  --brand-ring: oklch(0.55 0.22 277);
 
   /* Semantic role tokens. */
   --radius: 0.875rem;
@@ -100,10 +108,10 @@
 }
 
 .dark {
-  /* Brand primitives (dark). */
-  --brand: oklch(0.92 0.004 286.32);
-  --brand-foreground: oklch(0.21 0.006 285.885);
-  --brand-ring: oklch(0.552 0.016 285.938);
+  /* Brand primitives (dark): a lighter indigo reads better on dark surfaces. */
+  --brand: oklch(0.62 0.19 277);
+  --brand-foreground: oklch(0.985 0 0);
+  --brand-ring: oklch(0.62 0.19 277);
 
   /* Semantic role tokens (dark). */
   --background: oklch(0.141 0.005 285.823);

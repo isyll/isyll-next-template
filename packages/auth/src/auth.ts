@@ -1,13 +1,34 @@
-import { db, schema } from '@workspace/db'
+import { DEFAULT_LOCALE, resolveLocale, type AppLocale } from '@workspace/core'
+import { db, publishEvent, schema } from '@workspace/db'
+import {
+  sendPasswordReset,
+  sendRegistrationConfirmation,
+} from '@workspace/email'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
-import { sendAuthEmail } from './email'
+import { createAuthRedisStorage } from './redis'
 import { buildSocialProviders } from './social'
 
 const isProd = process.env['NODE_ENV'] === 'production'
 const userUrl = process.env['AUTH_USER_URL'] ?? 'http://localhost:3000'
+
+/** Product name shown in emails. `pnpm project:init` rewrites this constant. */
+const APP_NAME = 'App'
+
+/** Read the visitor's preferred locale from the request's NEXT_LOCALE cookie. */
+function localeFromHeaders(headers: Headers | undefined): AppLocale {
+  const cookie = headers?.get('cookie')
+  const match = cookie ? /(?:^|;\s*)NEXT_LOCALE=([^;]+)/.exec(cookie) : null
+  return resolveLocale(match?.[1] ? decodeURIComponent(match[1]) : undefined)
+}
+
+/** The user's stored `language` (an additionalField), coerced to a locale. */
+function userLocale(user: object): AppLocale {
+  const language = (user as { language?: unknown }).language
+  return resolveLocale(typeof language === 'string' ? language : undefined)
+}
 
 /**
  * End-user BetterAuth instance. Completely separate from `adminAuth`
@@ -15,9 +36,13 @@ const userUrl = process.env['AUTH_USER_URL'] ?? 'http://localhost:3000'
  * and database tables. The only API route it needs is the catch-all handler
  * mounted at /api/auth; everything else goes through server actions /
  * `userAuth.api.*`.
+ *
+ * Transactional emails are localized to the user's `language` (stored on the
+ * user, captured from the request locale at sign-up) and rendered with
+ * `@workspace/email`.
  */
 export const userAuth = betterAuth({
-  appName: 'App',
+  appName: APP_NAME,
   baseURL: userUrl,
   secret: process.env['AUTH_USER_SECRET'],
   database: drizzleAdapter(db, {
@@ -25,6 +50,38 @@ export const userAuth = betterAuth({
     schema,
     usePlural: true,
   }),
+  user: {
+    additionalFields: {
+      // Preferred locale; set server-side from the request, never user input.
+      language: { type: 'string', input: false, defaultValue: DEFAULT_LOCALE },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Capture the visitor's locale at sign-up so later emails are localized.
+        before: (user, context) =>
+          Promise.resolve({
+            data: { ...user, language: localeFromHeaders(context?.headers) },
+          }),
+        // Publish a domain event (transactional outbox) so the app can react —
+        // e.g. a welcome notification. Best-effort: BetterAuth manages its own
+        // write, so this runs outside our transaction.
+        after: async (user) => {
+          try {
+            await publishEvent({
+              type: 'user.registered',
+              userId: user.id,
+              email: user.email,
+              name: user.name,
+            })
+          } catch (error) {
+            console.error('[auth] failed to publish user.registered', error)
+          }
+        },
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -33,10 +90,10 @@ export const userAuth = betterAuth({
     autoSignIn: false,
     revokeSessionsOnPasswordReset: true,
     sendResetPassword: ({ user, url }) =>
-      sendAuthEmail({
-        to: user.email,
-        subject: 'Reset your password',
-        text: `Reset your password: ${url}`,
+      sendPasswordReset(user.email, {
+        resetUrl: url,
+        appName: APP_NAME,
+        locale: userLocale(user),
       }),
   },
   emailVerification: {
@@ -44,10 +101,11 @@ export const userAuth = betterAuth({
     autoSignInAfterVerification: true,
     expiresIn: 60 * 60,
     sendVerificationEmail: ({ user, url }) =>
-      sendAuthEmail({
-        to: user.email,
-        subject: 'Verify your email',
-        text: `Verify your email: ${url}`,
+      sendRegistrationConfirmation(user.email, {
+        name: user.name,
+        verificationUrl: url,
+        appName: APP_NAME,
+        locale: userLocale(user),
       }),
   },
   socialProviders: buildSocialProviders(),
@@ -57,10 +115,12 @@ export const userAuth = betterAuth({
       trustedProviders: ['google', 'microsoft', 'apple'],
     },
   },
-  // Classic stateful sessions: the cookie holds only an opaque token and the
-  // session row is read from the database on every request (cookieCache off),
-  // so sign-out / revocation takes effect immediately. No JWT, no bearer
-  // access/refresh tokens. Long-lived and rolling, like a typical website.
+  // Sessions are stored exclusively in Redis (fast TTL-based lookup).
+  // `storeSessionInDatabase` is intentionally omitted (defaults to falsy when
+  // `secondaryStorage` is provided) so the `app.sessions` table is not written
+  // to. The sessions table exists as a no-op fallback; in dev without Redis it
+  // gracefully falls back to the Drizzle adapter.
+  secondaryStorage: createAuthRedisStorage('user'),
   session: {
     expiresIn: 60 * 60 * 24 * 30,
     updateAge: 60 * 60 * 24 * 7,
