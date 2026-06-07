@@ -19,8 +19,8 @@ degrades safely when not configured:
   (`@/lib/observability`) — the one place to add Sentry et al.
 - Rate limiting & session storage: Redis via ioredis (`REDIS_URL`), with an
   in-process / database fallback (`@/lib/rate-limit`, `@/lib/redis`). Supersedes
-  the original Upstash REST choice — a self-hostable, protocol-level client suits
-  the Docker/Nginx deploy target better.
+  the original Upstash REST choice — a protocol-level client you can self-host
+  suits the Docker/Nginx deploy target better.
 - Email: Resend + React Email, console fallback in dev (`@workspace/email`).
 - Jobs: pg-boss, reusing Postgres (`@/lib/jobs`).
 - Storage: AWS SDK (S3/R2/MinIO), presigned URLs (`@/lib/storage`).
