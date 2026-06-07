@@ -127,6 +127,26 @@
     "created": "Rôle créé.",
     "deleted": "Rôle supprimé."
   },
+  "AdminMonitoring": {
+    "title": "Supervision",
+    "subtitle": "Erreurs, incidents et volume d'événements (via Sentry).",
+    "openInSentry": "Ouvrir dans Sentry",
+    "notConfigured": "Sentry n'est pas configuré",
+    "notConfiguredHint": "Définissez ces variables d'environnement pour activer la supervision :",
+    "metricEvents": "Événements (24 h)",
+    "metricEventsHint": "Événements reçus sur les dernières 24 heures.",
+    "metricIssues": "Problèmes non résolus",
+    "metricUsers": "Utilisateurs affectés",
+    "eventsTitle": "Événements par heure",
+    "issuesTitle": "Problèmes récents",
+    "colIssue": "Problème",
+    "colLevel": "Niveau",
+    "colEvents": "Événements",
+    "colUsers": "Utilisateurs",
+    "open": "Ouvrir",
+    "noData": "Aucune donnée disponible.",
+    "noIssues": "Aucun problème non résolu. 🎉"
+  },
   "Validation": {
     "required": "Ce champ est obligatoire",
     "email": "Adresse e-mail invalide",
