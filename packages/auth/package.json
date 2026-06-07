@@ -9,7 +9,6 @@
     "./admin": "./src/admin-auth.ts",
     "./permissions": "./src/permissions.ts",
     "./social": "./src/social.ts",
-    "./email": "./src/email.ts",
     "./env": "./src/env.ts"
   },
   "scripts": {
@@ -24,6 +23,7 @@
   "dependencies": {
     "@workspace/core": "workspace:*",
     "@workspace/db": "workspace:*",
+    "@workspace/email": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "ioredis": "catalog:",
@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "@vitest/coverage-v8": "catalog:",

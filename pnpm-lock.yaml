@@ -510,6 +510,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../db
+      '@workspace/email':
+        specifier: workspace:*
+        version: link:../email
       better-auth:
         specifier: 'catalog:'
         version: 1.6.13(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@types/pg@8.20.0)(kysely@0.28.17)(pg@8.21.0))(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(pg@8.21.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vitest@4.1.7)
@@ -529,6 +532,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.4
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.15
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.7(vitest@4.1.7)

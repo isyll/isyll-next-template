@@ -1,5 +1,10 @@
 {
   "extends": "@workspace/typescript-config/internal-package.json",
+  "compilerOptions": {
+    // Needed to typecheck the React Email templates consumed from
+    // @workspace/email (sendVerificationEmail / sendResetPassword).
+    "jsx": "react-jsx"
+  },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }

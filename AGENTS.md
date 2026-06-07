@@ -78,9 +78,11 @@ are absent (dev), so the template runs out of the box.
 - **Rate limiting.** `@/lib/rate-limit` → `createRateLimiter` / `enforceRateLimit`
   (Redis/ioredis sliding window when `REDIS_URL` is set, in-process fallback
   otherwise). Use `rateLimitedActionClient` for sensitive/costly actions.
-- **Email.** `@workspace/auth/email` `sendAuthEmail` (Resend when
-  `RESEND_API_KEY` is set, console otherwise). Re-implement the one function to
-  swap providers.
+- **Email.** `@workspace/email` (React Email templates + Resend; console
+  fallback in dev). Localized via `locale` (copy in `packages/email/src/i18n.ts`,
+  built on `@workspace/core/i18n`). BetterAuth sends verification / password-reset
+  emails through it in the user's `language`. Swap providers by re-implementing
+  `sendEmail`.
 - **Background jobs.** `@/lib/jobs` (pg-boss, Postgres-backed) → `enqueue` from
   actions, `work` in a worker process. No extra infra.
 - **Object storage.** `@/lib/storage` (S3/R2/MinIO, presigned URLs, server-only)
