@@ -1,5 +1,5 @@
 import { DEFAULT_LOCALE, resolveLocale, type AppLocale } from '@workspace/core'
-import { db, schema } from '@workspace/db'
+import { db, publishEvent, schema } from '@workspace/db'
 import {
   sendPasswordReset,
   sendRegistrationConfirmation,
@@ -64,6 +64,21 @@ export const userAuth = betterAuth({
           Promise.resolve({
             data: { ...user, language: localeFromHeaders(context?.headers) },
           }),
+        // Publish a domain event (transactional outbox) so the app can react —
+        // e.g. a welcome notification. Best-effort: BetterAuth manages its own
+        // write, so this runs outside our transaction.
+        after: async (user) => {
+          try {
+            await publishEvent({
+              type: 'user.registered',
+              userId: user.id,
+              email: user.email,
+              name: user.name,
+            })
+          } catch (error) {
+            console.error('[auth] failed to publish user.registered', error)
+          }
+        },
       },
     },
   },

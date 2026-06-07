@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "worker:outbox": "tsx server/workers/outbox-worker.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
@@ -63,6 +64,7 @@
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "tailwindcss": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
