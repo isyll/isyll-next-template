@@ -8,6 +8,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
+import { hashPassword, verifyPassword } from './password'
 import { createAuthRedisStorage } from './redis'
 import { buildSocialProviders } from './social'
 
@@ -89,6 +90,8 @@ export const userAuth = betterAuth({
     maxPasswordLength: 128,
     autoSignIn: false,
     revokeSessionsOnPasswordReset: true,
+    // Argon2id instead of the default scrypt (see ./password).
+    password: { hash: hashPassword, verify: verifyPassword },
     sendResetPassword: ({ user, url }) =>
       sendPasswordReset(user.email, {
         resetUrl: url,

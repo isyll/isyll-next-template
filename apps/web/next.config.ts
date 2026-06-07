@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
   // Keep these Node-only libs out of the bundle: pino's lazy transport/worker
   // requires and pg-boss's dynamic SQL loading confuse bundlers. Resolved from
   // node_modules at runtime instead.
-  serverExternalPackages: ['pino', 'pg-boss'],
+  serverExternalPackages: ['pino', 'pg-boss', '@node-rs/argon2'],
   // Opt-in: Next 16 Cache Components (PPR + `use cache`). Requires wrapping
   // dynamic (cookies/headers/searchParams) reads in <Suspense>. See README.
   // cacheComponents: true,

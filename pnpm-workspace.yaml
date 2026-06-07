@@ -93,6 +93,8 @@ catalog:
   # --- Auth ---
   better-auth: 1.6.13
   jose: 6.2.3
+  # Argon2id password hashing (prebuilt native bindings, incl. linux-musl).
+  '@node-rs/argon2': 2.0.2
 
   # --- Email (Resend + React Email) ---
   resend: 6.12.4
