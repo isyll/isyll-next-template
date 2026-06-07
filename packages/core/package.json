@@ -11,7 +11,8 @@
     "./pagination": "./src/pagination.ts",
     "./branded": "./src/branded.ts",
     "./assert": "./src/assert.ts",
-    "./env": "./src/env.ts"
+    "./env": "./src/env.ts",
+    "./i18n": "./src/i18n.ts"
   },
   "scripts": {
     "lint": "eslint .",
