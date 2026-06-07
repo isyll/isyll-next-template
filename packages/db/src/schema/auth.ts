@@ -38,6 +38,10 @@ export const users = appSchema.table(
     email: text('email').notNull(),
     emailVerified: boolean('email_verified').notNull().default(false),
     image: text('image'),
+    // Preferred language (BCP-47 short code); drives localized emails. Set
+    // server-side from the request locale at sign-up — see the `language`
+    // additionalField + create hook in `@workspace/auth`.
+    language: text('language').notNull().default('fr'),
     ...softDelete,
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
