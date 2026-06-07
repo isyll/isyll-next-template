@@ -89,6 +89,11 @@ are absent (dev), so the template runs out of the box.
   plus pure `@/lib/upload` helpers. Track files in `app.uploads` via its DAL.
 - **Notifications.** `app.notifications` table + DAL under
   `apps/web/features/notifications`.
+- **Domain events (outbox).** `publishEvent` (`@workspace/db`) writes a typed
+  event to `app.outbox_events` in the same transaction as your change; the relay
+  (`pnpm --filter web worker:outbox`) dispatches it to handlers in
+  `apps/web/server/events`. Use for reliable side effects (email, notifications,
+  webhooks). See `docs/events.md`.
 
 ## Enforcement & guardrails (these fail CI / block edits — don't fight them)
 
