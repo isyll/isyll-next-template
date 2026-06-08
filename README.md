@@ -88,4 +88,4 @@ tests/load      k6 load tests
 
 ## License
 
-UNLICENSED — private template.
+UNLICENSED — public template.
