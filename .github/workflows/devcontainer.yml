@@ -1,0 +1,49 @@
+name: Devcontainer
+
+# Builds the dev container (the same image GitHub Codespaces uses) and runs the
+# postCreate install, so the Codespaces / devcontainer environment can't silently
+# rot. Runs only when the container definition or the dependency graph changes.
+
+on:
+  push:
+    branches: [development, production]
+    paths:
+      - '.devcontainer/**'
+      - 'compose.yaml'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - '.github/workflows/devcontainer.yml'
+  pull_request:
+    branches: [development]
+    paths:
+      - '.devcontainer/**'
+      - 'compose.yaml'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - '.github/workflows/devcontainer.yml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: devcontainer-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build devcontainer
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build and validate the devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          push: never
+          # Runs after postCreateCommand (corepack + pnpm install), so a healthy
+          # build leaves a populated node_modules in the workspace.
+          runCmd: |
+            node --version
+            pnpm --version
+            test -d node_modules
