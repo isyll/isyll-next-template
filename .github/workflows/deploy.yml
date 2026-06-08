@@ -13,8 +13,9 @@ name: Deploy
 #   Variables (Settings → Secrets and variables → Actions → Variables)
 #     DEPLOY_ENABLED       "true" to arm this workflow (required)
 #     DEPLOY_PATH          absolute path to the checkout on the server (required)
-#     DEPLOY_BRANCH        branch to deploy            (default: production)
+#     DEPLOY_BRANCH        branch to deploy            (default: development)
 #     DEPLOY_COMPOSE_FILE  compose file on the server  (default: compose.prod.yaml)
+#     DEPLOY_ENVIRONMENT   GitHub deployment env name  (default: development)
 #     DEPLOY_URL           public URL (shown on the deployment, optional)
 #     TURBO_TEAM           Turborepo remote-cache team (optional)
 #
@@ -28,7 +29,7 @@ name: Deploy
 
 on:
   push:
-    branches: [production]
+    branches: [development]
   workflow_dispatch:
     inputs:
       ref:
@@ -82,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
-      name: production
+      name: ${{ vars.DEPLOY_ENVIRONMENT || 'development' }}
       url: ${{ vars.DEPLOY_URL }}
     steps:
       - name: Configure SSH
@@ -111,7 +112,7 @@ jobs:
           SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
           SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
-          DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH || 'production' }}
+          DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH || 'development' }}
           COMPOSE_FILE: ${{ vars.DEPLOY_COMPOSE_FILE || 'compose.prod.yaml' }}
         run: |
           : "${SSH_USER:?set the DEPLOY_SSH_USER secret}"

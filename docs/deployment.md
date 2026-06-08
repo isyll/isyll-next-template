@@ -41,9 +41,9 @@ Codespaces is for previews, demos and dev — not production traffic. A CI job
 (`devcontainer.yml`) rebuilds the dev container when its definition changes so
 this path can't silently rot.
 
-## VPS over SSH (production)
+## VPS over SSH
 
-On every push to the deploy branch (default `production`), `deploy.yml`:
+On every push to the deploy branch (default `development`), `deploy.yml`:
 
 1. re-runs the **full quality gate** (`lint`, `typecheck`, `test`, `build`,
    `spellcheck`, `boundaries`) on that exact commit — a failure stops the deploy;
@@ -82,7 +82,7 @@ On every push to the deploy branch (default `production`), `deploy.yml`:
 2. Add the **secrets** and **variables** below (repo ▸ Settings ▸ Secrets and
    variables ▸ Actions).
 3. Set the variable `DEPLOY_ENABLED` to `true`.
-4. Push to `production` (or run **Actions ▸ Deploy ▸ Run workflow**).
+4. Push to `development` (or run **Actions ▸ Deploy ▸ Run workflow**).
 
 ### Variables
 
@@ -90,8 +90,9 @@ On every push to the deploy branch (default `production`), `deploy.yml`:
 | --------------------- | -------- | ------------------- | ---------------------------------------- |
 | `DEPLOY_ENABLED`      | ✅       | —                   | Set to `true` to arm the workflow        |
 | `DEPLOY_PATH`         | ✅       | —                   | Absolute path to the checkout on the box |
-| `DEPLOY_BRANCH`       | —        | `production`        | Branch to deploy                         |
+| `DEPLOY_BRANCH`       | —        | `development`       | Branch to deploy                         |
 | `DEPLOY_COMPOSE_FILE` | —        | `compose.prod.yaml` | Compose file on the server               |
+| `DEPLOY_ENVIRONMENT`  | —        | `development`       | GitHub deployment environment name       |
 | `DEPLOY_URL`          | —        | —                   | Public URL shown on the deployment       |
 | `TURBO_TEAM`          | —        | —                   | Turborepo remote-cache team (optional)   |
 
