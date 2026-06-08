@@ -109,6 +109,49 @@ services:
     expose:
       - '3000'
 
+  # Long-lived background worker — the outbox relay (dispatches domain events to
+  # email / notifications / webhooks). Override `command` to run a different
+  # entrypoint, or add more `worker`-image services for pg-boss job workers.
+  # Scale with `docker compose -f compose.prod.yaml up -d --scale worker=2`
+  # (claims use FOR UPDATE SKIP LOCKED, so concurrent instances are safe).
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      target: worker
+    command: ['pnpm', '--filter', 'web', 'worker:outbox']
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+      ADMIN_DATABASE_URL: ${ADMIN_DATABASE_URL:?set ADMIN_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:?set REDIS_URL}
+      AUTH_USER_SECRET: ${AUTH_USER_SECRET:?set AUTH_USER_SECRET}
+      AUTH_USER_URL: ${AUTH_USER_URL:?set AUTH_USER_URL}
+      AUTH_ADMIN_SECRET: ${AUTH_ADMIN_SECRET:?set AUTH_ADMIN_SECRET}
+      AUTH_ADMIN_URL: ${AUTH_ADMIN_URL:?set AUTH_ADMIN_URL}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?set NEXT_PUBLIC_APP_URL}
+      # Transactional email (optional; console fallback when unset).
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      # Object storage (optional) — same vars as the web service.
+      S3_REGION: ${S3_REGION:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-}
+      # Error tracking (optional; empty = Sentry disabled).
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+    networks: [backend]
+    restart: unless-stopped
+
   nginx:
     # Nginx 1.30 mainline — includes HTTP/3 (QUIC), Brotli, and modern TLS.
     # HTTP/3 requires publishing port 443 on UDP as well as TCP.

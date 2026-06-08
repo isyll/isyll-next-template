@@ -6,7 +6,7 @@ Reverse proxy, database, and container configuration for every environment.
 
 ```text
 infra/
-  docker/web.Dockerfile        Multi-stage Next.js image (installer · builder · migrator · runner)
+  docker/web.Dockerfile        Multi-stage Next.js image (installer · builder · migrator · runner · worker)
   docker/.env.example          Compose / production environment template
   nginx/nginx.conf             Reverse-proxy base config
   nginx/conf.d/default.conf    Server block — proxies to web, blocks /admin
@@ -18,7 +18,7 @@ Compose files live at the repo root:
 
 - `compose.yaml` — local dev: Postgres + Adminer; run the app on the host with `pnpm dev`.
 - `compose.dev.yaml` — fully containerized stack, no proxy (uses the Postgres superuser).
-- `compose.prod.yaml` — production: nginx → web, one-shot migrator, least-privilege roles.
+- `compose.prod.yaml` — production: nginx → web, one-shot migrator, a background `worker` (outbox relay), least-privilege roles.
 
 ## Commands
 
@@ -26,8 +26,17 @@ Compose files live at the repo root:
 docker compose up -d                              # local dev database + Adminer
 docker compose -f compose.dev.yaml up --build     # full stack in containers
 cp infra/docker/.env.example .env                 # then edit the secrets
-docker compose -f compose.prod.yaml up -d --build # production
+docker compose -f compose.prod.yaml up -d --build # production (web + worker)
+docker compose -f compose.prod.yaml up -d --scale worker=2 # more worker replicas
 ```
+
+## Background worker
+
+The `worker` service runs the outbox relay (`worker:outbox`) from the same image
+as `web`, so it behaves identically in dev and prod. It claims events with
+`FOR UPDATE SKIP LOCKED`, so you can run several replicas safely (`--scale
+worker=N`). To run a pg-boss job worker too, add another service that reuses the
+`worker` target with a different `command`.
 
 ## Database roles (principle of least privilege)
 

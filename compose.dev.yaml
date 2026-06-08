@@ -115,6 +115,32 @@ services:
       migrator:
         condition: service_completed_successfully
 
+  # Background worker (outbox relay) — same image/target as production so it runs
+  # identically here. Override `command` to run a different worker entrypoint.
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      target: worker
+    command: ['pnpm', '--filter', 'web', 'worker:outbox']
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://postgres:postgres@db:5432/app
+      ADMIN_DATABASE_URL: postgres://postgres:postgres@db:5432/app
+      REDIS_URL: redis://:redis@redis:6379
+      AUTH_USER_SECRET: dev-insecure-user-secret-change-me-00000000000
+      AUTH_ADMIN_SECRET: dev-insecure-admin-secret-change-me-000000000
+      AUTH_USER_URL: http://localhost:3000
+      AUTH_ADMIN_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+
 volumes:
   db-data:
   redis-data:
