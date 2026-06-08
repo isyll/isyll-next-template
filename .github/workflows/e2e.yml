@@ -43,7 +43,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @workspace/db db:migrate
-      - run: pnpm --filter web exec playwright install --with-deps chromium
+      # Install every browser the Playwright config targets (chromium, firefox,
+      # webkit) — not just chromium — or the firefox/webkit projects fail.
+      - run: pnpm --filter web exec playwright install --with-deps
       - run: pnpm --filter web test:e2e
         env:
           CI: 'true'
