@@ -28,6 +28,7 @@ import {
   intro,
   isCancel,
   note,
+  type Option,
   outro,
   select,
   text,
@@ -121,7 +122,7 @@ async function ask(message: string, initialValue = true): Promise<boolean> {
 
 async function choose<T extends string>(
   message: string,
-  options: { value: T; label: string; hint?: string }[],
+  options: Option<T>[],
   initialValue: T
 ): Promise<T> {
   if (flags.yes) return initialValue
