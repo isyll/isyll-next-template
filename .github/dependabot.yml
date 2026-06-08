@@ -1,6 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: npm
+    # Dependency PRs land on the integration branch, not production.
+    target-branch: development
     directories:
       - '/'
       - '/apps/*'
@@ -33,6 +35,7 @@ updates:
         update-types: [major]
 
   - package-ecosystem: github-actions
+    target-branch: development
     directory: '/'
     schedule:
       interval: weekly
