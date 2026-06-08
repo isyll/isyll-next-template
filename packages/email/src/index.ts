@@ -18,7 +18,7 @@ export * from './i18n'
 export * from './templates'
 export * from './tokens'
 
-// ─── Sender ──────────────────────────────────────────────────────────────────
+// Sender
 
 export interface SendEmailOptions {
   to: string
@@ -74,7 +74,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
   }
 }
 
-// ─── Template senders ────────────────────────────────────────────────────────
+// Template senders
 
 /**
  * Send the registration confirmation / email-verification email. Subject and

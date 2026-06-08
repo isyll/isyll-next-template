@@ -169,7 +169,7 @@ function ensureSecret(env: string, key: string): string {
   return upsertEnv(env, key, randomBytes(32).toString('base64'))
 }
 
-// --- 0. Detect an already-initialized project ------------------------------
+// 0. Detect an already-initialized project
 intro(pc.cyan(`${TEMPLATE_NAME} · project setup`))
 
 const rootPkg = JSON.parse(
@@ -185,7 +185,7 @@ if (alreadyInitialized && !flags.force && !flags.yes) {
   if (!proceed) bail()
 }
 
-// --- 1. Project identity ----------------------------------------------------
+// 1. Project identity
 note('Names and description for your project.', 'Step 1 · Identity')
 const name = toKebab(
   flags.name ?? (await prompt('Package name (kebab-case)', 'my-app'))
@@ -197,14 +197,14 @@ const description =
 const authorEmail =
   flags.authorEmail ?? (await prompt('Contact email', 'contact@example.com'))
 
-// --- 2. Repository ----------------------------------------------------------
+// 2. Repository
 note('GitHub owner and repository.', 'Step 2 · Repository')
 const owner = flags.owner ?? (await prompt('GitHub owner/org', TEMPLATE_OWNER))
 const repo = toKebab(
   flags.repo ?? (await prompt('GitHub repository name', name))
 )
 
-// --- 3. URLs & auth ---------------------------------------------------------
+// 3. URLs & auth
 note('Public URL and end-user session cookie prefix.', 'Step 3 · URLs & auth')
 const appUrl =
   flags.appUrl ?? (await prompt('Public app URL', 'http://localhost:3000'))
@@ -213,7 +213,7 @@ const cookiePrefix = toKebab(
     (await prompt('Session cookie prefix', name.split('-')[0] ?? name))
 )
 
-// --- 4. Database ------------------------------------------------------------
+// 4. Database
 note('How this project connects to PostgreSQL.', 'Step 4 · Database')
 type DbMode = 'local' | 'custom' | 'keep'
 const dbMode: DbMode = flags.dbUrl
@@ -238,7 +238,7 @@ if (dbMode === 'custom') {
     flags.dbUrl ?? (await prompt('DATABASE_URL', LOCAL_DATABASE_URL))
 }
 
-// --- Apply identity changes -------------------------------------------------
+// Apply identity changes
 replaceInFile('package.json', [
   [`"name": "${TEMPLATE_NAME}"`, `"name": "${name}"`],
 ])
@@ -289,7 +289,7 @@ if (!dryRun) {
   }
 }
 
-// --- Write .env -------------------------------------------------------------
+// Write .env
 if (!dryRun) {
   const envExample = join(ROOT, '.env.example')
   const envPath = join(ROOT, '.env')
@@ -309,7 +309,7 @@ if (!dryRun) {
   writeFileSync(envPath, env)
 }
 
-// --- Write PROJECT.md -------------------------------------------------------
+// Write PROJECT.md
 const projectBrief = `# ${displayName}
 
 > ${description}
@@ -332,7 +332,7 @@ Built on ${TEMPLATE_NAME}. See \`AGENTS.md\` for engineering conventions.
 `
 if (!dryRun) writeFileSync(join(ROOT, 'PROJECT.md'), projectBrief)
 
-// --- 5. Optional bootstrap --------------------------------------------------
+// 5. Optional bootstrap
 const canBootstrap = !flags.yes && !flags.skipBootstrap && dbMode !== 'keep'
 if (canBootstrap) {
   note('Get the database up and running.', 'Step 5 · Bootstrap')
@@ -386,7 +386,7 @@ if (canBootstrap) {
   }
 }
 
-// --- 6. Fresh git history ---------------------------------------------------
+// 6. Fresh git history
 // Drop the template's history and start the project on its own two long-lived
 // branches: `production` (default/deploy) and `development` (integration).
 const wantsFreshGit = flags.freshGit
@@ -409,7 +409,7 @@ if (wantsFreshGit && !dryRun) {
   note('git init -b production && git branch development', 'Step 6 · Git')
 }
 
-// --- Done -------------------------------------------------------------------
+// Done
 const nextSteps = [
   pc.bold(`Initialized ${displayName} (${name}) for ${owner}/${repo}.`),
   '',
