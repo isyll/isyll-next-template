@@ -6,6 +6,7 @@ import { useAction } from 'next-safe-action/hooks'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import {
   Card,
@@ -13,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@workspace/ui/components/card'
+import { Checkbox } from '@workspace/ui/components/checkbox'
 import { Input } from '@workspace/ui/components/input'
 import { Label } from '@workspace/ui/components/label'
 
@@ -128,9 +130,9 @@ export function RolesManager({
                 <CardTitle className='flex items-center gap-2 text-base'>
                   {role.name}
                   {role.isSystem ? (
-                    <span className='rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase'>
+                    <Badge variant='outline' className='uppercase'>
                       {t('system')}
-                    </span>
+                    </Badge>
                   ) : null}
                 </CardTitle>
                 {role.description ? (
@@ -158,16 +160,15 @@ export function RolesManager({
                 {permissions.map((permission) => (
                   <li key={permission.id}>
                     <label className='flex items-start gap-2 text-sm'>
-                      <input
-                        type='checkbox'
+                      <Checkbox
                         className='mt-0.5'
                         checked={granted.has(permission.key)}
                         disabled={!canManage || setPermission.isPending}
-                        onChange={(event) => {
+                        onCheckedChange={(checked) => {
                           setPermission.execute({
                             roleId: role.id,
                             permissionId: permission.id,
-                            granted: event.target.checked,
+                            granted: checked,
                           })
                         }}
                       />
