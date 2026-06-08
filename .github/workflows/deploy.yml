@@ -1,0 +1,130 @@
+name: Deploy
+
+# Validates the full quality gate on the exact commit, then deploys to a VPS
+# over SSH by pulling the deploy branch and running the production compose
+# stack (`web` + `worker` behind nginx, with the one-shot migrator).
+#
+# DISABLED BY DEFAULT — there is nothing to break until you opt in. Every job is
+# gated on the `DEPLOY_ENABLED` repository *variable*, so the workflow shows as
+# skipped (not failed) until you turn it on. Enabling and customizing is done
+# entirely through repo Variables/Secrets — no edits to this file are required.
+# See docs/deployment.md for the full checklist. In short:
+#
+#   Variables (Settings → Secrets and variables → Actions → Variables)
+#     DEPLOY_ENABLED       "true" to arm this workflow (required)
+#     DEPLOY_PATH          absolute path to the checkout on the server (required)
+#     DEPLOY_BRANCH        branch to deploy            (default: production)
+#     DEPLOY_COMPOSE_FILE  compose file on the server  (default: compose.prod.yaml)
+#     DEPLOY_URL           public URL (shown on the deployment, optional)
+#     TURBO_TEAM           Turborepo remote-cache team (optional)
+#
+#   Secrets (Settings → Secrets and variables → Actions → Secrets)
+#     DEPLOY_SSH_HOST          server hostname or IP (required)
+#     DEPLOY_SSH_USER          SSH user              (required)
+#     DEPLOY_SSH_KEY           private key, PEM       (required)
+#     DEPLOY_SSH_PORT          SSH port              (default: 22)
+#     DEPLOY_SSH_KNOWN_HOSTS   server public key(s)  (recommended)
+#     TURBO_TOKEN              Turborepo remote-cache token (optional)
+
+on:
+  push:
+    branches: [production]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to deploy (defaults to the triggering commit)
+        required: false
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: 0
+  SKIP_ENV_VALIDATION: '1'
+  # Dummy secrets so BetterAuth doesn't error during `next build`. Never real values.
+  AUTH_USER_SECRET: ci-build-dummy-user-secret-00000000000000
+  AUTH_ADMIN_SECRET: ci-build-dummy-admin-secret-0000000000000
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  # Re-run the same checks as CI, on the exact commit being deployed. A failure
+  # here (fail-fast) stops the deploy.
+  validate:
+    name: validate (${{ matrix.task }})
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        task: [lint, typecheck, test, build, spellcheck, boundaries]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run ${{ matrix.task }}
+
+  deploy:
+    name: deploy
+    needs: validate
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.DEPLOY_URL }}
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+        run: |
+          : "${SSH_HOST:?set the DEPLOY_SSH_HOST secret}"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::DEPLOY_SSH_KNOWN_HOSTS not set — trusting the host key on first use (TOFU)."
+            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH || 'production' }}
+          COMPOSE_FILE: ${{ vars.DEPLOY_COMPOSE_FILE || 'compose.prod.yaml' }}
+        run: |
+          : "${SSH_USER:?set the DEPLOY_SSH_USER secret}"
+          : "${DEPLOY_PATH:?set the DEPLOY_PATH repository variable}"
+          # $DEPLOY_* are expanded here on the runner; the resulting literal
+          # script is what runs on the server. Quotes guard paths with spaces.
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "
+          set -eu
+          cd '$DEPLOY_PATH'
+          git fetch --prune origin
+          git checkout '$DEPLOY_BRANCH'
+          git reset --hard 'origin/$DEPLOY_BRANCH'
+          docker compose -f '$COMPOSE_FILE' pull --ignore-buildable || true
+          docker compose -f '$COMPOSE_FILE' up -d --build --remove-orphans
+          docker image prune -f
+          "
