@@ -133,5 +133,7 @@ are absent (dev), so the template runs out of the box.
 - **Create a conventional commit after each completed task.**
 - **Never** add `Co-Authored-By` trailers or AI attribution to commits.
 - Run `pnpm check` before considering work done.
-- **Branches.** Open PRs against `develop` — CI (lint/typecheck/test/build) and
-  E2E run there. `main` is the production branch (deploy target only).
+- **Branches.** Two long-lived branches: `development` (integration — open PRs
+  here; CI lint/typecheck/test/build + E2E run on it) and `production` (the
+  deploy target). Feature branches (`feat/...`, `fix/...`) branch off
+  `development`.

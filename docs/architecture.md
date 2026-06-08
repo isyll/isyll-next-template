@@ -38,4 +38,4 @@ Components and Server Actions, and keep `'use client'` at the leaves.
   server data stays in TanStack Query / Server Components, URL state in nuqs.
 - **Theming**: edit the `--brand-*` block in `packages/ui/src/styles/globals.css`.
 - **Commits**: Conventional Commits enforced by commitlint + husky. CI/E2E run
-  against `develop`; `main` is the production branch.
+  against `development`; `production` is the deploy branch.
