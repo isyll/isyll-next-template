@@ -34,6 +34,17 @@ RUN pnpm turbo run build --filter=web
 FROM installer AS migrator
 CMD ["pnpm", "--filter", "@workspace/db", "db:migrate"]
 
+# 3c. Long-lived worker process. Reuses the installer layer (it already has
+# `tsx`, the app sources, and the workspace deps) so workers run identically in
+# dev and prod. Defaults to the outbox relay; override the command in compose to
+# run a different entrypoint (e.g. a pg-boss jobs worker). Needs the same DB /
+# Redis / secrets env as the `runner` — see the `worker` service in the compose
+# files.
+FROM installer AS worker
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+CMD ["pnpm", "--filter", "web", "worker:outbox"]
+
 # 4. Minimal runtime image. (Migrations run from the `migrator` stage above —
 # see the `migrator` service in the compose files — not from this image.)
 FROM base AS runner
