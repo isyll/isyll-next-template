@@ -134,3 +134,7 @@ createbuckets
 minio
 minioadmin
 ilike
+codespace
+codespaces
+certonly
+webroot
