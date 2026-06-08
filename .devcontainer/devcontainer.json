@@ -13,10 +13,12 @@
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
-  // web · postgres · redis · adminer
+  // web · postgres · redis · adminer. In Codespaces the app is your live
+  // preview: run `pnpm dev`, open the forwarded `web` port, and make it Public
+  // in the Ports panel to share a URL. See docs/deployment.md.
   "forwardPorts": [3000, 5432, 6379, 8080],
   "portsAttributes": {
-    "3000": { "label": "web", "onAutoForward": "notify" },
+    "3000": { "label": "web", "onAutoForward": "openPreview" },
     "5432": { "label": "postgres" },
     "6379": { "label": "redis" },
     "8080": { "label": "adminer" }
