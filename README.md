@@ -13,7 +13,7 @@ Nginx infrastructure, and a complete quality/CI toolchain.
 - **Next.js 16** App Router · **React 19** · **TypeScript 6** (strict, type-aware)
 - **Tailwind CSS 4** · **shadcn/ui** (Base UI) with swappable theme tokens
 - **BetterAuth** — separate end-user and operator (admin) instances
-- **Drizzle ORM** (typed queries) + **golang-migrate** (pure-SQL up/down migrations)
+- **Drizzle ORM** (typed queries) + a **Node SQL migration runner** (pure-SQL up/down migrations)
 - **PostgreSQL** with least-privilege roles, immutable reference data, PBAC
 - **next-intl** · **TanStack Query** · **next-safe-action** · **Zod 4** · **Zustand**
 - **Docker** (multi-stage) + **Nginx** reverse proxy · least-privilege Postgres
@@ -26,16 +26,17 @@ Nginx infrastructure, and a complete quality/CI toolchain.
 pnpm install
 docker compose up -d                 # local Postgres + Adminer
 pnpm project:init                    # rename, generate .env secrets
-pnpm db:migrate                      # apply migrations (needs golang-migrate)
+pnpm db:migrate                      # apply migrations
 pnpm db:seed                         # optional sample users
 pnpm admin:create-operator --email you@example.com --name "You" --super
 pnpm dev                             # http://localhost:3000
 ```
 
-Migrations run through [golang-migrate](https://github.com/golang-migrate/migrate)
-(`brew install golang-migrate`, or `docker compose -f compose.prod.yaml run --rm
-migrator`). Social providers are optional — each is enabled only when its
-credentials are present in `.env`.
+Migrations are plain SQL applied by a small Node runner (`pnpm db:migrate`) — no
+external binary to install. In Docker, run them through the one-shot `migrator`
+service (`docker compose -f compose.prod.yaml run --rm migrator`). Social
+providers are optional — each is enabled only when its credentials are present
+in `.env`.
 
 ## Architecture
 

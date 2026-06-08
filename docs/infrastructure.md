@@ -22,8 +22,8 @@ docker compose -f compose.prod.yaml up -d --build  # production
 
 `infra/docker/web.Dockerfile` is multi-stage: `turbo prune` → install → build →
 a minimal `runner` stage serving Next.js standalone output as a non-root user.
-Migrations run from the official `migrate/migrate` image (the `migrator`
-service), not from the app image.
+Migrations run from the `migrator` stage of the same Dockerfile — the `migrator`
+service applies them with the Node runner — not from the app `runner` image.
 
 ## Nginx
 

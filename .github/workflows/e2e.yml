@@ -42,10 +42,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Install golang-migrate
-        run: |
-          curl -fsSL https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz | tar xz
-          sudo mv migrate /usr/local/bin/migrate
       - run: pnpm --filter @workspace/db db:migrate
       - run: pnpm --filter web exec playwright install --with-deps chromium
       - run: pnpm --filter web test:e2e

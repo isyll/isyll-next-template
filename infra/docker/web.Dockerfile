@@ -27,8 +27,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV SKIP_ENV_VALIDATION=1
 RUN pnpm turbo run build --filter=web
 
-# 4. Minimal runtime image. (Migrations run via the official migrate/migrate
-# image — see compose.prod.yaml — not from this image.)
+# 3b. One-shot migrator: applies the pure-SQL migrations with the Node runner
+# (no external binary). Reuses the installer layer — it already has `tsx`, `pg`,
+# the migration files, and the runner under packages/db. Needs
+# MIGRATION_DATABASE_URL (or DATABASE_URL) at run time — see the compose files.
+FROM installer AS migrator
+CMD ["pnpm", "--filter", "@workspace/db", "db:migrate"]
+
+# 4. Minimal runtime image. (Migrations run from the `migrator` stage above —
+# see the `migrator` service in the compose files — not from this image.)
 FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
