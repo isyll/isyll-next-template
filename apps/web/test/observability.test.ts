@@ -7,6 +7,9 @@ vi.mock('@/lib/logger', () => ({
   logger: { warn: vi.fn(), error: vi.fn() },
 }))
 
+// Sentry reads server env (unavailable under jsdom) — stub it.
+vi.mock('@/lib/sentry', () => ({ captureException: vi.fn() }))
+
 import { logger } from '@/lib/logger'
 import { reportError } from '@/lib/observability'
 
