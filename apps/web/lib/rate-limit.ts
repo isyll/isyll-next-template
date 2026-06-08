@@ -3,6 +3,7 @@ import 'server-only'
 import { RateLimitError } from '@workspace/core'
 
 import { getRedis } from '@/lib/redis'
+import { captureSecurityEvent } from '@/lib/sentry'
 
 /**
  * Application-level rate limiting for Server Actions and route handlers. This
@@ -156,6 +157,11 @@ export async function enforceRateLimit(
 ): Promise<RateLimitResult> {
   const result = await limiter.limit(identifier)
   if (!result.success) {
+    // Surface the abuse signal to Sentry (no-op when disabled) — a spike here
+    // often precedes credential-stuffing or scraping.
+    captureSecurityEvent('Rate limit exceeded', {
+      extra: { identifier, limit: result.limit, reset: result.reset },
+    })
     throw new RateLimitError('Too many requests — please slow down.')
   }
   return result

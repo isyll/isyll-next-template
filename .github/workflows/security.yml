@@ -6,9 +6,9 @@ name: Security
 
 on:
   push:
-    branches: [develop, main]
+    branches: [development, production]
   pull_request:
-    branches: [develop]
+    branches: [development]
     types: [opened, synchronize, reopened]
   schedule:
     - cron: '27 4 * * 1' # Mondays 04:27 UTC
@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Review dependency changes
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
           comment-summary-in-pr: on-failure

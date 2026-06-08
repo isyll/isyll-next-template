@@ -95,3 +95,46 @@ export function createAuthRedisStorage(
     },
   }
 }
+
+/**
+ * Force-logout: revoke every session of an account by clearing it from Redis.
+ * BetterAuth keeps a per-account index (`active-sessions-<id>` → a list of
+ * `{ token }`) in secondary storage, with each session stored under its token;
+ * we delete both, namespaced by the same `prefix` as the storage adapter. No-op
+ * (returns 0) when Redis is unconfigured — dev (DB sessions) should also clear
+ * the relevant sessions rows. Returns the number of sessions revoked.
+ */
+async function revokeSessions(
+  prefix: 'user' | 'admin',
+  accountId: string
+): Promise<number> {
+  const redis = getAuthRedis()
+  if (!redis) return 0
+
+  const ns = (key: string) => `auth:${prefix}:${key}`
+  const indexKey = ns(`active-sessions-${accountId}`)
+  const raw = await redis.get(indexKey)
+  if (!raw) return 0
+
+  let sessions: { token: string }[]
+  try {
+    sessions = JSON.parse(raw) as { token: string }[]
+  } catch {
+    sessions = []
+  }
+
+  const sessionKeys = sessions.map((session) => ns(session.token))
+  if (sessionKeys.length > 0) await redis.del(...sessionKeys)
+  await redis.del(indexKey)
+  return sessions.length
+}
+
+/** Revoke all sessions of an end user (force-logout). */
+export function revokeUserSessions(userId: string): Promise<number> {
+  return revokeSessions('user', userId)
+}
+
+/** Revoke all sessions of an operator (e.g. when deactivating them). */
+export function revokeOperatorSessions(operatorId: string): Promise<number> {
+  return revokeSessions('admin', operatorId)
+}

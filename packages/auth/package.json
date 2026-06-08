@@ -21,6 +21,7 @@
     "admin:create-operator": "tsx src/scripts/admin-cli.ts create-operator"
   },
   "dependencies": {
+    "@node-rs/argon2": "catalog:",
     "@workspace/core": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/email": "workspace:*",

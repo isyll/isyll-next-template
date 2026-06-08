@@ -73,8 +73,10 @@ are absent (dev), so the template runs out of the box.
 
 - **Logging / errors.** `@/lib/logger` (pino, structured, secret-redacting,
   server-only) and `@/lib/observability` → `reportError(err, ctx)`, the single
-  error choke-point. Server Actions already route errors through it. Add an
-  error tracker (Sentry, ...) in `reportError` — call sites never change.
+  error choke-point. Server Actions already route errors through it. **Sentry**
+  is wired for server/client/edge, env-gated on `SENTRY_DSN` (inert when unset);
+  `reportError` forwards real bugs and rate-limit hits are tagged `security`.
+  See `docs/observability.md`.
 - **Rate limiting.** `@/lib/rate-limit` → `createRateLimiter` / `enforceRateLimit`
   (Redis/ioredis sliding window when `REDIS_URL` is set, in-process fallback
   otherwise). Use `rateLimitedActionClient` for sensitive/costly actions.
@@ -133,5 +135,7 @@ are absent (dev), so the template runs out of the box.
 - **Create a conventional commit after each completed task.**
 - **Never** add `Co-Authored-By` trailers or AI attribution to commits.
 - Run `pnpm check` before considering work done.
-- **Branches.** Open PRs against `develop` — CI (lint/typecheck/test/build) and
-  E2E run there. `main` is the production branch (deploy target only).
+- **Branches.** Two long-lived branches: `development` (integration — open PRs
+  here; CI lint/typecheck/test/build + E2E run on it) and `production` (the
+  deploy target). Feature branches (`feat/...`, `fix/...`) branch off
+  `development`.

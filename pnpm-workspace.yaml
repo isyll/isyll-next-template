@@ -9,6 +9,9 @@ allowBuilds:
   msw: false
   '@parcel/watcher': true
   '@swc/core': true
+  # Sentry source-map upload tooling; only needed at release time (and fetched
+  # lazily then), so we skip its install-time binary download by default.
+  '@sentry/cli': false
 
 # better-auth's kysely-adapter uses DEFAULT_MIGRATION_TABLE, removed in
 # kysely 0.29.x — pin to the 0.28 line that still exports it.
@@ -76,6 +79,7 @@ catalog:
 
   # --- Observability ---
   pino: 10.3.1
+  '@sentry/nextjs': 10.56.0
 
   # --- Redis (ioredis — full-featured, native TCP connection) ---
   ioredis: 5.11.1
@@ -93,6 +97,8 @@ catalog:
   # --- Auth ---
   better-auth: 1.6.13
   jose: 6.2.3
+  # Argon2id password hashing (prebuilt native bindings, incl. linux-musl).
+  '@node-rs/argon2': 2.0.2
 
   # --- Email (Resend + React Email) ---
   resend: 6.12.4

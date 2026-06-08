@@ -5,9 +5,11 @@ import {
   sendRegistrationConfirmation,
 } from '@workspace/email'
 import { betterAuth } from 'better-auth'
+import { eq } from 'drizzle-orm'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
+import { hashPassword, verifyPassword } from './password'
 import { createAuthRedisStorage } from './redis'
 import { buildSocialProviders } from './social'
 
@@ -81,6 +83,21 @@ export const userAuth = betterAuth({
         },
       },
     },
+    session: {
+      create: {
+        // Block sign-in for deactivated (soft-deleted) users. Operators
+        // deactivate users from the admin console; this enforces it at login.
+        before: async (session) => {
+          const [row] = await db
+            .select({ deletedAt: schema.users.deletedAt })
+            .from(schema.users)
+            .where(eq(schema.users.id, session.userId))
+            .limit(1)
+          // Returning false aborts session creation (login); undefined allows it.
+          return row?.deletedAt ? false : undefined
+        },
+      },
+    },
   },
   emailAndPassword: {
     enabled: true,
@@ -89,6 +106,8 @@ export const userAuth = betterAuth({
     maxPasswordLength: 128,
     autoSignIn: false,
     revokeSessionsOnPasswordReset: true,
+    // Argon2id instead of the default scrypt (see ./password).
+    password: { hash: hashPassword, verify: verifyPassword },
     sendResetPassword: ({ user, url }) =>
       sendPasswordReset(user.email, {
         resetUrl: url,

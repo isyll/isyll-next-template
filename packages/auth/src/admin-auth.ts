@@ -3,6 +3,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
+import { hashPassword, verifyPassword } from './password'
 import { createAuthRedisStorage } from './redis'
 
 const isProd = process.env['NODE_ENV'] === 'production'
@@ -44,6 +45,8 @@ export const adminAuth = betterAuth({
     maxPasswordLength: 128,
     autoSignIn: false,
     revokeSessionsOnPasswordReset: true,
+    // Argon2id instead of the default scrypt (see ./password).
+    password: { hash: hashPassword, verify: verifyPassword },
   },
   // Operator sessions are stored exclusively in Redis with a short TTL.
   // See notes in auth.ts; same strategy applies.

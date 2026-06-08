@@ -12,7 +12,13 @@
  */
 import { spawnSync } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+  copyFileSync,
+  existsSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 
@@ -54,6 +60,11 @@ program
     'skip the database/operator bootstrap step',
     false
   )
+  .option(
+    '--fresh-git',
+    'reinitialize git with production + development branches',
+    false
+  )
   .option('--dry-run', 'preview changes without writing or running anything')
   .parse()
 
@@ -70,6 +81,7 @@ const flags = program.opts<{
   yes?: boolean
   force?: boolean
   skipBootstrap?: boolean
+  freshGit?: boolean
   dryRun?: boolean
 }>()
 
@@ -372,6 +384,29 @@ if (canBootstrap) {
       '--super',
     ])
   }
+}
+
+// --- 6. Fresh git history ---------------------------------------------------
+// Drop the template's history and start the project on its own two long-lived
+// branches: `production` (default/deploy) and `development` (integration).
+const wantsFreshGit = flags.freshGit
+  ? true
+  : await ask('Start a fresh git history?')
+if (wantsFreshGit && !dryRun) {
+  note('Reinitializing git (production + development).', 'Step 6 · Git')
+  rmSync(join(ROOT, '.git'), { recursive: true, force: true })
+  if (run('Initialize git', 'git', ['init', '-b', 'production'])) {
+    run('Stage files', 'git', ['add', '-A'])
+    run('Initial commit', 'git', [
+      'commit',
+      '--no-verify',
+      '-m',
+      `chore: initialize ${name} from ${TEMPLATE_NAME}`,
+    ])
+    run('Create development branch', 'git', ['branch', 'development'])
+  }
+} else if (dryRun) {
+  note('git init -b production && git branch development', 'Step 6 · Git')
 }
 
 // --- Done -------------------------------------------------------------------

@@ -15,6 +15,22 @@ Components and Server Actions, and keep `'use client'` at the leaves.
 | `packages/*-config` | Shared ESLint / TypeScript configs                           |
 | `infra`             | Docker image, Nginx config, Postgres bootstrap               |
 
+The dependency direction is enforced in CI (`pnpm boundaries`): `core` depends on
+nothing internal, and the app is the only place that composes everything.
+
+```mermaid
+flowchart TD
+    web[apps/web] --> ui[packages/ui]
+    web --> auth[packages/auth]
+    web --> db[packages/db]
+    web --> core[packages/core]
+    auth --> db
+    auth --> email[packages/email]
+    auth --> core
+    db --> core
+    email --> core
+```
+
 ## Request flow
 
 1. `proxy.ts` does an optimistic cookie check for `/dashboard` and `/admin`
@@ -38,4 +54,4 @@ Components and Server Actions, and keep `'use client'` at the leaves.
   server data stays in TanStack Query / Server Components, URL state in nuqs.
 - **Theming**: edit the `--brand-*` block in `packages/ui/src/styles/globals.css`.
 - **Commits**: Conventional Commits enforced by commitlint + husky. CI/E2E run
-  against `develop`; `main` is the production branch.
+  against `development`; `production` is the deploy branch.

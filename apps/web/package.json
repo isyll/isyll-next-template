@@ -19,6 +19,7 @@
     "@aws-sdk/s3-request-presigner": "catalog:",
     "@hookform/resolvers": "catalog:",
     "@next-safe-action/adapter-tanstack-query": "catalog:",
+    "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "ioredis": "catalog:",
     "@workspace/email": "workspace:*",

@@ -3,7 +3,7 @@ name: E2E
 on:
   workflow_dispatch: {}
   push:
-    branches: [develop]
+    branches: [development, production]
 
 permissions:
   contents: read

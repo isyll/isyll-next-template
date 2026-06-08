@@ -6,6 +6,11 @@
  */
 export const ADMIN_PERMISSIONS = [
   { key: 'console.access', description: 'Sign in to the admin console' },
+  { key: 'users.read', description: 'View end users' },
+  {
+    key: 'users.write',
+    description: 'Edit end users (deactivate, force sign-out)',
+  },
   { key: 'operators.read', description: 'View operators' },
   {
     key: 'operators.write',
@@ -13,6 +18,10 @@ export const ADMIN_PERMISSIONS = [
   },
   { key: 'roles.read', description: 'View roles and their permissions' },
   { key: 'roles.write', description: 'Create, edit and assign roles' },
+  {
+    key: 'monitoring.read',
+    description: 'View monitoring, issues and incidents',
+  },
   { key: 'supported_countries.read', description: 'View supported countries' },
   {
     key: 'supported_countries.write',

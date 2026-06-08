@@ -27,11 +27,24 @@ service), not from the app image.
 
 ## Nginx
 
-`infra/nginx/conf.d/default.conf` reverse-proxies to the web container and
-returns `404` for `/admin`, so the operator console is unreachable from the
-public internet. To expose it internally, uncomment the allow-list + proxy
-block and restrict to your VPN/office CIDRs. A commented TLS server block is
-included for certificate termination.
+`infra/nginx/conf.d/default.conf` terminates TLS (TLS 1.2/1.3 + HTTP/3 over
+QUIC), redirects HTTP→HTTPS, sets the baseline security headers, and
+reverse-proxies to the web container. It returns `404` for `/admin`, so the
+operator console is unreachable from the public internet — to expose it
+internally, uncomment the allow-list + proxy block and restrict to your
+VPN/office CIDRs. Certificates are issued/renewed by the `certbot` service;
+TLS params live in `conf.d/ssl.conf`.
+
+```mermaid
+flowchart LR
+    C[Client] -->|HTTPS / HTTP3| N[Nginx]
+    N -->|404| ADM[/admin/]
+    N -->|proxy_pass keepalive| W[web · Next.js standalone]
+    W --> PG[(Postgres)]
+    W --> R[(Redis · sessions, rate limit)]
+    W --> S[(S3 / MinIO · uploads)]
+    W -.errors/traces.-> SE[Sentry]
+```
 
 ## PostgreSQL
 

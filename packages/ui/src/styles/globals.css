@@ -147,6 +147,35 @@
   --sidebar-ring: var(--brand-ring);
 }
 
+/*
+ * Admin back-office theme. Scoped to the `.admin` wrapper on the operator
+ * console (apps/web/app/admin) so it reads as a distinct internal tool, not a
+ * copy of the public site: a different brand hue (teal, not the site's indigo)
+ * and a permanently dark sidebar. Customize these like the blocks above —
+ * change the hue (196) to re-accent the whole console.
+ */
+.admin {
+  --brand: oklch(0.52 0.11 196); /* teal */
+  --brand-foreground: oklch(0.985 0 0);
+  --brand-ring: oklch(0.52 0.11 196);
+
+  /* Dark sidebar in both light and dark mode — the classic back-office look. */
+  --sidebar: oklch(0.23 0.02 240);
+  --sidebar-foreground: oklch(0.96 0.01 240);
+  --sidebar-primary: oklch(0.62 0.12 196);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.3 0.02 240);
+  --sidebar-accent-foreground: oklch(0.96 0.01 240);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.62 0.12 196);
+}
+
+.dark .admin {
+  --brand: oklch(0.7 0.1 196); /* lighter teal for dark surfaces */
+  --brand-foreground: oklch(0.18 0.02 200);
+  --brand-ring: oklch(0.7 0.1 196);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
