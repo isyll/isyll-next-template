@@ -6,12 +6,15 @@
 services:
   app:
     build:
-      context: ..
+      # Paths are resolved from the Compose *project directory* — the repo root,
+      # since the merge lists ../compose.yaml first — NOT from this file's
+      # folder. So the repo root is `.`, not `..` (which would be its parent).
+      context: .
       dockerfile: .devcontainer/Dockerfile
     # Keep the container alive; VS Code / JetBrains attach and run commands.
     command: sleep infinity
     volumes:
-      - ..:/workspaces/next-monorepo-template:cached
+      - .:/workspaces/next-monorepo-template:cached
       - pnpm-store:/home/node/.local/share/pnpm
     environment:
       # The DB/Redis hostnames are the compose service names, not localhost.
