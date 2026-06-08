@@ -4,6 +4,21 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+
+  "tailwindCSS.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html"
+  },
+
+  "tailwindCSS.experimental.classRegex": [
+    "cn\\(([^)]*)\\)",
+    "cva\\(([^)]*)\\)",
+    ["cva\\(([^()]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"],
+    ["cn\\(([^()]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]
+  ],
   "prettier.requireConfig": true,
   "eslint.useFlatConfig": true,
   "eslint.workingDirectories": [{ "mode": "auto" }],
