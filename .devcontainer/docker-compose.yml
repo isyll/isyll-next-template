@@ -1,0 +1,36 @@
+# Dev container overlay. Merged with the repo-root compose.yaml (which provides
+# Postgres + Redis + Adminer) by .devcontainer/devcontainer.json, so the
+# workspace and the services share one Docker network — reach Postgres at
+# host `db` and Redis at host `redis` (see the `app` environment below).
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    # Keep the container alive; VS Code / JetBrains attach and run commands.
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/next-monorepo-template:cached
+      - pnpm-store:/home/node/.local/share/pnpm
+    environment:
+      # The DB/Redis hostnames are the compose service names, not localhost.
+      DATABASE_URL: postgres://postgres:postgres@db:5432/app
+      ADMIN_DATABASE_URL: postgres://postgres:postgres@db:5432/app
+      MIGRATION_DATABASE_URL: postgres://postgres:postgres@db:5432/app
+      REDIS_URL: redis://:redis@redis:6379
+      # Insecure dev secrets so the app boots out of the box — replace via
+      # `.env` / `pnpm project:init` for anything real.
+      AUTH_USER_SECRET: dev-insecure-user-secret-change-me-00000000000
+      AUTH_ADMIN_SECRET: dev-insecure-admin-secret-change-me-000000000
+      AUTH_USER_URL: http://localhost:3000
+      AUTH_ADMIN_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pnpm-store:

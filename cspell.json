@@ -22,7 +22,8 @@
     "**/messages/*.d.json.ts",
     "pnpm-lock.yaml",
     "**/*.snap",
-    ".vscode/**"
+    ".vscode/**",
+    ".devcontainer/**"
   ],
   "files": ["**/*.{ts,tsx,js,jsx,mjs,cjs,md,mdx,json}"]
 }

@@ -38,6 +38,10 @@ service (`docker compose -f compose.prod.yaml run --rm migrator`). Social
 providers are optional — each is enabled only when its credentials are present
 in `.env`.
 
+Prefer a container? Open the repo in VS Code and **Reopen in Container** (or
+launch a Codespace): `.devcontainer/` brings up the app, Postgres, Redis and
+Adminer with the toolchain preinstalled. See `docs/infrastructure.md`.
+
 ## Architecture
 
 - **Two isolated auth systems.** End users (`@workspace/auth`, `public` schema,

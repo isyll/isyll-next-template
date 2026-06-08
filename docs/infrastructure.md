@@ -18,6 +18,17 @@ cp infra/docker/.env.example .env                  # then edit secrets
 docker compose -f compose.prod.yaml up -d --build  # production
 ```
 
+## Dev container
+
+`.devcontainer/` defines a ready-to-code environment (VS Code "Reopen in
+Container", GitHub Codespaces, or the JetBrains Gateway dev containers plugin).
+The workspace runs as the `app` service next to Postgres + Redis + Adminer from
+`compose.yaml`, so the database is reachable at host `db` and the cache at host
+`redis` — both already wired into the container environment. `pnpm install` runs
+on first start; then `pnpm db:migrate && pnpm dev` and open
+[localhost:3000](http://localhost:3000). The recommended editor extensions
+(`.vscode/extensions.json`) are installed into the container automatically.
+
 ## Web image
 
 `infra/docker/web.Dockerfile` is multi-stage: `turbo prune` → install → build →

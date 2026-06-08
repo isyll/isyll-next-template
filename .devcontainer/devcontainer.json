@@ -1,0 +1,63 @@
+{
+  // Full dev environment for the template. The workspace runs as the `app`
+  // service alongside Postgres + Redis + Adminer (from the repo-root
+  // compose.yaml). See https://containers.dev for the schema.
+  "name": "next-monorepo-template",
+  "dockerComposeFile": ["../compose.yaml", "docker-compose.yml"],
+  "service": "app",
+  "workspaceFolder": "/workspaces/next-monorepo-template",
+  // Bring up the database, cache and DB browser alongside the workspace.
+  "runServices": ["db", "redis", "adminer"],
+
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // web · postgres · redis · adminer
+  "forwardPorts": [3000, 5432, 6379, 8080],
+  "portsAttributes": {
+    "3000": { "label": "web", "onAutoForward": "notify" },
+    "5432": { "label": "postgres" },
+    "6379": { "label": "redis" },
+    "8080": { "label": "adminer" }
+  },
+
+  // node_modules lives on the bind mount; install once the container is up.
+  "postCreateCommand": "corepack enable && pnpm install --frozen-lockfile",
+  "remoteUser": "node",
+
+  "customizations": {
+    "vscode": {
+      // Mirrors .vscode/extensions.json so the container has the same toolchain.
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-french",
+        "davidanson.vscode-markdownlint",
+        "dorzey.vscode-sqlfluff",
+        "editorconfig.editorconfig",
+        "vitest.explorer",
+        "ms-playwright.playwright",
+        "ms-azuretools.vscode-docker",
+        "mikestead.dotenv",
+        "yoavbls.pretty-ts-errors",
+        "usernamehw.errorlens"
+      ],
+      // A focused subset of .vscode/settings.json — the editor-behaviour bits
+      // that matter inside the container.
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
+        "eslint.useFlatConfig": true,
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+        "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
+        "tailwindCSS.classFunctions": ["cn", "cva"],
+        "files.eol": "\n"
+      }
+    }
+  }
+}
