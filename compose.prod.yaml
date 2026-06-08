@@ -22,7 +22,9 @@ services:
       - -c
       - shared_preload_libraries=pg_stat_statements
     volumes:
-      - db-data:/var/lib/postgresql/data
+      # postgres:18+ stores data in a version subdir and rejects a volume at the
+      # old /var/lib/postgresql/data path — mount the parent instead.
+      - db-data:/var/lib/postgresql
       - ./infra/postgres/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test:
