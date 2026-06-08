@@ -1,5 +1,7 @@
 # Next Monorepo Template
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/isyll/next-monorepo-template)
+
 A server-first **Next.js 16** monorepo (pnpm + Turborepo) for building modern,
 high-traffic products fast: strict TypeScript, two fully isolated authentication
 systems, pure-SQL migrations with embedded ISO reference data, i18n, Docker +
@@ -74,6 +76,7 @@ tests/load      k6 load tests
 - [docs/database.md](./docs/database.md) — migrations, reference data, roles, Drizzle
 - [docs/auth.md](./docs/auth.md) — user vs operator auth, PBAC, operator provisioning
 - [docs/infrastructure.md](./docs/infrastructure.md) — Docker, Nginx, environment
+- [docs/deployment.md](./docs/deployment.md) — deploy to a VPS over SSH; preview in Codespaces
 - [AGENTS.md](./AGENTS.md) — the canonical guide for AI agents
 
 ## Scripts
