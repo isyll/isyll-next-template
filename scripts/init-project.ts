@@ -282,6 +282,13 @@ replaceInFile('.github/ISSUE_TEMPLATE/config.yml', [
     `github.com/${owner}/${repo}`,
   ],
 ])
+// "Open in GitHub Codespaces" badge → the new repository.
+replaceInFile('README.md', [
+  [
+    `codespaces.new/${TEMPLATE_OWNER}/${TEMPLATE_NAME}`,
+    `codespaces.new/${owner}/${repo}`,
+  ],
+])
 if (!dryRun) {
   const readmePath = join(ROOT, 'README.md')
   if (existsSync(readmePath)) {
@@ -422,6 +429,8 @@ const nextSteps = [
   '  • Rebrand: edit --brand-* in packages/ui/src/styles/globals.css +',
   '    siteConfig.themeColor (see docs/theming.md); replace public/og-image.png',
   '  • pnpm dev',
+  '  • Deploy: see docs/deployment.md — preview in Codespaces now, VPS over',
+  '    SSH when ready (set the DEPLOY_* repo secrets/variables to enable)',
 ].join('\n')
 
 outro(
