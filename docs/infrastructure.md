@@ -29,6 +29,19 @@ on first start; then `pnpm db:migrate && pnpm dev` and open
 [localhost:3000](http://localhost:3000). The recommended editor extensions
 (`.vscode/extensions.json`) are installed into the container automatically.
 
+## Editors
+
+Both major editors are configured out of the box:
+
+- **VS Code** — `.vscode/` ships recommended extensions, format/ESLint-on-save,
+  Tailwind + SQLFluff settings, debug launchers and tasks; the dev container
+  reuses them.
+- **JetBrains** (WebStorm / IntelliJ IDEA) — shared run configurations live in
+  `.run/` (Run ▸ dev, build, lint, typecheck, test, check, db:migrate,
+  db:studio, docker: local db). Code style is read from `.editorconfig`
+  natively; enable the **Prettier** (run on save), **ESLint** (automatic
+  configuration) and **Tailwind CSS** plugins to match the VS Code experience.
+
 ## Web image
 
 `infra/docker/web.Dockerfile` is multi-stage: `turbo prune` → install → build →
