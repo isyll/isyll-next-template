@@ -6,9 +6,12 @@ applied as hand-written pure-SQL migrations.
 ## Migrations
 
 Migrations live in `packages/db/migrations/` as paired files named
-`NNNNNN_description.up.sql` / `.down.sql`, run by
-[golang-migrate](https://github.com/golang-migrate/migrate). One table (and all
-of its indexes, constraints, triggers, and grants) per migration.
+`NNNNNN_description.up.sql` / `.down.sql`, applied by a small Node runner
+(`packages/db/src/scripts/migrate.ts`, built on `pg` — no external binary).
+State is tracked in `public.schema_migrations` and each step runs in its own
+transaction; add `-- migrate:no-transaction` as the first line for statements
+that cannot (e.g. `CREATE INDEX CONCURRENTLY`). One table (and all of its
+indexes, constraints, triggers, and grants) per migration.
 
 | Command                      | Action                                  |
 | ---------------------------- | --------------------------------------- |

@@ -6,8 +6,23 @@ import { useAction } from 'next-safe-action/hooks'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
-import { cn } from '@workspace/ui/lib/utils'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@workspace/ui/components/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@workspace/ui/components/table'
 
 import type {
   AdminOperatorDTO,
@@ -64,49 +79,37 @@ export function OperatorsTable({
   const busy = setActive.isPending || assign.isPending || remove.isPending
 
   return (
-    <div className='overflow-x-auto rounded-md border bg-card'>
-      <table className='w-full text-sm'>
-        <thead className='border-b text-left text-muted-foreground'>
-          <tr>
-            <th className='px-4 py-3 font-medium'>{t('colOperator')}</th>
-            <th className='px-4 py-3 font-medium'>{t('colStatus')}</th>
-            <th className='px-4 py-3 font-medium'>{t('colRoles')}</th>
+    <div className='rounded-md border bg-card'>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('colOperator')}</TableHead>
+            <TableHead>{t('colStatus')}</TableHead>
+            <TableHead>{t('colRoles')}</TableHead>
             {canManage ? (
-              <th className='px-4 py-3 text-right font-medium'>
-                {t('colActions')}
-              </th>
+              <TableHead className='text-end'>{t('colActions')}</TableHead>
             ) : null}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {operators.map((operator) => (
-            <tr key={operator.id} className='border-b align-top last:border-0'>
-              <td className='px-4 py-3'>
+            <TableRow key={operator.id} className='align-top'>
+              <TableCell>
                 <div className='font-medium'>{operator.name}</div>
                 <div className='text-muted-foreground'>{operator.email}</div>
-              </td>
-              <td className='px-4 py-3'>
-                <span
-                  className={cn(
-                    'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
-                    operator.isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground'
-                  )}
-                >
+              </TableCell>
+              <TableCell>
+                <Badge variant={operator.isActive ? 'secondary' : 'outline'}>
                   {t(operator.isActive ? 'active' : 'inactive')}
-                </span>
-              </td>
-              <td className='px-4 py-3'>
+                </Badge>
+              </TableCell>
+              <TableCell>
                 <div className='flex flex-wrap gap-1.5'>
                   {operator.roles.length === 0 ? (
                     <span className='text-xs text-muted-foreground'>—</span>
                   ) : (
                     operator.roles.map((role) => (
-                      <span
-                        key={role.id}
-                        className='inline-flex items-center gap-1 rounded-md border bg-muted px-2 py-0.5 text-xs'
-                      >
+                      <Badge key={role.id} variant='outline' className='gap-1'>
                         {role.name}
                         {canManage ? (
                           <button
@@ -124,13 +127,13 @@ export function OperatorsTable({
                             ×
                           </button>
                         ) : null}
-                      </span>
+                      </Badge>
                     ))
                   )}
                 </div>
-              </td>
+              </TableCell>
               {canManage ? (
-                <td className='px-4 py-3'>
+                <TableCell>
                   <div className='flex flex-col items-end gap-2'>
                     <RoleAssigner
                       roles={roles.filter(
@@ -162,12 +165,12 @@ export function OperatorsTable({
                       </Button>
                     )}
                   </div>
-                </td>
+                </TableCell>
               ) : null}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }
@@ -183,33 +186,37 @@ function RoleAssigner({
   onAssign: (roleId: string) => void
   label: string
 }) {
-  const [roleId, setRoleId] = useState('')
+  const [roleId, setRoleId] = useState<string | null>(null)
   if (roles.length === 0) return null
   return (
     <div className='flex items-center gap-1'>
-      <select
+      <Select
         value={roleId}
         disabled={disabled}
-        onChange={(event) => {
-          setRoleId(event.target.value)
+        items={roles.map((role) => ({ value: role.id, label: role.name }))}
+        onValueChange={(value) => {
+          setRoleId(value)
         }}
-        className='h-8 rounded-md border bg-background px-2 text-xs'
       >
-        <option value=''>{label}</option>
-        {roles.map((role) => (
-          <option key={role.id} value={role.id}>
-            {role.name}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger size='sm' className='text-xs'>
+          <SelectValue placeholder={label} />
+        </SelectTrigger>
+        <SelectContent>
+          {roles.map((role) => (
+            <SelectItem key={role.id} value={role.id}>
+              {role.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <Button
         type='button'
         size='sm'
         variant='outline'
-        disabled={disabled || roleId === ''}
+        disabled={disabled || roleId === null}
         onClick={() => {
           if (roleId) onAssign(roleId)
-          setRoleId('')
+          setRoleId(null)
         }}
       >
         +

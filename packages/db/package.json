@@ -18,7 +18,7 @@
     "test:watch": "vitest",
     "db:migrate": "tsx src/scripts/migrate.ts up",
     "db:rollback": "tsx src/scripts/migrate.ts down 1",
-    "db:migrate:status": "tsx src/scripts/migrate.ts version",
+    "db:migrate:status": "tsx src/scripts/migrate.ts status",
     "db:migrate:new": "tsx src/scripts/migrate.ts new",
     "db:reference:generate": "tsx src/scripts/generate-reference-migrations.ts",
     "sql:lint": "sqlfluff lint migrations",

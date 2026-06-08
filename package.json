@@ -9,7 +9,7 @@
     "node": ">=24",
     "pnpm": ">=11"
   },
-  "packageManager": "pnpm@11.5.0",
+  "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916",
   "scripts": {
     "dev": "turbo watch dev",
     "build": "turbo run build",
@@ -29,7 +29,10 @@
     "boundaries": "depcruise --config .dependency-cruiser.cjs packages apps",
     "boundaries:graph": "depcruise --config .dependency-cruiser.cjs --output-type mermaid packages apps",
     "check": "SKIP_ENV_VALIDATION=1 turbo run lint typecheck test build && pnpm run boundaries && pnpm run spellcheck && pnpm run format:check",
-    "clean": "turbo run clean && rimraf .turbo",
+    "clean": "turbo run clean && rimraf .turbo node_modules/.cache apps/web/.next",
+    "deps:check": "pnpm update --recursive --latest --dry-run",
+    "deps:upgrade": "pnpm update --recursive --interactive --latest",
+    "deps:upgrade:patch": "pnpm update --recursive",
     "db:migrate": "turbo run db:migrate",
     "db:rollback": "turbo run db:rollback",
     "db:migrate:status": "turbo run db:migrate:status",

@@ -6,8 +6,16 @@ import { useRouter } from 'next/navigation'
 import { useAction } from 'next-safe-action/hooks'
 import { toast } from 'sonner'
 
+import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
-import { cn } from '@workspace/ui/lib/utils'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@workspace/ui/components/table'
 
 import type { AdminUserDTO } from '@/features/admin-users/queries'
 
@@ -67,44 +75,37 @@ export function UsersTable({
   }
 
   return (
-    <div className='overflow-x-auto rounded-md border bg-card'>
-      <table className='w-full text-sm'>
-        <thead className='border-b text-left text-muted-foreground'>
-          <tr>
-            <th className='px-4 py-3 font-medium'>{t('colUser')}</th>
-            <th className='px-4 py-3 font-medium'>{t('colStatus')}</th>
-            <th className='px-4 py-3 font-medium'>{t('colLanguage')}</th>
+    <div className='rounded-md border bg-card'>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('colUser')}</TableHead>
+            <TableHead>{t('colStatus')}</TableHead>
+            <TableHead>{t('colLanguage')}</TableHead>
             {canManage ? (
-              <th className='px-4 py-3 text-right font-medium'>
-                {t('colActions')}
-              </th>
+              <TableHead className='text-end'>{t('colActions')}</TableHead>
             ) : null}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {data.items.map((user) => (
-            <tr key={user.id} className='border-b last:border-0'>
-              <td className='px-4 py-3'>
+            <TableRow key={user.id}>
+              <TableCell>
                 <div className='font-medium'>{user.name}</div>
                 <div className='text-muted-foreground'>{user.email}</div>
-              </td>
-              <td className='px-4 py-3'>
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium',
-                    user.status === 'active'
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground'
-                  )}
+              </TableCell>
+              <TableCell>
+                <Badge
+                  variant={user.status === 'active' ? 'secondary' : 'outline'}
                 >
                   {t(`status.${user.status}`)}
-                </span>
-              </td>
-              <td className='px-4 py-3 font-mono text-xs uppercase'>
+                </Badge>
+              </TableCell>
+              <TableCell className='font-mono text-xs uppercase'>
                 {user.language}
-              </td>
+              </TableCell>
               {canManage ? (
-                <td className='px-4 py-3'>
+                <TableCell className='text-end'>
                   <div className='flex justify-end gap-2'>
                     {user.status === 'active' ? (
                       <>
@@ -145,12 +146,12 @@ export function UsersTable({
                       </Button>
                     )}
                   </div>
-                </td>
+                </TableCell>
               ) : null}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }

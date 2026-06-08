@@ -37,7 +37,7 @@ export interface RateLimitConfig {
   prefix?: string
 }
 
-// ─── In-process fallback ─────────────────────────────────────────────────────
+// In-process fallback
 
 /** Fixed-window in-process limiter (fallback when Redis isn't configured). */
 export class InMemoryRateLimiter implements RateLimiter {
@@ -73,7 +73,7 @@ export class InMemoryRateLimiter implements RateLimiter {
   }
 }
 
-// ─── Redis sliding-window limiter ────────────────────────────────────────────
+// Redis sliding-window limiter
 
 /**
  * Sliding-window rate limiter backed by ioredis.
@@ -131,7 +131,7 @@ class RedisRateLimiter implements RateLimiter {
   }
 }
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// Public API
 
 /** Build a rate limiter, backed by Redis when configured, else in-process. */
 export function createRateLimiter(config: RateLimitConfig): RateLimiter {

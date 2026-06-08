@@ -20,7 +20,7 @@ import { env } from '@/env'
  * importing this module never requires `REDIS_URL`.
  */
 
-// ─── Singleton client ────────────────────────────────────────────────────────
+// Singleton client
 
 const globalForRedis = globalThis as typeof globalThis & {
   __redisClient?: Redis
@@ -64,7 +64,7 @@ export function getRedis(): Redis | null {
   return client
 }
 
-// ─── Typed helpers ───────────────────────────────────────────────────────────
+// Typed helpers
 
 /** Get a JSON-decoded value, or `null` if absent / Redis is unconfigured. */
 export async function redisGet<T>(key: string): Promise<T | null> {

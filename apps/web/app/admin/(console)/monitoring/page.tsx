@@ -11,6 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@workspace/ui/components/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@workspace/ui/components/table'
 
 import { BarChart } from '@/components/admin/bar-chart'
 import { AdminPageHeader } from '@/components/admin/page-header'
@@ -116,50 +124,46 @@ export default async function MonitoringPage() {
           {issues.length === 0 ? (
             <p className='p-6 text-sm text-muted-foreground'>{t('noIssues')}</p>
           ) : (
-            <div className='overflow-x-auto'>
-              <table className='w-full text-sm'>
-                <thead className='border-b text-left text-muted-foreground'>
-                  <tr>
-                    <th className='px-4 py-2 font-medium'>{t('colIssue')}</th>
-                    <th className='px-4 py-2 font-medium'>{t('colLevel')}</th>
-                    <th className='px-4 py-2 font-medium'>{t('colEvents')}</th>
-                    <th className='px-4 py-2 font-medium'>{t('colUsers')}</th>
-                    <th className='px-4 py-2'></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {issues.map((issue) => (
-                    <tr key={issue.id} className='border-b last:border-0'>
-                      <td className='max-w-md px-4 py-2'>
-                        <div className='truncate font-medium'>
-                          {issue.title}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('colIssue')}</TableHead>
+                  <TableHead>{t('colLevel')}</TableHead>
+                  <TableHead>{t('colEvents')}</TableHead>
+                  <TableHead>{t('colUsers')}</TableHead>
+                  <TableHead className='text-end' />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {issues.map((issue) => (
+                  <TableRow key={issue.id}>
+                    <TableCell className='max-w-md'>
+                      <div className='truncate font-medium'>{issue.title}</div>
+                      {issue.culprit ? (
+                        <div className='truncate text-xs text-muted-foreground'>
+                          {issue.culprit}
                         </div>
-                        {issue.culprit ? (
-                          <div className='truncate text-xs text-muted-foreground'>
-                            {issue.culprit}
-                          </div>
-                        ) : null}
-                      </td>
-                      <td className='px-4 py-2 font-mono text-xs uppercase'>
-                        {issue.level}
-                      </td>
-                      <td className='px-4 py-2'>{issue.events}</td>
-                      <td className='px-4 py-2'>{issue.users}</td>
-                      <td className='px-4 py-2 text-right'>
-                        <a
-                          href={issue.permalink}
-                          target='_blank'
-                          rel='noreferrer'
-                          className='text-primary hover:underline'
-                        >
-                          {t('open')}
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className='font-mono text-xs uppercase'>
+                      {issue.level}
+                    </TableCell>
+                    <TableCell>{issue.events}</TableCell>
+                    <TableCell>{issue.users}</TableCell>
+                    <TableCell className='text-end'>
+                      <a
+                        href={issue.permalink}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='text-primary hover:underline'
+                      >
+                        {t('open')}
+                      </a>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>

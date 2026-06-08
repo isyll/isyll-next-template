@@ -18,12 +18,36 @@ cp infra/docker/.env.example .env                  # then edit secrets
 docker compose -f compose.prod.yaml up -d --build  # production
 ```
 
+## Dev container
+
+`.devcontainer/` defines a ready-to-code environment (VS Code "Reopen in
+Container", GitHub Codespaces, or the JetBrains Gateway dev containers plugin).
+The workspace runs as the `app` service next to Postgres + Redis + Adminer from
+`compose.yaml`, so the database is reachable at host `db` and the cache at host
+`redis` — both already wired into the container environment. `pnpm install` runs
+on first start; then `pnpm db:migrate && pnpm dev` and open
+[localhost:3000](http://localhost:3000). The recommended editor extensions
+(`.vscode/extensions.json`) are installed into the container automatically.
+
+## Editors
+
+Both major editors are configured out of the box:
+
+- **VS Code** — `.vscode/` ships recommended extensions, format/ESLint-on-save,
+  Tailwind + SQLFluff settings, debug launchers and tasks; the dev container
+  reuses them.
+- **JetBrains** (WebStorm / IntelliJ IDEA) — shared run configurations live in
+  `.run/` (Run ▸ dev, build, lint, typecheck, test, check, db:migrate,
+  db:studio, docker: local db). Code style is read from `.editorconfig`
+  natively; enable the **Prettier** (run on save), **ESLint** (automatic
+  configuration) and **Tailwind CSS** plugins to match the VS Code experience.
+
 ## Web image
 
 `infra/docker/web.Dockerfile` is multi-stage: `turbo prune` → install → build →
 a minimal `runner` stage serving Next.js standalone output as a non-root user.
-Migrations run from the official `migrate/migrate` image (the `migrator`
-service), not from the app image.
+Migrations run from the `migrator` stage of the same Dockerfile — the `migrator`
+service applies them with the Node runner — not from the app `runner` image.
 
 ## Nginx
 
