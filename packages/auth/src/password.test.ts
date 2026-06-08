@@ -12,7 +12,7 @@ describe('argon2id password hashing', () => {
   })
 
   it('rejects an incorrect password', async () => {
-    const digest = await hashPassword('s3cret-passw0rd-9876')
+    const digest = await hashPassword('a-very-strong-passphrase-9876')
     expect(await verifyPassword({ hash: digest, password: 'nope' })).toBe(false)
   })
 

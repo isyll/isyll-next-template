@@ -133,3 +133,4 @@ keepalive
 createbuckets
 minio
 minioadmin
+ilike
