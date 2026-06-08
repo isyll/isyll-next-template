@@ -9,7 +9,8 @@ End users and operators are entirely separate: own BetterAuth instance, secret,
 cookies, database role, and schema (`@workspace/auth` vs `@workspace/auth/admin`,
 `@workspace/db` vs `@workspace/db/admin`). A compromised user secret can never
 grant operator access. Operators are provisioned (no self-signup) and gated by
-PBAC. Never mix the two.
+PBAC. Never mix the two. Passwords are hashed with **Argon2id** (memory-hard,
+OWASP-balanced params; `packages/auth/src/password.ts`), not the default scrypt.
 
 ## Defense in depth
 
@@ -43,7 +44,8 @@ set — a sliding-window algorithm over a sorted set — and an in-process fallb
 otherwise. **Configure `REDIS_URL` in production** so limits are shared across
 instances.
 `rateLimitedActionClient` applies a per-user limit; build dedicated limiters for
-hot paths (login, password reset, expensive endpoints).
+hot paths (login, password reset, expensive endpoints). Exceeded limits are
+surfaced to Sentry as `security`-tagged events (`docs/observability.md`).
 
 ## Secrets and supply chain
 

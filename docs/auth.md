@@ -15,9 +15,25 @@ other.
 | Sign-up    | Self-service (email/password, social) | Disabled — provisioned only            |
 | Session    | Stateful, 30 days, rolling            | Stateful, 12 hours                     |
 
+```mermaid
+flowchart TB
+    subgraph users["End users — @workspace/auth"]
+      U1[/api/auth] --> U2[userAuth] --> U3[(app schema · role app)]
+    end
+    subgraph ops["Operators — @workspace/auth/admin"]
+      A1[/admin/api/auth] --> A2[adminAuth] --> A3[(admin schema · role admin_service)]
+    end
+    users -. no shared secret / cookie / table .- ops
+```
+
 Sessions are classic stateful cookies (the cookie holds an opaque token; the
-session row is the source of truth, validated on every request — no JWT, no
-bearer tokens). Deleting the row revokes access immediately.
+session is the source of truth, validated on every request — no JWT, no bearer
+tokens). Sessions live in Redis (`secondaryStorage`) with a DB fallback;
+revoking them (force-logout, deactivation) clears them immediately.
+
+Passwords are hashed with **Argon2id** (memory-hard, OWASP-balanced params) via
+`@node-rs/argon2`, replacing BetterAuth's default scrypt — see
+`packages/auth/src/password.ts`.
 
 ## Operators are provisioned, never self-service
 

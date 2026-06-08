@@ -15,6 +15,22 @@ Components and Server Actions, and keep `'use client'` at the leaves.
 | `packages/*-config` | Shared ESLint / TypeScript configs                           |
 | `infra`             | Docker image, Nginx config, Postgres bootstrap               |
 
+The dependency direction is enforced in CI (`pnpm boundaries`): `core` depends on
+nothing internal, and the app is the only place that composes everything.
+
+```mermaid
+flowchart TD
+    web[apps/web] --> ui[packages/ui]
+    web --> auth[packages/auth]
+    web --> db[packages/db]
+    web --> core[packages/core]
+    auth --> db
+    auth --> email[packages/email]
+    auth --> core
+    db --> core
+    email --> core
+```
+
 ## Request flow
 
 1. `proxy.ts` does an optimistic cookie check for `/dashboard` and `/admin`
