@@ -10,6 +10,20 @@ Nginx infrastructure, and a complete quality/CI toolchain.
 > New project? Run `pnpm project:init` (or the `/start-project` agent command)
 > to rename everything, generate secrets, and record the brief in `PROJECT.md`.
 
+## Use this template
+
+Scaffold a new project from this template — `degit` copies the files **without**
+the template's git history, then `project:init` rebrands everything:
+
+```bash
+pnpm dlx degit isyll/next-monorepo-template my-app
+cd my-app && pnpm install
+pnpm project:init --theme emerald    # name, theme, secrets, brief (interactive without flags)
+```
+
+Prefer the GitHub UI? Click **Use this template ▸ Create a new repository**, then
+clone and run `pnpm project:init`.
+
 ## Stack
 
 - **Next.js 16** App Router · **React 19** · **TypeScript 6** (strict, type-aware)
