@@ -7,9 +7,11 @@ ones. It closes with a recommendation on the **primary-key / ID strategy**.
 
 > **Shipped already** (removed from the list below): the original Phase 1 — DX &
 > startup (devcontainer/Codespaces, the production worker, brand theme presets,
-> and full `project:init` de-templating) — plus CI/CD deployment (VPS over SSH,
-> disabled by default, and Codespaces previews). See `docs/deployment.md` and
-> `docs/theming.md`.
+> and full `project:init` de-templating); CI/CD deployment (VPS over SSH,
+> disabled by default, and Codespaces previews); and part of the security phase —
+> `pnpm audit` CI gating, signed-commit guidance, and a `CSP_REPORT_ONLY` /
+> `report-uri` rollout path. See `docs/deployment.md`, `docs/theming.md`, and
+> `docs/security.md`.
 
 Guiding principles, unchanged from the existing template:
 
@@ -34,11 +36,6 @@ Guiding principles, unchanged from the existing template:
 - **Audit coverage + retention.** Extend the audit trigger to more tables and
   add a scheduled job to prune/`processed`-archive `outbox_events` and old
   audit rows.
-- **Security headers test + CSP report-only mode.** A test asserting the CSP and
-  headers from `proxy.ts`, plus a `report-uri` to catch violations before
-  enforcing.
-- **Supply chain.** Add `pnpm audit` gating in CI and signed-commits guidance
-  (gitleaks secret-scanning and CodeQL SAST already run).
 
 ## Phase 2 — Product building blocks
 
