@@ -3,13 +3,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 // Control the validated env that proxy.ts reads (importing the real `@/env`
 // would run full env validation under jsdom). `mock`-prefixed so vi.mock's
 // hoisted factory is allowed to reference it.
-const { mockEnv } = vi.hoisted(() => ({
-  mockEnv: {
-    NODE_ENV: 'production' as 'production' | 'development',
-    CSP_REPORT_ONLY: false as boolean | undefined,
-    CSP_REPORT_URI: undefined as string | undefined,
-  },
-}))
+const { mockEnv } = vi.hoisted(() => {
+  const mockEnv: {
+    NODE_ENV: 'production' | 'development'
+    CSP_REPORT_ONLY: boolean | undefined
+    CSP_REPORT_URI: string | undefined
+  } = {
+    NODE_ENV: 'production',
+    CSP_REPORT_ONLY: false,
+    CSP_REPORT_URI: undefined,
+  }
+  return { mockEnv }
+})
 vi.mock('@/env', () => ({ env: mockEnv }))
 
 import { NextRequest } from 'next/server'

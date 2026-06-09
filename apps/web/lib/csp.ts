@@ -20,7 +20,10 @@
  */
 export function buildContentSecurityPolicy(
   nonce: string,
-  { isDev = false, reportUri }: { isDev?: boolean; reportUri?: string } = {}
+  {
+    isDev = false,
+    reportUri,
+  }: { isDev?: boolean; reportUri?: string | undefined } = {}
 ): string {
   const scriptSrc = isDev
     ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
