@@ -51,3 +51,21 @@ jobs:
         with:
           fail-on-severity: high
           comment-summary-in-pr: on-failure
+
+  audit:
+    name: dependency-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Gate on known advisories. `high` (and above) fails the build; moderate/low
+      # are reported but non-blocking. Triage false positives with overrides in
+      # package.json (`pnpm.auditConfig.ignoreCves`) — never by lowering this gate.
+      - name: Audit dependencies (fail on high or critical)
+        run: pnpm audit --audit-level high
