@@ -139,3 +139,6 @@ codespaces
 certonly
 webroot
 gpgsign
+tsvector
+tsquery
+websearch
