@@ -5,6 +5,12 @@ This document proposes improvements and new features to take this template from
 phase is independently shippable and ordered so earlier phases de-risk later
 ones. It closes with a recommendation on the **primary-key / ID strategy**.
 
+> **Shipped already** (removed from the list below): the original Phase 1 — DX &
+> startup (devcontainer/Codespaces, the production worker, brand theme presets,
+> and full `project:init` de-templating) — plus CI/CD deployment (VPS over SSH,
+> disabled by default, and Codespaces previews). See `docs/deployment.md` and
+> `docs/theming.md`.
+
 Guiding principles, unchanged from the existing template:
 
 - **Server-first, typed, secure by default.** Everything new keeps the
@@ -18,35 +24,11 @@ Guiding principles, unchanged from the existing template:
 
 ---
 
-## Phase 1 — Faster startup & zero template traces (DX)
+## Phase 1 — Security & reliability hardening
 
-Goal: `pnpm project:init` produces a project with **no leftover template
-identity**, running in minutes.
-
-- **Finish de-templating in `project:init`.** Already covers package name,
-  auth/cookie identity, `siteConfig`, messages, README title, Copilot guide.
-  Still manual: the README body, `AGENTS.md` intro paragraph, and the OG image.
-  Add an interactive "replace README with a project stub?" step and an
-  `og-image` placeholder generator (e.g. render the app name onto a 1200×630
-  gradient at init time).
-- **A real `create-*` entry point.** Publish a `degit`/`create-` wrapper so
-  `pnpm create <name>` clones + runs `project:init` in one command, dropping the
-  git history of the template.
-- **Theme presets.** Ship 4–5 named palettes (indigo/blue/emerald/violet/rose)
-  as a `--brand-*` snippet each, and let `project:init --theme emerald` write the
-  chosen one into `globals.css` + `siteConfig.themeColor` + `emailTokens`.
-- **Devcontainer + one-command up.** A `.devcontainer` and a `make dev` /
-  `pnpm setup` that starts Postgres + Redis, migrates, seeds, and creates a
-  first operator non-interactively.
-- **Worker process, production-ready.** Add a `Dockerfile.worker` + a compose
-  service that runs `worker:outbox` (and a pg-boss worker), plus a paths-aware
-  runtime so workers run identically in dev and prod.
-
-## Phase 2 — Security & reliability hardening
-
-- **Error tracking + tracing.** Wire Sentry (or equivalent) behind the existing
-  `reportError` choke-point and add OpenTelemetry traces around actions, the
-  DAL, and the outbox relay. One DSN env var turns it on.
+- **Distributed tracing.** Sentry already routes errors through the
+  `reportError` choke-point (env-gated on `SENTRY_DSN`). Add OpenTelemetry traces
+  around actions, the DAL, and the outbox relay.
 - **2FA / passkeys.** Add BetterAuth's TOTP + WebAuthn plugins for end users and
   **require** a second factor for operators.
 - **Audit coverage + retention.** Extend the audit trigger to more tables and
@@ -55,10 +37,10 @@ identity**, running in minutes.
 - **Security headers test + CSP report-only mode.** A test asserting the CSP and
   headers from `proxy.ts`, plus a `report-uri` to catch violations before
   enforcing.
-- **Secrets & supply chain.** Keep gitleaks/CodeQL; add `pnpm audit` gating and
-  signed commits guidance.
+- **Supply chain.** Add `pnpm audit` gating in CI and signed-commits guidance
+  (gitleaks secret-scanning and CodeQL SAST already run).
 
-## Phase 3 — Product building blocks
+## Phase 2 — Product building blocks
 
 Things almost every serious app re-implements; ship them once, well.
 
@@ -75,7 +57,7 @@ Things almost every serious app re-implements; ship them once, well.
 - **Feature flags.** A tiny flag service (DB-backed, cached in Redis) gating
   features per user/org — pairs with the event system for rollout metrics.
 
-## Phase 4 — Scale & operations
+## Phase 3 — Scale & operations
 
 - **Caching layer.** A typed cache helper over the existing Redis client
   (`redisGet/redisSet`) with tag-based invalidation tied to domain events.
@@ -86,7 +68,7 @@ Things almost every serious app re-implements; ship them once, well.
 - **Background-job dashboard + DLQ tooling.** A small operator page to inspect
   `dead` outbox rows and pg-boss queues, with replay.
 
-## Phase 5 — Quality & polish
+## Phase 4 — Quality & polish
 
 - **Component workbench.** Storybook (or Ladle) for `@workspace/ui` + visual
   regression in CI.
