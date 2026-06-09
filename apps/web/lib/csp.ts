@@ -13,10 +13,14 @@
  * request) — the accepted trade-off for a strict policy. A project that needs
  * statically-cached pages can relax this (report-only or hash-based); see
  * docs/security.md.
+ *
+ * `reportUri` appends a `report-uri` directive so the browser POSTs violation
+ * reports there — pair it with report-only mode (proxy.ts) to vet a policy
+ * before enforcing it.
  */
 export function buildContentSecurityPolicy(
   nonce: string,
-  { isDev = false }: { isDev?: boolean } = {}
+  { isDev = false, reportUri }: { isDev?: boolean; reportUri?: string } = {}
 ): string {
   const scriptSrc = isDev
     ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
@@ -42,11 +46,13 @@ export function buildContentSecurityPolicy(
     'worker-src': ["'self'", 'blob:'],
   }
 
-  const policy = Object.entries(directives)
+  let policy = Object.entries(directives)
     .map(([directive, values]) => `${directive} ${values.join(' ')}`)
     .join('; ')
 
   // Upgrade any http subresource to https in production; never in dev (the dev
   // server is plain http on localhost).
-  return isDev ? policy : `${policy}; upgrade-insecure-requests`
+  if (!isDev) policy = `${policy}; upgrade-insecure-requests`
+  if (reportUri) policy = `${policy}; report-uri ${reportUri}`
+  return policy
 }

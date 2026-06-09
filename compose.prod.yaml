@@ -99,6 +99,10 @@ services:
       # Error tracking (optional; empty = Sentry disabled).
       SENTRY_DSN: ${SENTRY_DSN:-}
       NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+      # CSP rollout (optional). Set CSP_REPORT_ONLY=true to log violations
+      # without enforcing while you vet the policy; CSP_REPORT_URI collects them.
+      CSP_REPORT_ONLY: ${CSP_REPORT_ONLY:-}
+      CSP_REPORT_URI: ${CSP_REPORT_URI:-}
     depends_on:
       db:
         condition: service_healthy

@@ -54,24 +54,31 @@ export function proxy(request: NextRequest): NextResponse {
   const nonce = generateNonce()
   const csp = buildContentSecurityPolicy(nonce, {
     isDev: env.NODE_ENV === 'development',
+    reportUri: env.CSP_REPORT_URI,
   })
+  // Report-only mode logs violations without blocking — use it to vet a policy
+  // before enforcing. The *request* header stays the enforced name so Next still
+  // applies the nonce to its own scripts (a no-op for the browser).
+  const responseCspHeader = env.CSP_REPORT_ONLY
+    ? 'content-security-policy-report-only'
+    : 'content-security-policy'
 
   const redirectTo = authRedirect(request)
   if (redirectTo) {
     const response = NextResponse.redirect(redirectTo)
-    response.headers.set('content-security-policy', csp)
+    response.headers.set(responseCspHeader, csp)
     return response
   }
 
   // Forward the nonce + CSP on the request so Next nonces its own scripts and
   // components can read `x-nonce`; set the CSP on the response so the browser
-  // enforces it.
+  // enforces (or, in report-only mode, just reports) it.
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
   requestHeaders.set('content-security-policy', csp)
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
-  response.headers.set('content-security-policy', csp)
+  response.headers.set(responseCspHeader, csp)
   return response
 }
 

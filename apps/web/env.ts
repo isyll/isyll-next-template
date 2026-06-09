@@ -38,6 +38,12 @@ export const env = createEnv({
       .min(32, 'Must be at least 32 characters')
       .optional(),
     AUTH_ADMIN_URL: z.url().optional(),
+    // Content-Security-Policy rollout (proxy.ts / lib/csp.ts). Set
+    // CSP_REPORT_ONLY=true to send the policy as `-Report-Only` (logged, not
+    // enforced) while you vet it; CSP_REPORT_URI is where the browser POSTs
+    // violation reports (absolute URL or a same-origin path like /api/csp-report).
+    CSP_REPORT_ONLY: z.stringbool().optional(),
+    CSP_REPORT_URI: z.string().optional(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     FACEBOOK_CLIENT_ID: z.string().optional(),

@@ -58,4 +58,12 @@ describe('buildContentSecurityPolicy', () => {
       'upgrade-insecure-requests'
     )
   })
+
+  it('appends report-uri only when a report endpoint is given', () => {
+    expect(buildContentSecurityPolicy('n')).not.toContain('report-uri')
+    const policy = buildContentSecurityPolicy('n', {
+      reportUri: '/api/csp-report',
+    })
+    expect(parse(policy)['report-uri']).toEqual(['/api/csp-report'])
+  })
 })
