@@ -36,6 +36,13 @@ nonce (`lib/csp.ts`): production uses `'nonce-…' 'strict-dynamic'` with **no**
 > and stop reading the nonce in the layout. Allow third-party origins
 > (analytics, Stripe, an error tracker) by extending the relevant directive.
 
+**Staged rollout.** Before enforcing a tightened policy, set `CSP_REPORT_ONLY=true`
+to emit it as `Content-Security-Policy-Report-Only` — the browser logs violations
+but blocks nothing — and point `CSP_REPORT_URI` at a collector (an absolute URL
+or a same-origin path) so reports are captured. When the reports are clean, unset
+`CSP_REPORT_ONLY` to enforce. Both are wired through `proxy.ts` / `lib/csp.ts` and
+default off.
+
 ## Rate limiting
 
 `@/lib/rate-limit` provides app-level limits for Server Actions (separate from
@@ -55,3 +62,11 @@ surfaced to Sentry as `security`-tagged events (`docs/observability.md`).
 - `CodeQL` runs SAST on every PR; `dependency-review` blocks new high-severity
   advisories; Dependabot keeps dependencies current. New, very-recent packages
   are quarantined by a minimum-release-age policy until explicitly allowed.
+- `pnpm audit` runs in CI (the `Security` workflow) and **fails the build on
+  high/critical** advisories; moderate/low are reported but non-blocking. Run
+  `pnpm audit` locally before pushing. Triage unavoidable false positives via
+  `pnpm.auditConfig` in `package.json` — never by lowering the gate.
+- **Sign your commits.** Make authorship verifiable:
+  `git config commit.gpgsign true` with a GPG or SSH key (`git config gpg.format
+ssh` for SSH), add the public key to GitHub, then enable a branch-protection
+  rule requiring signed commits on `development` / `production`.

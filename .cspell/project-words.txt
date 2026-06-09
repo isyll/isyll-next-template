@@ -138,3 +138,4 @@ codespace
 codespaces
 certonly
 webroot
+gpgsign
