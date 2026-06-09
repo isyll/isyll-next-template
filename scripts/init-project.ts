@@ -51,11 +51,19 @@ program
   .option('--owner <handle>', 'GitHub owner/org')
   .option('--repo <name>', 'GitHub repository name')
   .option('--author-email <email>', 'contact email (security.txt, author)')
+  .option(
+    '--theme <name>',
+    'brand color preset: indigo | blue | emerald | violet | rose'
+  )
   .option('--cookie-prefix <prefix>', 'end-user session cookie prefix')
   .option('--app-url <url>', 'public application URL')
   .option('--db-url <url>', 'PostgreSQL connection string')
   .option('-y, --yes', 'accept defaults without prompting', false)
   .option('--force', 'reinitialize even if already set up', false)
+  .option(
+    '--readme-stub',
+    'replace README.md with a minimal project stub (skip the prompt)'
+  )
   .option(
     '--skip-bootstrap',
     'skip the database/operator bootstrap step',
@@ -76,9 +84,11 @@ const flags = program.opts<{
   owner?: string
   repo?: string
   authorEmail?: string
+  theme?: string
   cookiePrefix?: string
   appUrl?: string
   dbUrl?: string
+  readmeStub?: boolean
   yes?: boolean
   force?: boolean
   skipBootstrap?: boolean
@@ -170,6 +180,120 @@ function ensureSecret(env: string, key: string): string {
   return upsertEnv(env, key, randomBytes(32).toString('base64'))
 }
 
+/**
+ * Brand color presets. Each maps the `--brand-*` block in
+ * `packages/ui/src/styles/globals.css` (light + dark oklch values) to a
+ * matching `siteConfig.themeColor` and email-token hex. `indigo` is the
+ * template default — selecting it changes nothing.
+ */
+const THEME_PRESETS = {
+  indigo: {
+    label: 'Indigo (default)',
+    light: 'oklch(0.55 0.22 277)',
+    dark: 'oklch(0.62 0.19 277)',
+    themeColor: '#4f46e5',
+    emailBrand: '#6366f1',
+  },
+  blue: {
+    label: 'Blue',
+    light: 'oklch(0.55 0.2 264)',
+    dark: 'oklch(0.62 0.17 264)',
+    themeColor: '#2563eb',
+    emailBrand: '#3b82f6',
+  },
+  emerald: {
+    label: 'Emerald',
+    light: 'oklch(0.58 0.14 163)',
+    dark: 'oklch(0.65 0.13 163)',
+    themeColor: '#059669',
+    emailBrand: '#10b981',
+  },
+  violet: {
+    label: 'Violet',
+    light: 'oklch(0.55 0.24 293)',
+    dark: 'oklch(0.62 0.2 293)',
+    themeColor: '#7c3aed',
+    emailBrand: '#8b5cf6',
+  },
+  rose: {
+    label: 'Rose',
+    light: 'oklch(0.58 0.22 16)',
+    dark: 'oklch(0.64 0.2 16)',
+    themeColor: '#e11d48',
+    emailBrand: '#f43f5e',
+  },
+} as const
+type ThemeName = keyof typeof THEME_PRESETS
+const THEME_OPTIONS: Option<ThemeName>[] = (
+  Object.keys(THEME_PRESETS) as ThemeName[]
+).map((value) => ({ value, label: THEME_PRESETS[value].label }))
+
+const DEFAULT_LIGHT_BRAND = THEME_PRESETS.indigo.light
+const DEFAULT_DARK_BRAND = THEME_PRESETS.indigo.dark
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/** A 1200×630 Open Graph placeholder: the app name on a brand gradient. */
+function ogPlaceholderSvg(
+  title: string,
+  subtitle: string,
+  hex: string
+): string {
+  const font =
+    '-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="${escapeXml(title)}">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${hex}"/>
+      <stop offset="1" stop-color="#0b0b12"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="80" y="340" font-family="${font}" font-size="84" font-weight="700" fill="#ffffff">${escapeXml(title)}</text>
+  <text x="80" y="412" font-family="${font}" font-size="34" fill="#ffffffcc">${escapeXml(subtitle)}</text>
+</svg>
+`
+}
+
+/** A minimal, de-templated README for a freshly initialized project. */
+function readmeStub(
+  title: string,
+  desc: string,
+  ownerHandle: string,
+  repoName: string
+): string {
+  return `# ${title}
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/${ownerHandle}/${repoName})
+
+${desc}
+
+## Quick start
+
+\`\`\`bash
+pnpm install
+docker compose up -d                 # local Postgres + Adminer
+pnpm db:migrate                      # apply migrations
+pnpm db:seed                         # optional sample data
+pnpm admin:create-operator --email you@example.com --name "You" --super
+pnpm dev                             # http://localhost:3000
+\`\`\`
+
+See \`PROJECT.md\` for the project brief and \`AGENTS.md\` for engineering
+conventions. Deployment is documented in \`docs/deployment.md\`.
+
+---
+
+Built on [${TEMPLATE_NAME}](https://github.com/${TEMPLATE_OWNER}/${TEMPLATE_NAME}).
+`
+}
+
 // 0. Detect an already-initialized project
 intro(pc.cyan(`${TEMPLATE_NAME} · project setup`))
 
@@ -197,6 +321,18 @@ const description =
   (await prompt('One-line description', 'A modern web application.'))
 const authorEmail =
   flags.authorEmail ?? (await prompt('Contact email', 'contact@example.com'))
+
+let theme: ThemeName = 'indigo'
+if (flags.theme !== undefined) {
+  if (flags.theme in THEME_PRESETS) theme = flags.theme as ThemeName
+  else
+    console.warn(
+      pc.yellow(`Unknown theme "${flags.theme}" — keeping indigo (default).`)
+    )
+} else {
+  theme = await choose<ThemeName>('Brand color theme', THEME_OPTIONS, 'indigo')
+}
+const preset = THEME_PRESETS[theme]
 
 // 2. Repository
 note('GitHub owner and repository.', 'Step 2 · Repository')
@@ -269,10 +405,45 @@ replaceInFile('apps/web/lib/site-config.ts', [
     `'${description}'`,
   ],
 ])
-// AI-agent guide brand line (keep the engineering conventions, swap the name).
+// AI-agent guides: keep the engineering conventions, swap the project identity.
 replaceInFile('.github/copilot-instructions.md', [
   [`**${TEMPLATE_NAME}**`, `**${displayName}**`],
 ])
+replaceInFile('AGENTS.md', [
+  [
+    `\`${TEMPLATE_NAME}\` — a server-first Next.js 16 monorepo template (pnpm +\nTurborepo) used as the base for new client/product projects.`,
+    `\`${name}\` — ${description}\n\nBuilt on ${TEMPLATE_NAME} (a server-first Next.js 16 monorepo; pnpm + Turborepo).`,
+  ],
+])
+
+// Brand color theme. `indigo` is the template default, so a no-op there; any
+// other preset rewrites the `--brand-*` block, themeColor and email token.
+if (theme !== 'indigo') {
+  replaceInFile('packages/ui/src/styles/globals.css', [
+    [DEFAULT_LIGHT_BRAND, preset.light],
+    [DEFAULT_DARK_BRAND, preset.dark],
+  ])
+  replaceInFile('apps/web/lib/site-config.ts', [
+    ["themeColor: '#4f46e5'", `themeColor: '${preset.themeColor}'`],
+  ])
+  replaceInFile('packages/email/src/tokens.ts', [
+    ["brand: '#6366f1'", `brand: '${preset.emailBrand}'`],
+  ])
+}
+
+// Open Graph: replace the template's branded PNG with a generated placeholder
+// carrying the project's own name (no leftover template identity). Swap it for
+// a real 1200×630 image before launch.
+replaceInFile('apps/web/lib/site-config.ts', [
+  ['/og-image.png', '/og-image.svg'],
+])
+if (!dryRun) {
+  writeFileSync(
+    join(ROOT, 'apps/web/public/og-image.svg'),
+    ogPlaceholderSvg(displayName, description, preset.themeColor)
+  )
+  rmSync(join(ROOT, 'apps/web/public/og-image.png'), { force: true })
+}
 if (owner !== TEMPLATE_OWNER) {
   replaceInFile('.github/CODEOWNERS', [[`@${TEMPLATE_OWNER}`, `@${owner}`]])
 }
@@ -282,18 +453,22 @@ replaceInFile('.github/ISSUE_TEMPLATE/config.yml', [
     `github.com/${owner}/${repo}`,
   ],
 ])
-// "Open in GitHub Codespaces" badge → the new repository.
-replaceInFile('README.md', [
-  [
-    `codespaces.new/${TEMPLATE_OWNER}/${TEMPLATE_NAME}`,
-    `codespaces.new/${owner}/${repo}`,
-  ],
-])
+// README: either a minimal project stub, or keep the template's README with the
+// title + Codespaces badge re-pointed at the new project.
+const wantReadmeStub =
+  flags.readmeStub ??
+  (await ask('Replace README with a minimal project stub?', true))
 if (!dryRun) {
   const readmePath = join(ROOT, 'README.md')
-  if (existsSync(readmePath)) {
-    const readme = readFileSync(readmePath, 'utf8')
-    writeFileSync(readmePath, readme.replace(/^#\s.*$/m, `# ${displayName}`))
+  if (wantReadmeStub) {
+    writeFileSync(readmePath, readmeStub(displayName, description, owner, repo))
+  } else if (existsSync(readmePath)) {
+    let readme = readFileSync(readmePath, 'utf8')
+    readme = readme
+      .replace(/^#\s.*$/m, `# ${displayName}`)
+      .split(`codespaces.new/${TEMPLATE_OWNER}/${TEMPLATE_NAME}`)
+      .join(`codespaces.new/${owner}/${repo}`)
+    writeFileSync(readmePath, readme)
   }
 }
 
@@ -426,8 +601,9 @@ const nextSteps = [
     ? '  • pnpm db:migrate && pnpm db:seed'
     : '  • Database bootstrap handled above (re-run steps as needed)',
   '  • pnpm admin:create-operator --email you@example.com --name "You" --super',
-  '  • Rebrand: edit --brand-* in packages/ui/src/styles/globals.css +',
-  '    siteConfig.themeColor (see docs/theming.md); replace public/og-image.png',
+  `  • Theme: ${preset.label.toLowerCase()} — tweak --brand-* in`,
+  '    packages/ui/src/styles/globals.css (see docs/theming.md); swap the',
+  '    generated public/og-image.svg for a real 1200×630 image before launch',
   '  • pnpm dev',
   '  • Deploy: see docs/deployment.md — preview in Codespaces now, VPS over',
   '    SSH when ready (set the DEPLOY_* repo secrets/variables to enable)',
