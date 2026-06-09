@@ -61,6 +61,31 @@ Then keep two non-CSS values in sync (they can't read CSS variables):
    [`packages/email/src/tokens.ts`](../packages/email/src/tokens.ts) — the hex
    used by email templates (email clients don't support CSS vars).
 
+## Theme presets (`project:init --theme`)
+
+`pnpm project:init` can set the brand color for you. It ships five presets and
+rewrites all three places at once — the `--brand-*` block (light + dark), the
+`siteConfig.themeColor` hex, and the `emailTokens` brand hex — so they never
+drift:
+
+| Preset    | Hue | `themeColor`        |
+| --------- | --- | ------------------- |
+| `indigo`  | 277 | `#4f46e5` (default) |
+| `blue`    | 264 | `#2563eb`           |
+| `emerald` | 163 | `#059669`           |
+| `violet`  | 293 | `#7c3aed`           |
+| `rose`    | 16  | `#e11d48`           |
+
+```bash
+pnpm project:init --theme emerald      # non-interactive
+pnpm project:init                      # or pick from the prompt
+```
+
+`indigo` is the template default, so selecting it changes nothing. The admin
+console keeps its own distinct hue (teal) regardless — see the `.admin` block in
+`globals.css`. For a hue not listed here, pick `indigo` and edit the block by
+hand as above.
+
 ## Going beyond one color
 
 The neutrals (`--secondary`, `--muted`, `--accent`, `--border`) are intentionally
