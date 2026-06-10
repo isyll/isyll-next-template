@@ -71,6 +71,21 @@
     "tooLarge": "{name} dépasse la taille maximale.",
     "badType": "{name} : type de fichier non pris en charge."
   },
+  "Notifications": {
+    "title": "Notifications",
+    "subtitle": "Vos notifications et vos préférences de notification.",
+    "inboxHeading": "Boîte de réception",
+    "preferencesHeading": "Préférences",
+    "empty": "Aucune notification.",
+    "markRead": "Marquer comme lu",
+    "markAllRead": "Tout marquer comme lu",
+    "delete": "Supprimer",
+    "deleted": "Notification supprimée.",
+    "allRead": "Toutes les notifications ont été marquées comme lues.",
+    "channelInApp": "Notifications dans l'application",
+    "channelEmail": "Notifications par e-mail",
+    "bellLabel": "Notifications ({count} non lues)"
+  },
   "Admin": {
     "title": "Console d'administration",
     "loginTitle": "Connexion opérateur",

@@ -7,6 +7,8 @@ import { Button, buttonVariants } from '@workspace/ui/components/button'
 import { ModeToggle } from '@workspace/ui/components/mode-toggle'
 
 import { LocaleSwitcher } from '@/components/locale-switcher'
+import { NotificationBell } from '@/components/notification-bell'
+import { getUnreadNotificationCount } from '@/features/notifications/queries'
 import { signOutAction } from '@/server/auth'
 
 export async function SiteHeader() {
@@ -15,6 +17,10 @@ export async function SiteHeader() {
     getTranslations('Nav'),
     userAuth.api.getSession({ headers: await headers() }),
   ])
+
+  const unreadCount = session
+    ? await getUnreadNotificationCount(session.user.id)
+    : 0
 
   return (
     <header className='sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur'>
@@ -39,6 +45,7 @@ export async function SiteHeader() {
               >
                 {tNav('files')}
               </Link>
+              <NotificationBell initialCount={unreadCount} />
               <form action={signOutAction}>
                 <Button type='submit' variant='outline' size='sm'>
                   {tNav('logout')}

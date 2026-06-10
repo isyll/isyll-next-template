@@ -93,7 +93,11 @@ are absent (dev).
 - **Object storage.** `@/lib/storage` (S3/R2/MinIO, presigned URLs, server-only)
   plus pure `@/lib/upload` helpers. Track files in `app.uploads` via its DAL.
 - **Notifications.** `app.notifications` table + DAL under
-  `apps/web/features/notifications`.
+  `apps/web/features/notifications`, with a bell + inbox UI, **realtime** unread
+  badge over Server-Sent Events (Redis pub/sub, polling fallback), and
+  **per-channel preferences** (`app.notification_preferences`). Send via
+  `deliverNotification` (respects the channel preference + pushes realtime). See
+  `docs/notifications.md`.
 - **Feature flags.** `@/lib/feature-flags` → `isEnabled` / `getStringFlag` /
   `getNumberFlag` / `getJsonFlag` and the `<FeatureGate>` server component, gated
   per user (or any context attribute) with targeting rules + sticky percentage

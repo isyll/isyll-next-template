@@ -1,5 +1,13 @@
 import { sql } from 'drizzle-orm'
-import { index, jsonb, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  index,
+  jsonb,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 import { softDelete, timestamps } from './_helpers'
 import { appSchema, users } from './auth'
@@ -35,4 +43,22 @@ export const notifications = appSchema.table(
       .on(table.userId)
       .where(sql`${table.readAt} is null and ${table.deletedAt} is null`),
   ]
+)
+
+/**
+ * Per-channel notification preferences (Drizzle mirror of the pure-SQL
+ * migration). One row per (user, channel); a missing row means enabled. Senders
+ * consult these before delivering through a channel.
+ */
+export const notificationPreferences = appSchema.table(
+  'notification_preferences',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    channel: text('channel').$type<'in_app' | 'email'>().notNull(),
+    enabled: boolean('enabled').notNull().default(true),
+    ...timestamps,
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.channel] })]
 )

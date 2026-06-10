@@ -10,7 +10,7 @@ import type {
 } from '@workspace/db'
 import { sendNewConnectionAlert } from '@workspace/email'
 
-import { createNotification } from '@/features/notifications/queries'
+import { deliverNotification } from '@/features/notifications/service'
 import { logger } from '@/lib/logger'
 import { siteConfig } from '@/lib/site-config'
 
@@ -24,7 +24,7 @@ import { siteConfig } from '@/lib/site-config'
 
 /** A new user finished signing up → drop them a welcome notification. */
 async function onUserRegistered(event: UserRegisteredEvent): Promise<void> {
-  await createNotification({
+  await deliverNotification({
     userId: event.userId,
     type: 'welcome',
     // The app is single-locale today; localize via the user's `language` when
