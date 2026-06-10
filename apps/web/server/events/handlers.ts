@@ -4,12 +4,14 @@ import { resolveLocale } from '@workspace/core'
 import type {
   DomainEvent,
   DomainEventType,
+  FeatureFlagChangedEvent,
   UserNewConnectionEvent,
   UserRegisteredEvent,
 } from '@workspace/db'
 import { sendNewConnectionAlert } from '@workspace/email'
 
 import { createNotification } from '@/features/notifications/queries'
+import { logger } from '@/lib/logger'
 import { siteConfig } from '@/lib/site-config'
 
 /**
@@ -53,6 +55,26 @@ async function onUserNewConnection(
 }
 
 /**
+ * A feature flag's configuration changed → record a structured rollout-metric
+ * line. Because the event is written transactionally with the change and
+ * delivered at-least-once, this is a durable audit/rollout trail (which flag
+ * flipped, by whom, when) that pairs cleanly with log-based metrics.
+ */
+function onFeatureFlagChanged(event: FeatureFlagChangedEvent): Promise<void> {
+  logger.info(
+    {
+      scope: 'feature-flags',
+      flag: event.key,
+      change: event.change,
+      enabled: event.enabled,
+      actorId: event.actorId,
+    },
+    '[feature-flags] configuration changed'
+  )
+  return Promise.resolve()
+}
+
+/**
  * Registry of handlers, one per event type. The dispatcher narrows the stored
  * payload to the matching `DomainEvent` variant before calling.
  */
@@ -63,4 +85,6 @@ export const eventHandlers: Record<
   'user.registered': (event) => onUserRegistered(event as UserRegisteredEvent),
   'user.new_connection': (event) =>
     onUserNewConnection(event as UserNewConnectionEvent),
+  'feature_flag.changed': (event) =>
+    onFeatureFlagChanged(event as FeatureFlagChangedEvent),
 }

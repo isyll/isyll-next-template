@@ -94,6 +94,15 @@ are absent (dev).
   plus pure `@/lib/upload` helpers. Track files in `app.uploads` via its DAL.
 - **Notifications.** `app.notifications` table + DAL under
   `apps/web/features/notifications`.
+- **Feature flags.** `@/lib/feature-flags` → `isEnabled` / `getStringFlag` /
+  `getNumberFlag` / `getJsonFlag` and the `<FeatureGate>` server component, gated
+  per user (or any context attribute) with targeting rules + sticky percentage
+  rollouts. The pure evaluation engine lives in `@workspace/core` (`evaluateFlag`);
+  the DB-backed store (`app.feature_flags`) is cached two-tier (in-process + Redis)
+  behind an OpenFeature-style `FlagProvider` seam. Flags are typed against the
+  catalogue (`lib/feature-flags/catalog.ts`) and degrade to the catalogue default
+  with no DB row. Manage with `pnpm --filter web flags <list|sync|enable|…>`; each
+  change emits a `feature_flag.changed` event. See `docs/feature-flags.md`.
 - **Domain events (outbox).** `publishEvent` (`@workspace/db`) writes a typed
   event to `app.outbox_events` in the same transaction as your change; the relay
   (`pnpm --filter web worker:outbox`) dispatches it to handlers in

@@ -8,5 +8,10 @@ export default defineConfig(
   // Point the Next plugin at this app's root so its routes-dir rules resolve
   // even when ESLint runs from the monorepo root (e.g. lint-staged / pre-commit),
   // not just via `turbo run lint` (which runs in this package's cwd).
-  { settings: { next: { rootDir: import.meta.dirname } } }
+  { settings: { next: { rootDir: import.meta.dirname } } },
+  // Standalone maintenance scripts are allowed to log progress to the console.
+  {
+    files: ['server/scripts/**/*.ts'],
+    rules: { 'no-console': 'off' },
+  }
 )

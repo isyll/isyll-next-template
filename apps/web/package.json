@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "worker:outbox": "tsx server/workers/outbox-worker.ts",
     "worker:jobs": "tsx server/workers/jobs-worker.ts",
-    "retention:run": "tsx server/jobs/run-retention.ts"
+    "retention:run": "tsx server/jobs/run-retention.ts",
+    "flags": "tsx server/scripts/flags.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",

@@ -9,6 +9,7 @@ export {
   type DomainEventType,
   type UserRegisteredEvent,
   type UserNewConnectionEvent,
+  type FeatureFlagChangedEvent,
 } from './lib/events'
 export {
   createTransactional,

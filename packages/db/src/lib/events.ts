@@ -35,18 +35,45 @@ export interface UserNewConnectionEvent {
   detectedAt: string
 }
 
-export type DomainEvent = UserRegisteredEvent | UserNewConnectionEvent
+export interface FeatureFlagChangedEvent {
+  type: 'feature_flag.changed'
+  /** The flag key whose configuration changed. */
+  key: string
+  /** The flag's kill-switch state after the change. */
+  enabled: boolean
+  change: 'created' | 'updated' | 'deleted'
+  /** Operator/user/system id that made the change, if known. */
+  actorId: string | null
+}
+
+export type DomainEvent =
+  | UserRegisteredEvent
+  | UserNewConnectionEvent
+  | FeatureFlagChangedEvent
 
 export type DomainEventType = DomainEvent['type']
 
+/**
+ * The aggregate a domain event is "about" — the primary entity it concerns.
+ * Exhaustive over `DomainEvent`, so adding a variant forces a mapping here.
+ */
+function aggregateRef(event: DomainEvent): { id: string; type: string } {
+  switch (event.type) {
+    case 'user.registered':
+    case 'user.new_connection':
+      return { id: event.userId, type: 'user' }
+    case 'feature_flag.changed':
+      return { id: event.key, type: 'feature_flag' }
+  }
+}
+
 /** Map a domain event to its outbox-row representation. */
 export function buildOutboxEvent(event: DomainEvent): NewOutboxEvent {
-  const [aggregateType] = event.type.split('.')
+  const aggregate = aggregateRef(event)
   return {
     eventType: event.type,
-    // Every current aggregate is a user; widen this when adding other domains.
-    aggregateId: event.userId,
-    aggregateType: aggregateType ?? 'unknown',
+    aggregateId: aggregate.id,
+    aggregateType: aggregate.type,
     payload: event as unknown as Record<string, unknown>,
   }
 }
