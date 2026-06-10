@@ -36,6 +36,11 @@ export function isStorageConfigured(): boolean {
   )
 }
 
+/** The configured bucket name; throws if storage is not configured. */
+export function getBucketName(): string {
+  return getConfig().bucket
+}
+
 function getConfig(): StorageConfig {
   const region = env.S3_REGION
   const bucket = env.S3_BUCKET

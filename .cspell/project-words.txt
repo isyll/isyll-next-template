@@ -134,6 +134,8 @@ regconfig
 meilisearch
 typesense
 opensearch
+previewable
+imgproxy
 ksuid
 tsid
 hashids

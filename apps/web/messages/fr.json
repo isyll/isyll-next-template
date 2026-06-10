@@ -15,6 +15,7 @@
   "Nav": {
     "home": "Accueil",
     "dashboard": "Tableau de bord",
+    "files": "Fichiers",
     "login": "Connexion",
     "logout": "Déconnexion",
     "register": "Inscription"
@@ -53,6 +54,22 @@
     "title": "Tableau de bord",
     "welcome": "Bienvenue, {name}",
     "signedInAs": "Connecté en tant que {email}"
+  },
+  "Files": {
+    "title": "Fichiers",
+    "subtitle": "Téléversez et gérez vos fichiers.",
+    "dropzone": "Glissez-déposez des fichiers, ou cliquez pour parcourir",
+    "dropzoneHint": "Images et PDF, jusqu'à {max}",
+    "empty": "Aucun fichier pour le moment.",
+    "disabled": "Le stockage de fichiers n'est pas configuré.",
+    "uploadingName": "Téléversement de {name}…",
+    "uploaded": "{name} téléversé.",
+    "uploadError": "Échec du téléversement de {name}.",
+    "deleted": "Fichier supprimé.",
+    "download": "Télécharger",
+    "delete": "Supprimer",
+    "tooLarge": "{name} dépasse la taille maximale.",
+    "badType": "{name} : type de fichier non pris en charge."
   },
   "Admin": {
     "title": "Console d'administration",

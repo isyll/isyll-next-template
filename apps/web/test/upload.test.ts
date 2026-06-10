@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_IMAGE_CONSTRAINTS,
   buildObjectKey,
+  formatBytes,
+  isImageContentType,
   validateUpload,
 } from '@/lib/upload'
 
@@ -59,5 +61,27 @@ describe('buildObjectKey', () => {
     expect(key).not.toContain('..')
     expect(key).not.toContain(' ')
     expect(key).toMatch(/avatars\/user_1\/\d+-.*passwd_photo\.png$/)
+  })
+})
+
+describe('formatBytes', () => {
+  it('formats across units', () => {
+    expect(formatBytes(0)).toBe('0 B')
+    expect(formatBytes(512)).toBe('512 B')
+    expect(formatBytes(1024)).toBe('1 KB')
+    expect(formatBytes(1.5 * 1024 * 1024)).toBe('1.5 MB')
+  })
+
+  it('handles invalid input safely', () => {
+    expect(formatBytes(-1)).toBe('0 B')
+    expect(formatBytes(Number.NaN)).toBe('0 B')
+  })
+})
+
+describe('isImageContentType', () => {
+  it('detects image types', () => {
+    expect(isImageContentType('image/png')).toBe(true)
+    expect(isImageContentType('image/webp')).toBe(true)
+    expect(isImageContentType('application/pdf')).toBe(false)
   })
 })

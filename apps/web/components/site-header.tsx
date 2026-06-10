@@ -33,6 +33,12 @@ export async function SiteHeader() {
               >
                 {tNav('dashboard')}
               </Link>
+              <Link
+                href='/dashboard/files'
+                className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+              >
+                {tNav('files')}
+              </Link>
               <form action={signOutAction}>
                 <Button type='submit' variant='outline' size='sm'>
                   {tNav('logout')}
