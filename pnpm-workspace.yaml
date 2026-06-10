@@ -45,7 +45,7 @@ catalog:
   # --- ESLint 10 toolchain ---
   eslint: 10.4.1
   '@eslint/js': 10.0.1
-  typescript-eslint: 8.60.1
+  typescript-eslint: 8.61.0
   eslint-config-prettier: 10.1.8
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 7.1.1
@@ -91,11 +91,11 @@ catalog:
   pg-boss: 12.18.2
 
   # --- Object storage (S3-compatible: AWS S3, Cloudflare R2, MinIO, ...) ---
-  '@aws-sdk/client-s3': 3.1063.0
-  '@aws-sdk/s3-request-presigner': 3.1063.0
+  '@aws-sdk/client-s3': 3.1064.0
+  '@aws-sdk/s3-request-presigner': 3.1064.0
 
   # --- Auth ---
-  better-auth: 1.6.14
+  better-auth: 1.6.15
   jose: 6.2.3
   # Argon2id password hashing (prebuilt native bindings, incl. linux-musl).
   '@node-rs/argon2': 2.0.2
@@ -129,7 +129,7 @@ catalog:
   server-only: 0.0.1
 
   # --- Forms ---
-  react-hook-form: 7.77.0
+  react-hook-form: 7.78.0
   '@hookform/resolvers': 5.4.0
 
   # --- CLI tooling ---
