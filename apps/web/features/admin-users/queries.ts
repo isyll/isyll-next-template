@@ -6,8 +6,15 @@ import {
   paginated,
   toLimitOffset,
 } from '@workspace/core'
-import { db, schema } from '@workspace/db'
-import { count, desc, ilike, or, type SQL } from 'drizzle-orm'
+import {
+  db,
+  notDeleted,
+  schema,
+  smartTextSearch,
+  trigramMatch,
+  trigramSimilarity,
+} from '@workspace/db'
+import { and, asc, count, desc, sql, type SQL } from 'drizzle-orm'
 
 const { users } = schema
 
@@ -27,6 +34,12 @@ export interface AdminUserDTO {
   createdAt: string
 }
 
+export interface UserSuggestion {
+  id: string
+  name: string
+  email: string
+}
+
 type UserRow = typeof users.$inferSelect
 
 function toDto(row: UserRow): AdminUserDTO {
@@ -41,14 +54,26 @@ function toDto(row: UserRow): AdminUserDTO {
   }
 }
 
-/** Paginated, optionally search-filtered (email or name) list of all users. */
+// The generated `search_vector` column (name + email) is SQL-only — referenced
+// here as a raw expression, scoped to the single-table query.
+const searchVector = sql`search_vector`
+
+/**
+ * Paginated, optionally search-filtered list of all users. Search combines
+ * Postgres full-text (`websearch_to_tsquery` over name + email) with a fuzzy
+ * trigram arm on name, ranked by the better of the two scores.
+ */
 export async function listUsers(
   params: PaginationParams & { search?: string }
 ): Promise<Paginated<AdminUserDTO>> {
   const term = params.search?.trim()
-  const where: SQL | undefined = term
-    ? or(ilike(users.email, `%${term}%`), ilike(users.name, `%${term}%`))
-    : undefined
+  const search = term
+    ? smartTextSearch({ vector: searchVector, trigramColumn: users.name, term })
+    : null
+  const where: SQL | undefined = search?.condition
+  const orderBy = search
+    ? [desc(search.rank), desc(users.createdAt)]
+    : [desc(users.createdAt)]
   const { limit, offset } = toLimitOffset(params)
 
   const [rows, totals] = await Promise.all([
@@ -56,11 +81,37 @@ export async function listUsers(
       .select()
       .from(users)
       .where(where)
-      .orderBy(desc(users.createdAt))
+      .orderBy(...orderBy)
       .limit(limit)
       .offset(offset),
     db.select({ value: count() }).from(users).where(where),
   ])
 
   return paginated(rows.map(toDto), totals[0]?.value ?? 0, params)
+}
+
+/**
+ * Typo-tolerant autocomplete over live users' names (pg_trgm), ranked by
+ * similarity. Returns a short list suitable for a search-as-you-type box.
+ */
+export async function suggestUsers(
+  term: string,
+  limit = 8
+): Promise<UserSuggestion[]> {
+  const query = term.trim()
+  if (query.length === 0) return []
+
+  const rows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      score: trigramSimilarity(users.name, query),
+    })
+    .from(users)
+    .where(and(notDeleted(users), trigramMatch(users.name, query)))
+    .orderBy(desc(sql`score`), asc(users.name))
+    .limit(limit)
+
+  return rows.map(({ id, name, email }) => ({ id, name, email }))
 }

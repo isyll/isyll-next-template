@@ -130,6 +130,10 @@ webhooks
 stripe
 unaccent
 autocomplete
+regconfig
+meilisearch
+typesense
+opensearch
 ksuid
 tsid
 hashids

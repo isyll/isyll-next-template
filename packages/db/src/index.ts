@@ -2,6 +2,7 @@ export { db, type DB, getDb, withTransaction } from './client'
 export * as schema from './schema'
 export * from './validators'
 export * from './lib/soft-delete'
+export * from './lib/search'
 export {
   publishEvent,
   buildOutboxEvent,
