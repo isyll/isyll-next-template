@@ -1,4 +1,4 @@
-import { render } from '@react-email/components'
+import { render } from 'react-email'
 import { DEFAULT_LOCALE } from '@workspace/core/i18n'
 import { Resend } from 'resend'
 

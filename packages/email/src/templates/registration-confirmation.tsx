@@ -1,4 +1,4 @@
-import { Section } from '@react-email/components'
+import { Section } from 'react-email'
 import { DEFAULT_LOCALE } from '@workspace/core/i18n'
 
 import { EmailButton } from '../components/email-button'

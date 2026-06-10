@@ -1,11 +1,4 @@
-import {
-  Body,
-  Container,
-  Head,
-  Html,
-  Preview,
-  Tailwind,
-} from '@react-email/components'
+import { Body, Container, Head, Html, Preview, Tailwind } from 'react-email'
 import { DEFAULT_LOCALE } from '@workspace/core/i18n'
 import type { ReactNode } from 'react'
 

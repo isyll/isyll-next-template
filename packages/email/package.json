@@ -15,10 +15,9 @@
     "email:export": "email export --dir src/templates --outDir dist/emails --pretty"
   },
   "dependencies": {
-    "@react-email/components": "catalog:",
-    "@react-email/tailwind": "catalog:",
     "@workspace/core": "workspace:*",
     "react": "catalog:",
+    "react-email": "catalog:",
     "react-dom": "catalog:",
     "resend": "catalog:"
   },

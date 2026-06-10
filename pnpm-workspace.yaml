@@ -103,8 +103,6 @@ catalog:
   # --- Email (Resend + React Email) ---
   resend: 6.12.4
   'react-email': 6.5.0
-  '@react-email/components': 1.0.12
-  '@react-email/tailwind': 2.0.7
 
   # --- Reference data (generated into migrations) ---
   world-countries: 5.1.0
