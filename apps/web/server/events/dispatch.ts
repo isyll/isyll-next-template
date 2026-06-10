@@ -10,6 +10,7 @@ import { and, asc, eq, inArray, lte } from 'drizzle-orm'
 
 import { logger } from '@/lib/logger'
 import { reportError } from '@/lib/observability'
+import { withSpan } from '@/lib/otel'
 
 import { eventHandlers } from './handlers'
 
@@ -47,49 +48,68 @@ export async function processOutboxBatch(): Promise<number> {
       .limit(BATCH_SIZE)
       .for('update', { skipLocked: true })
 
-    for (const row of due) {
-      const handler = eventHandlers[row.eventType as DomainEventType] as
-        | ((event: DomainEvent) => Promise<void>)
-        | undefined
-      try {
-        if (!handler) {
-          throw new Error(`No handler for event type "${row.eventType}"`)
-        }
-        await handler(row.payload as unknown as DomainEvent)
-        await tx
-          .update(outboxEvents)
-          .set({
-            status: 'processed',
-            processedAt: new Date(),
-            errorMessage: null,
-          })
-          .where(eq(outboxEvents.id, row.id))
-      } catch (error) {
-        const attempts = row.attempts + 1
-        const dead = attempts >= row.maxAttempts
-        reportError(error, {
-          scope: 'outbox',
-          eventType: row.eventType,
-          eventId: row.id,
-          attempts,
-        })
-        await tx
-          .update(outboxEvents)
-          .set({
-            status: dead ? 'dead' : 'failed',
-            attempts,
-            failedAt: new Date(),
-            scheduledAt: dead ? row.scheduledAt : nextRetryAt(attempts),
-            errorMessage:
-              error instanceof Error ? error.message : String(error),
-          })
-          .where(eq(outboxEvents.id, row.id))
-      }
-    }
+    // No span when idle — the worker polls frequently and most polls are empty.
+    if (due.length === 0) return 0
 
-    if (due.length > 0) {
-      logger.debug({ count: due.length }, '[outbox] processed batch')
-    }
-    return due.length
+    return withSpan(
+      'outbox.batch',
+      async () => {
+        for (const row of due) {
+          const handler = eventHandlers[row.eventType as DomainEventType] as
+            | ((event: DomainEvent) => Promise<void>)
+            | undefined
+          try {
+            await withSpan(
+              'outbox.dispatch',
+              async () => {
+                if (!handler) {
+                  throw new Error(
+                    `No handler for event type "${row.eventType}"`
+                  )
+                }
+                await handler(row.payload as unknown as DomainEvent)
+              },
+              {
+                'event.type': row.eventType,
+                'event.id': row.id,
+                'event.attempts': row.attempts,
+              }
+            )
+            await tx
+              .update(outboxEvents)
+              .set({
+                status: 'processed',
+                processedAt: new Date(),
+                errorMessage: null,
+              })
+              .where(eq(outboxEvents.id, row.id))
+          } catch (error) {
+            const attempts = row.attempts + 1
+            const dead = attempts >= row.maxAttempts
+            reportError(error, {
+              scope: 'outbox',
+              eventType: row.eventType,
+              eventId: row.id,
+              attempts,
+            })
+            await tx
+              .update(outboxEvents)
+              .set({
+                status: dead ? 'dead' : 'failed',
+                attempts,
+                failedAt: new Date(),
+                scheduledAt: dead ? row.scheduledAt : nextRetryAt(attempts),
+                errorMessage:
+                  error instanceof Error ? error.message : String(error),
+              })
+              .where(eq(outboxEvents.id, row.id))
+          }
+        }
+
+        logger.debug({ count: due.length }, '[outbox] processed batch')
+        return due.length
+      },
+      { 'outbox.batch_size': due.length }
+    )
   })
 }

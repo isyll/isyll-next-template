@@ -16,12 +16,7 @@ import { appSchema } from './auth'
  * The relay and handlers are plain Postgres + in-process code — no broker. See
  * `packages/db/src/lib/events.ts` (publisher) and `apps/web/server/events`.
  */
-export type OutboxEventStatus =
-  | 'pending'
-  | 'processing'
-  | 'processed'
-  | 'failed'
-  | 'dead'
+export type OutboxEventStatus = 'pending' | 'processed' | 'failed' | 'dead'
 
 export const outboxEvents = appSchema.table('outbox_events', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -39,7 +34,7 @@ export const outboxEvents = appSchema.table('outbox_events', {
     .notNull()
     .default({}),
 
-  /** State machine: pending → processing → processed | failed → … → dead. */
+  /** State machine: pending → processed | failed → … → dead (no in-flight state). */
   status: text('status')
     .$type<OutboxEventStatus>()
     .notNull()

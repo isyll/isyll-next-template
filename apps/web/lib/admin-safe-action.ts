@@ -12,12 +12,14 @@ import * as z from 'zod'
 
 import { getOperatorPermissions } from '@/lib/admin-permissions'
 import { reportError } from '@/lib/observability'
+import { withSpan } from '@/lib/otel'
 
 /**
  * Server-action client for operator-only actions. Completely separate from the
  * user-facing `authActionClient`: it validates against the admin BetterAuth
  * instance, so a valid USER session can never satisfy an admin action. The
- * operator's PBAC permission set is resolved once and injected as `ctx`.
+ * operator's PBAC permission set is resolved once and injected as `ctx`. The
+ * outermost middleware wraps each action in an OpenTelemetry span.
  */
 const baseAdminActionClient = createSafeActionClient({
   defineMetadataSchema() {
@@ -33,7 +35,9 @@ const baseAdminActionClient = createSafeActionClient({
       ? normalized.message
       : DEFAULT_SERVER_ERROR_MESSAGE
   },
-})
+}).use(({ next, metadata }) =>
+  withSpan(`action ${metadata.actionName}`, () => next())
+)
 
 /** Requires an active operator session; injects `ctx.operator` and `ctx.permissions`. */
 export const adminActionClient = baseAdminActionClient.use(async ({ next }) => {

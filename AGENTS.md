@@ -85,7 +85,11 @@ are absent (dev).
   emails through it in the user's `language`. Swap providers by re-implementing
   `sendEmail`.
 - **Background jobs.** `@/lib/jobs` (pg-boss, Postgres-backed) → `enqueue` from
-  actions, `work` in a worker process. No extra infra.
+  actions, `work`/`schedule` in a worker process (`pnpm --filter web worker:jobs`
+  runs the scheduled retention prune). No extra infra.
+- **Tracing.** OpenTelemetry spans around Server Actions, the DAL, and the outbox
+  relay, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (no-op
+  otherwise; Sentry owns tracing when its DSN is set). See `docs/observability.md`.
 - **Object storage.** `@/lib/storage` (S3/R2/MinIO, presigned URLs, server-only)
   plus pure `@/lib/upload` helpers. Track files in `app.uploads` via its DAL.
 - **Notifications.** `app.notifications` table + DAL under

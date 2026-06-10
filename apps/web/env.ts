@@ -74,6 +74,17 @@ export const env = createEnv({
     SENTRY_PROJECT: z.string().optional(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_API_BASE_URL: z.url().optional(),
+    // Distributed tracing (OpenTelemetry). Set the collector base URL to enable
+    // OTLP export (absent = no-op tracer); headers carry auth as `k=v,k2=v2`.
+    // When SENTRY_DSN is also set, Sentry owns tracing and this is not activated.
+    OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
+    OTEL_EXPORTER_OTLP_HEADERS: z.string().optional(),
+    OTEL_SERVICE_NAME: z.string().optional(),
+    // Retention windows (days) for the scheduled prune job (`worker:jobs`): aged
+    // audit rows and processed outbox events. RETENTION_CRON drives the schedule.
+    AUDIT_RETENTION_DAYS: z.coerce.number().int().min(1).default(365),
+    OUTBOX_RETENTION_DAYS: z.coerce.number().int().min(1).default(30),
+    RETENTION_CRON: z.string().default('0 3 * * *'),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),

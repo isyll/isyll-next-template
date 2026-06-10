@@ -27,6 +27,7 @@
     "db:seed": "tsx src/scripts/seed.ts"
   },
   "dependencies": {
+    "@opentelemetry/api": "catalog:",
     "@workspace/core": "workspace:*",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "catalog:",

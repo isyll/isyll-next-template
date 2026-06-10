@@ -45,10 +45,13 @@ sequenceDiagram
 
 ### State machine
 
-`pending → processing → processed` on success; on failure `→ failed` (retried
-with exponential back-off via `scheduled_at`) and finally `→ dead` after
-`max_attempts`. Rows are never deleted, so the table doubles as an audit log;
-prune `processed` rows on a schedule if it grows.
+`pending → processed` on success; on failure `→ failed` (retried with
+exponential back-off via `scheduled_at`) and finally `→ dead` after
+`max_attempts`. There is no separate in-flight state: the relay claims due rows
+with `FOR UPDATE SKIP LOCKED` inside its own transaction, so a crash mid-dispatch
+simply rolls back and the row stays `pending`/`failed` to be retried. Rows are
+not deleted inline, so the table doubles as a short-term log — the retention job
+(below) prunes `processed` rows on a schedule; `dead` rows are kept for inspection.
 
 ## Publishing an event
 
@@ -119,6 +122,21 @@ or many instances — `FOR UPDATE SKIP LOCKED` means they never double-process a
 row. In production, run it as its own container/service (see the roadmap in
 [`docs/ROADMAP.md`](./ROADMAP.md) for a worker Dockerfile).
 
+## Retention
+
+`processed` rows are not deleted inline, so a scheduled job prunes them (and aged
+audit rows). Run it alongside the relay:
+
+```bash
+pnpm --filter web worker:jobs
+```
+
+It prunes on `RETENTION_CRON` (daily by default), deleting `processed` events
+older than `OUTBOX_RETENTION_DAYS` and audit rows older than
+`AUDIT_RETENTION_DAYS` via the `app.prune_outbox_events` / `app.prune_audit_logs`
+`SECURITY DEFINER` functions; `dead` rows are kept for inspection. One-off sweep:
+`pnpm --filter web retention:run`.
+
 ## Files
 
 | Concern             | File                                                        |
@@ -128,4 +146,6 @@ row. In production, run it as its own container/service (see the roadmap in
 | Catalogue + publish | `packages/db/src/lib/events.ts`                             |
 | Handlers            | `apps/web/server/events/handlers.ts`                        |
 | Dispatcher          | `apps/web/server/events/dispatch.ts`                        |
-| Worker              | `apps/web/server/workers/outbox-worker.ts`                  |
+| Relay worker        | `apps/web/server/workers/outbox-worker.ts`                  |
+| Retention job       | `apps/web/server/jobs/retention.ts`                         |
+| Jobs worker         | `apps/web/server/workers/jobs-worker.ts`                    |

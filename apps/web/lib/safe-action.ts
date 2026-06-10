@@ -10,12 +10,14 @@ import { headers } from 'next/headers'
 import * as z from 'zod'
 
 import { reportError } from '@/lib/observability'
+import { withSpan } from '@/lib/otel'
 import { createRateLimiter, enforceRateLimit } from '@/lib/rate-limit'
 
 /**
  * Server-action clients. Errors thrown in actions are normalized and reported
  * through the observability choke-point; only operational AppErrors surface
- * their message — everything else is masked.
+ * their message — everything else is masked. The outermost middleware wraps each
+ * action in an OpenTelemetry span (no-op unless tracing is enabled).
  */
 export const actionClient = createSafeActionClient({
   defineMetadataSchema() {
@@ -31,7 +33,9 @@ export const actionClient = createSafeActionClient({
       ? normalized.message
       : DEFAULT_SERVER_ERROR_MESSAGE
   },
-})
+}).use(({ next, metadata }) =>
+  withSpan(`action ${metadata.actionName}`, () => next())
+)
 
 /** Requires an authenticated session; injects `ctx.user` / `ctx.session`. */
 export const authActionClient = actionClient.use(async ({ next }) => {

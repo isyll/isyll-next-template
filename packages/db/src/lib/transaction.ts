@@ -1,6 +1,10 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 
+import { SpanStatusCode, trace } from '@opentelemetry/api'
 import { sql, type SQL } from 'drizzle-orm'
+
+/** Each top-level `withTransaction` is a `db.transaction` span (no-op when off). */
+const tracer = trace.getTracer('workspace-db')
 
 /**
  * Central, reusable transaction system for Drizzle.
@@ -57,19 +61,34 @@ export function createTransactional<TDb extends TxCapable>(
     const ambient = storage.getStore()
     if (ambient) return fn(ambient)
 
-    return base.transaction(async (raw) => {
-      const tx = raw as TDb
-      const actor = options?.actor
-      if (actor) {
-        // `true` => transaction-local; reset automatically at COMMIT/ROLLBACK.
-        await tx.execute(
-          sql`select set_config('app.actor_id', ${actor.id}, true)`
+    return tracer.startActiveSpan('db.transaction', async (span) => {
+      if (options?.actor) span.setAttribute('db.actor_type', options.actor.type)
+      try {
+        const result = await base.transaction(async (raw) => {
+          const tx = raw as TDb
+          const actor = options?.actor
+          if (actor) {
+            // `true` => transaction-local; reset automatically at COMMIT/ROLLBACK.
+            await tx.execute(
+              sql`select set_config('app.actor_id', ${actor.id}, true)`
+            )
+            await tx.execute(
+              sql`select set_config('app.actor_type', ${actor.type}, true)`
+            )
+          }
+          return storage.run(tx, () => fn(tx))
+        })
+        span.setStatus({ code: SpanStatusCode.OK })
+        return result
+      } catch (error) {
+        span.recordException(
+          error instanceof Error ? error : new Error(String(error))
         )
-        await tx.execute(
-          sql`select set_config('app.actor_type', ${actor.type}, true)`
-        )
+        span.setStatus({ code: SpanStatusCode.ERROR })
+        throw error
+      } finally {
+        span.end()
       }
-      return storage.run(tx, () => fn(tx))
     })
   }
 

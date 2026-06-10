@@ -1,5 +1,9 @@
 import { logger } from '@/lib/logger'
 import { reportError } from '@/lib/observability'
+import {
+  shutdownTracing,
+  startTracing,
+} from '@/server/observability/otel-bootstrap'
 import { processOutboxBatch } from '@/server/events/dispatch'
 
 /**
@@ -47,6 +51,7 @@ async function loop(): Promise<void> {
 function shutdown(reason: string): void {
   logger.info({ signal: reason }, '[outbox] shutting down')
   controller.abort()
+  void shutdownTracing()
 }
 
 process.on('SIGINT', () => {
@@ -56,4 +61,7 @@ process.on('SIGTERM', () => {
   shutdown('SIGTERM')
 })
 
+// Register the OTLP tracer provider (no-op unless OTEL_EXPORTER_OTLP_ENDPOINT is
+// set) before the loop creates any spans.
+startTracing('outbox')
 void loop()

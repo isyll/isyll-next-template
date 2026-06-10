@@ -56,6 +56,30 @@ Wiring:
 Security signals (rate-limit hits) are captured as Sentry messages tagged
 `security` via `captureSecurityEvent` (`@/lib/sentry`).
 
+## Distributed tracing (OpenTelemetry)
+
+Optional OTLP tracing, off by default. Set `OTEL_EXPORTER_OTLP_ENDPOINT` (your
+collector's base URL — `/v1/traces` is appended) to turn it on; absent, every
+span hits the no-op tracer and nothing is exported. `OTEL_EXPORTER_OTLP_HEADERS`
+(`key=value,key2=value2`) carries auth, `OTEL_SERVICE_NAME` sets `service.name`.
+
+Spans are emitted at three seams, all manual (so they work under any provider):
+
+- **Server Actions** — a middleware on the action clients wraps each action in an
+  `action <name>` span (`lib/otel.ts`).
+- **DAL** — every `withTransaction` is a `db.transaction` span (`@workspace/db`).
+- **Outbox relay** — `outbox.batch` + per-event `outbox.dispatch` spans
+  (`server/events/dispatch.ts`); the jobs worker emits `job.run`.
+
+The provider lives in `server/observability/otel-bootstrap.ts` — registered by
+`instrumentation.ts` for the web server, and by the standalone workers
+(`worker:outbox`, `worker:jobs`) themselves.
+
+**Sentry coexistence.** Sentry is built on OpenTelemetry and registers its own
+(single) tracer provider, so when `SENTRY_DSN` is set Sentry owns tracing and the
+OTLP exporter is not activated — unset `SENTRY_DSN` to export to your own
+collector. The manual spans feed whichever provider is active.
+
 ## Admin monitoring
 
 Operators with `monitoring.read` see live Sentry data (recent issues, event

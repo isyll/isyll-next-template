@@ -12,13 +12,21 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "worker:outbox": "tsx server/workers/outbox-worker.ts"
+    "worker:outbox": "tsx server/workers/outbox-worker.ts",
+    "worker:jobs": "tsx server/workers/jobs-worker.ts",
+    "retention:run": "tsx server/jobs/run-retention.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
     "@aws-sdk/s3-request-presigner": "catalog:",
     "@hookform/resolvers": "catalog:",
     "@next-safe-action/adapter-tanstack-query": "catalog:",
+    "@opentelemetry/api": "catalog:",
+    "@opentelemetry/exporter-trace-otlp-http": "catalog:",
+    "@opentelemetry/resources": "catalog:",
+    "@opentelemetry/sdk-trace-base": "catalog:",
+    "@opentelemetry/sdk-trace-node": "catalog:",
+    "@opentelemetry/semantic-conventions": "catalog:",
     "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "ioredis": "catalog:",

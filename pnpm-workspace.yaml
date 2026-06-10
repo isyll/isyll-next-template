@@ -81,11 +81,17 @@ catalog:
   pino: 10.3.1
   '@sentry/nextjs': 10.56.0
 
+  # --- Distributed tracing (OpenTelemetry, OTLP) ---
+  '@opentelemetry/api': 1.9.1
+  '@opentelemetry/sdk-trace-node': 2.7.1
+  '@opentelemetry/sdk-trace-base': 2.7.1
+  '@opentelemetry/exporter-trace-otlp-http': 0.218.0
+  '@opentelemetry/resources': 2.7.1
+  '@opentelemetry/semantic-conventions': 1.41.1
+
   # --- Redis (ioredis — full-featured, native TCP connection) ---
   ioredis: 5.11.1
   '@types/ioredis': 4.28.10
-
-  # --- Rate limiting (ioredis-backed, in-process fallback for dev) ---
 
   # --- Background jobs (Postgres-backed) ---
   pg-boss: 12.18.2

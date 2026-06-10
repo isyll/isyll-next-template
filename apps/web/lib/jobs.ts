@@ -1,4 +1,10 @@
-import { PgBoss, type Job, type SendOptions, type WorkOptions } from 'pg-boss'
+import {
+  PgBoss,
+  type Job,
+  type ScheduleOptions,
+  type SendOptions,
+  type WorkOptions,
+} from 'pg-boss'
 
 import { env } from '@/env'
 
@@ -62,6 +68,22 @@ export async function work<T extends object>(
   return options
     ? boss.work<T>(name, options, onBatch)
     : boss.work<T>(name, onBatch)
+}
+
+/**
+ * Register (or update) a cron schedule for `name`. Idempotent by queue name —
+ * safe to call on every worker boot; changing the cron + restarting updates it.
+ * The queue must exist (`ensureQueue`) and a `work(name, …)` handler must be
+ * running in a long-lived process to consume the scheduled jobs.
+ */
+export async function schedule(
+  name: string,
+  cron: string,
+  data?: object,
+  options?: ScheduleOptions
+): Promise<void> {
+  const boss = await getBoss()
+  await boss.schedule(name, cron, data ?? {}, options)
 }
 
 /** Gracefully stop the pg-boss instance (call on worker shutdown). */

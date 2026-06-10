@@ -11,7 +11,10 @@
 --   3. Rows that exhaust `max_attempts` are marked 'dead' for manual inspection.
 --
 -- No external broker: the relay and handlers are plain Postgres + app code.
--- Status: pending → processing → processed | failed → … → dead. Timestamps UTC.
+-- Status: pending → processed on success; on failure → failed (retried with
+-- back-off) → … → dead after max_attempts. Claiming uses FOR UPDATE SKIP LOCKED
+-- inside the relay's transaction, so there is no separate in-flight state — a
+-- crash mid-dispatch rolls back to pending/failed. Timestamps UTC.
 CREATE TABLE app.outbox_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -31,7 +34,7 @@ CREATE TABLE app.outbox_events (
   -- Processing state.
   status text NOT NULL DEFAULT 'pending'
   CONSTRAINT outbox_events_status_check
-  CHECK (status IN ('pending', 'processing', 'processed', 'failed', 'dead')),
+  CHECK (status IN ('pending', 'processed', 'failed', 'dead')),
 
   -- Retry tracking (smallint: a handful of attempts, never more).
   attempts smallint NOT NULL DEFAULT 0
@@ -65,6 +68,10 @@ CREATE INDEX outbox_events_aggregate_idx ON app.outbox_events (aggregate_type, a
 CREATE INDEX outbox_events_idempotency_idx ON app.outbox_events (idempotency_key)
 WHERE idempotency_key IS NOT NULL;
 
+-- Retention prune predicate (the due index above only covers pending/failed).
+CREATE INDEX outbox_events_processed_at_idx ON app.outbox_events (processed_at)
+WHERE status = 'processed';
+
 CREATE TRIGGER outbox_events_set_updated_at BEFORE UPDATE ON app.outbox_events
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
@@ -72,6 +79,36 @@ DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
     GRANT SELECT, INSERT, UPDATE ON app.outbox_events TO app;
+  END IF;
+END;
+$$;
+
+-- Scheduled retention (worker:jobs). The app role has no DELETE here, so the
+-- prune runs as the table owner (SECURITY DEFINER); 'dead' rows are kept.
+CREATE OR REPLACE FUNCTION app.prune_outbox_events(retain interval)
+RETURNS bigint
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  removed bigint;
+BEGIN
+  DELETE FROM app.outbox_events
+  WHERE
+    status = 'processed'
+    AND processed_at IS NOT NULL
+    AND processed_at < now() - retain;
+  GET DIAGNOSTICS removed = ROW_COUNT;
+  RETURN removed;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION app.prune_outbox_events(interval) FROM public;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
+    GRANT EXECUTE ON FUNCTION app.prune_outbox_events(interval) TO app;
   END IF;
 END;
 $$;

@@ -7,9 +7,12 @@ shippable and ordered so earlier phases de-risk later ones. It closes with the
 > **Shipped already** (not listed below): the DX & startup phase
 > (devcontainer/Codespaces, the production worker, brand theme presets,
 > `project:init`); CI/CD deployment (VPS over SSH, disabled by default, plus
-> Codespaces previews); and the first security pass — `pnpm audit` CI gating,
-> signed-commit guidance, and a `CSP_REPORT_ONLY` / `report-uri` rollout path.
-> See `docs/deployment.md`, `docs/theming.md`, and `docs/security.md`.
+> Codespaces previews); the first security pass — `pnpm audit` CI gating,
+> signed-commit guidance, and a `CSP_REPORT_ONLY` / `report-uri` rollout path;
+> and the security & reliability hardening pass — OpenTelemetry/OTLP distributed
+> tracing (one endpoint env var), extended audit coverage, and a scheduled
+> retention job. See `docs/deployment.md`, `docs/theming.md`, `docs/security.md`,
+> and `docs/observability.md`.
 
 Guiding principles:
 
@@ -27,16 +30,7 @@ Guiding principles:
 
 ---
 
-## Phase 1 — Security & reliability hardening
-
-- **Distributed tracing.** Add OpenTelemetry spans around Server Actions, the
-  DAL, and the outbox relay, exported via OTLP — one endpoint env var turns it
-  on.
-- **Audit coverage + retention.** Extend the audit trigger to more tables, and
-  add a scheduled pg-boss job that prunes or archives `processed`
-  `outbox_events` and aged audit rows, with the window configurable via env.
-
-## Phase 2 — Product building blocks
+## Phase 1 — Product building blocks
 
 Things almost every serious app re-implements; ship them once, well.
 
@@ -54,7 +48,7 @@ Things almost every serious app re-implements; ship them once, well.
   features per user/org; pairs with the event system for rollout metrics. An
   OpenFeature-style interface keeps the backend swappable.
 
-## Phase 3 — Scale & operations
+## Phase 2 — Scale & operations
 
 - **Caching layer.** Lean on Next 16 Cache Components (`use cache` +
   `cacheTag`/`revalidateTag`) for render caching, and add a typed helper over the
@@ -67,7 +61,7 @@ Things almost every serious app re-implements; ship them once, well.
 - **Background-job dashboard + DLQ tooling.** A small operator page to inspect
   `dead` outbox rows and pg-boss queues, with replay.
 
-## Phase 4 — Quality, accessibility & polish
+## Phase 3 — Quality, accessibility & polish
 
 - **Accessibility as a CI gate (WCAG 2.2 AA).** `axe-core` assertions inside
   Playwright and an `eslint-plugin-jsx-a11y` pass; verified keyboard navigation

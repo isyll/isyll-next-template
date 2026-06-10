@@ -107,6 +107,18 @@ EXECUTE FUNCTION app.record_audit(
   'country_code', 'is_active', 'launch_date', 'deleted_at'
 );
 
+-- Privilege-grant join tables (composite PK, insert/delete only): the anchor
+-- column is the row_id, both columns are watched so the pair is recorded.
+CREATE TRIGGER operator_roles_audit
+AFTER INSERT OR UPDATE OR DELETE ON admin.operator_roles
+FOR EACH ROW
+EXECUTE FUNCTION app.record_audit('operator_id', 'operator_id', 'role_id');
+
+CREATE TRIGGER role_permissions_audit
+AFTER INSERT OR UPDATE OR DELETE ON admin.role_permissions
+FOR EACH ROW
+EXECUTE FUNCTION app.record_audit('role_id', 'role_id', 'permission_id');
+
 -- History is readable, never writable, by the service roles. The default
 -- privileges granted on the `app` schema (migration 000002) would otherwise let
 -- the app role write here, so revoke first. admin_service reads operator/role
@@ -120,6 +132,32 @@ BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'admin_service') THEN
     GRANT USAGE ON SCHEMA app TO admin_service;
     GRANT SELECT ON app.audit_logs TO admin_service;
+  END IF;
+END;
+$$;
+
+-- Scheduled retention (worker:jobs). The app role only has SELECT here, so the
+-- prune runs as the table owner (SECURITY DEFINER) and returns the rows removed.
+CREATE OR REPLACE FUNCTION app.prune_audit_logs(retain interval)
+RETURNS bigint
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  removed bigint;
+BEGIN
+  DELETE FROM app.audit_logs WHERE occurred_at < now() - retain;
+  GET DIAGNOSTICS removed = ROW_COUNT;
+  RETURN removed;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION app.prune_audit_logs(interval) FROM public;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
+    GRANT EXECUTE ON FUNCTION app.prune_audit_logs(interval) TO app;
   END IF;
 END;
 $$;
