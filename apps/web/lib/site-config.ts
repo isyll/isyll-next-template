@@ -2,7 +2,7 @@ import { env } from '@/env'
 
 /**
  * Centralized site configuration — single source of truth for metadata, SEO,
- * and analytics. Customize this file for each project created from the template.
+ * and analytics. Customize this file when rebranding.
  *
  * WHAT TO UPDATE WHEN REBRANDING:
  *   1. `name`, `description`, `tagline`

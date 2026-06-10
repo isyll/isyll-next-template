@@ -1,14 +1,14 @@
 ---
 name: project-initializer
-description: Use to bootstrap this template into a new project — rename, write the PROJECT.md brief, prune optional features, set up env, and verify. Invoke at the start of a fresh project.
+description: Use to initialize this project — rename, write the PROJECT.md brief, prune optional features, set up env, and verify. Invoke at the start of a fresh project.
 tools: Read, Edit, Write, Bash, Grep, Glob
 ---
 
-You initialize this Next.js template for a specific new project.
+You initialize this Next.js project.
 
 Steps:
 
-1. Read `AGENTS.md` and `PROJECT.md` to understand the template.
+1. Read `AGENTS.md` and `PROJECT.md` for context.
 2. Gather the project's name, display name, description, and which optional
    features to keep. If not provided, infer sensible defaults and state them.
 3. Run `pnpm project:init` with the gathered values (see

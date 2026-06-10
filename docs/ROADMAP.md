@@ -1,19 +1,17 @@
-# Roadmap — making the template production-grade
+# Roadmap
 
-The remaining work to take this template from "excellent foundation" to "ready
-for large, serious, long-lived projects." Each phase is independently shippable
-and ordered so earlier phases de-risk later ones. It closes with the
+Remaining work toward a production-grade foundation. Each phase is independently
+shippable and ordered so earlier phases de-risk later ones. It closes with the
 **primary-key / ID strategy**.
 
 > **Shipped already** (not listed below): the DX & startup phase
-> (devcontainer/Codespaces, the production worker, brand theme presets, full
-> `project:init` de-templating); CI/CD deployment (VPS over SSH, disabled by
-> default, plus Codespaces previews); and the first security pass — `pnpm audit`
-> CI gating, signed-commit guidance, and a `CSP_REPORT_ONLY` / `report-uri`
-> rollout path. See `docs/deployment.md`, `docs/theming.md`, and
-> `docs/security.md`.
+> (devcontainer/Codespaces, the production worker, brand theme presets,
+> `project:init`); CI/CD deployment (VPS over SSH, disabled by default, plus
+> Codespaces previews); and the first security pass — `pnpm audit` CI gating,
+> signed-commit guidance, and a `CSP_REPORT_ONLY` / `report-uri` rollout path.
+> See `docs/deployment.md`, `docs/theming.md`, and `docs/security.md`.
 
-Guiding principles, unchanged from the existing template:
+Guiding principles:
 
 - **Server-first, typed, secure by default.** Everything new keeps the
   `Result`/`AppError`, Zod-validated, DTO-returning, re-verify-in-the-DAL style.
@@ -24,9 +22,8 @@ Guiding principles, unchanged from the existing template:
   keyboard-operable and screen-reader-friendly components, visible focus,
   sufficient contrast, and `prefers-reduced-motion` support — enforced in CI,
   never bolted on later.
-- **One edit to rebrand, minutes to a running project.** Customization lives in
-  a few well-known places (`siteConfig`, `--brand-*`, `PROJECT.md`,
-  `project:init`).
+- **One edit to rebrand.** Customization lives in a few well-known places
+  (`siteConfig`, `--brand-*`, `PROJECT.md`, `project:init`).
 
 ---
 
@@ -104,7 +101,7 @@ B-tree. **`uuid` v7 fixes this:** it is a standard 128-bit UUID whose high bits
 are a millisecond timestamp, so inserts are time-ordered (they append to the
 right of the index) while the value stays non-enumerable.
 
-PostgreSQL 18 — which this template already runs — ships a built-in
+PostgreSQL 18 — which this project already runs — ships a built-in
 **`uuidv7()`**, so no extension or app-side library is needed for DB-generated
 keys.
 
@@ -134,8 +131,8 @@ is accepted as-is — no ULID, prefixed IDs, or external encoders.
    ```
 
 2. **Edit the migration SQL in place — do not add `ALTER TABLE` migrations.**
-   This template is pre-production, so change the default directly in each
-   table's existing `up.sql` and mirror it in the Drizzle schema:
+   This is pre-production, so change the default directly in each table's
+   existing `up.sql` and mirror it in the Drizzle schema:
 
    ```sql
    -- in each table's up.sql, replacing gen_random_uuid()

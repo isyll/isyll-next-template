@@ -1,5 +1,5 @@
 {
-  // Full dev environment for the template. The workspace runs as the `app`
+  // Full dev environment. The workspace runs as the `app`
   // service alongside Postgres + Redis + Adminer (from the repo-root
   // compose.yaml). See https://containers.dev for the schema.
   "name": "next-monorepo-template",

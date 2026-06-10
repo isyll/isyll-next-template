@@ -6,7 +6,7 @@ import { env } from '@/env'
  * Server-side Sentry init (Node runtime). Loaded by `instrumentation.ts`.
  *
  * Disabled by default: with no `SENTRY_DSN` set, `init` is never called and the
- * SDK is inert — so the template (and any project that doesn't want Sentry)
+ * SDK is inert — so any project that doesn't want Sentry
  * runs with zero reporting. Set `SENTRY_DSN` to enable.
  */
 if (env.SENTRY_DSN) {

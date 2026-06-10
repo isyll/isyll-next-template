@@ -10,9 +10,8 @@ repository. `CLAUDE.md` and `.github/copilot-instructions.md` defer to this file
 
 ## What this is
 
-`next-monorepo-template` — a server-first Next.js 16 monorepo template (pnpm +
-Turborepo) used as the base for new client/product projects. See `PROJECT.md`
-for the **current** project's brief (created by `pnpm project:init`).
+`next-monorepo-template` — a server-first Next.js 16 monorepo (pnpm +
+Turborepo). See `PROJECT.md` for this project's purpose and scope.
 
 ## Layout
 
@@ -69,7 +68,7 @@ tests/load                    k6 load tests
 ## Platform services (already built — use these, don't reinvent)
 
 All are concrete but env-gated: they degrade safely when the relevant env vars
-are absent (dev), so the template runs out of the box.
+are absent (dev).
 
 - **Logging / errors.** `@/lib/logger` (pino, structured, secret-redacting,
   server-only) and `@/lib/observability` → `reportError(err, ctx)`, the single
@@ -125,7 +124,7 @@ are absent (dev), so the template runs out of the box.
 | SQL lint      | `pnpm sql:lint` · `pnpm sql:fix`                   |
 | Seed / studio | `pnpm db:seed` · `pnpm db:studio`                  |
 | New operator  | `pnpm admin:create-operator`                       |
-| New project   | `pnpm project:init`                                |
+| Init project  | `pnpm project:init`                                |
 | Bump version  | `pnpm version:bump <patch\|minor\|major\|v=x.y.z>` |
 
 ## Commit rules (STRICT)

@@ -1,8 +1,8 @@
 ---
-description: Initialize this template for a new project (name, brief, env, cleanup)
+description: Initialize this project (name, brief, env, cleanup)
 ---
 
-You are bootstrapping a NEW project from this template. Do the following:
+You are initializing this project. Do the following:
 
 1. Ask me (concisely, batched) for: project name (kebab-case), display name,
    one-line description, the GitHub owner/org, and which social auth providers

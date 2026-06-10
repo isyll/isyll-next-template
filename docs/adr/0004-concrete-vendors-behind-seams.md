@@ -4,7 +4,7 @@
 
 ## Context
 
-The template needs cross-cutting infrastructure (logging, error reporting, rate
+The project needs cross-cutting infrastructure (logging, error reporting, rate
 limiting, email, background jobs, object storage) that most projects want. Two
 failure modes to avoid: (a) empty abstractions that every project must wire up
 before anything works, and (b) hard-wired vendors that are painful to swap or
@@ -32,7 +32,7 @@ than baked in.
 
 ## Consequences
 
-- The template runs and builds with zero vendor accounts; production wiring is
+- Runs and builds with zero vendor accounts; production wiring is
   setting env vars.
 - Swapping a provider is re-implementing one small module, not a refactor.
 - Pure logic (rate-limiter, upload validation) is unit-tested; vendor I/O is

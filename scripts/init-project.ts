@@ -1,5 +1,5 @@
 /**
- * Bootstraps this template for a new project, step by step:
+ * Initializes this project, step by step:
  *   1. Project identity (package name, display name, description)
  *   2. Repository (GitHub owner / repo)
  *   3. URLs & auth (public URL, session cookie prefix, generated secrets)
@@ -44,7 +44,7 @@ const LOCAL_DATABASE_URL = 'postgres://postgres:postgres@localhost:5432/app'
 const program = new Command()
 program
   .name('project:init')
-  .description('Initialize this template for a new project')
+  .description('Initialize this project (name, env, brief)')
   .option('--name <kebab>', 'package name (kebab-case)')
   .option('--display-name <name>', 'human-facing application name')
   .option('--description <text>', 'one-line description')
@@ -184,7 +184,7 @@ function ensureSecret(env: string, key: string): string {
  * Brand color presets. Each maps the `--brand-*` block in
  * `packages/ui/src/styles/globals.css` (light + dark oklch values) to a
  * matching `siteConfig.themeColor` and email-token hex. `indigo` is the
- * template default — selecting it changes nothing.
+ * default — selecting `indigo` changes nothing.
  */
 const THEME_PRESETS = {
   indigo: {
@@ -287,10 +287,6 @@ pnpm dev                             # http://localhost:3000
 
 See \`PROJECT.md\` for the project brief and \`AGENTS.md\` for engineering
 conventions. Deployment is documented in \`docs/deployment.md\`.
-
----
-
-Built on [${TEMPLATE_NAME}](https://github.com/${TEMPLATE_OWNER}/${TEMPLATE_NAME}).
 `
 }
 
@@ -411,13 +407,13 @@ replaceInFile('.github/copilot-instructions.md', [
 ])
 replaceInFile('AGENTS.md', [
   [
-    `\`${TEMPLATE_NAME}\` — a server-first Next.js 16 monorepo template (pnpm +\nTurborepo) used as the base for new client/product projects.`,
-    `\`${name}\` — ${description}\n\nBuilt on ${TEMPLATE_NAME} (a server-first Next.js 16 monorepo; pnpm + Turborepo).`,
+    `\`${TEMPLATE_NAME}\` — a server-first Next.js 16 monorepo (pnpm +\nTurborepo). See \`PROJECT.md\` for this project's purpose and scope.`,
+    `\`${name}\` — ${description}`,
   ],
 ])
 
-// Brand color theme. `indigo` is the template default, so a no-op there; any
-// other preset rewrites the `--brand-*` block, themeColor and email token.
+// Brand color theme. `indigo` is the default (a no-op); any other preset
+// rewrites the `--brand-*` block, themeColor and email token.
 if (theme !== 'indigo') {
   replaceInFile('packages/ui/src/styles/globals.css', [
     [DEFAULT_LIGHT_BRAND, preset.light],
@@ -431,8 +427,7 @@ if (theme !== 'indigo') {
   ])
 }
 
-// Open Graph: replace the template's branded PNG with a generated placeholder
-// carrying the project's own name (no leftover template identity). Swap it for
+// Open Graph: replace the placeholder PNG with a generated SVG. Swap it for
 // a real 1200×630 image before launch.
 replaceInFile('apps/web/lib/site-config.ts', [
   ['/og-image.png', '/og-image.svg'],
@@ -453,7 +448,7 @@ replaceInFile('.github/ISSUE_TEMPLATE/config.yml', [
     `github.com/${owner}/${repo}`,
   ],
 ])
-// README: either a minimal project stub, or keep the template's README with the
+// README: either a minimal project stub, or keep the existing README with the
 // title + Codespaces badge re-pointed at the new project.
 const wantReadmeStub =
   flags.readmeStub ??
@@ -511,7 +506,7 @@ const projectBrief = `# ${displayName}
 
 ---
 
-Built on ${TEMPLATE_NAME}. See \`AGENTS.md\` for engineering conventions.
+See \`AGENTS.md\` for engineering conventions.
 `
 if (!dryRun) writeFileSync(join(ROOT, 'PROJECT.md'), projectBrief)
 
@@ -569,8 +564,7 @@ if (canBootstrap) {
   }
 }
 
-// 6. Fresh git history
-// Drop the template's history and start the project on its own two long-lived
+// 6. Fresh git history — start the project on its own two long-lived
 // branches: `production` (default/deploy) and `development` (integration).
 const wantsFreshGit = flags.freshGit
   ? true
@@ -584,7 +578,7 @@ if (wantsFreshGit && !dryRun) {
       'commit',
       '--no-verify',
       '-m',
-      `chore: initialize ${name} from ${TEMPLATE_NAME}`,
+      `chore: initialize ${name}`,
     ])
     run('Create development branch', 'git', ['branch', 'development'])
   }

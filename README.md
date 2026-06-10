@@ -7,23 +7,6 @@ high-traffic products fast: strict TypeScript, two fully isolated authentication
 systems, pure-SQL migrations with embedded ISO reference data, i18n, Docker +
 Nginx infrastructure, and a complete quality/CI toolchain.
 
-> New project? Run `pnpm project:init` (or the `/start-project` agent command)
-> to rename everything, generate secrets, and record the brief in `PROJECT.md`.
-
-## Use this template
-
-Scaffold a new project from this template — `degit` copies the files **without**
-the template's git history, then `project:init` rebrands everything:
-
-```bash
-pnpm dlx degit isyll/next-monorepo-template my-app
-cd my-app && pnpm install
-pnpm project:init --theme emerald    # name, theme, secrets, brief (interactive without flags)
-```
-
-Prefer the GitHub UI? Click **Use this template ▸ Create a new repository**, then
-clone and run `pnpm project:init`.
-
 ## Stack
 
 - **Next.js 16** App Router · **React 19** · **TypeScript 6** (strict, type-aware)
@@ -41,7 +24,7 @@ clone and run `pnpm project:init`.
 ```bash
 pnpm install
 docker compose up -d                 # local Postgres + Adminer
-pnpm project:init                    # rename, generate .env secrets
+pnpm project:init                    # rename, set up .env, record brief
 pnpm db:migrate                      # apply migrations
 pnpm db:seed                         # optional sample users
 pnpm admin:create-operator --email you@example.com --name "You" --super
@@ -106,8 +89,8 @@ tests/load      k6 load tests
 | `pnpm sql:lint` · `sql:fix`    | SQLFluff lint / fix the migrations                 |
 | `pnpm admin:sync-permissions`  | Sync the PBAC permission catalogue to the database |
 | `pnpm admin:create-operator`   | Provision an operator account                      |
-| `pnpm project:init`            | Initialize the template for a new project          |
+| `pnpm project:init`            | Initialize the project (name, env, brief)          |
 
 ## License
 
-UNLICENSED — public template.
+UNLICENSED.

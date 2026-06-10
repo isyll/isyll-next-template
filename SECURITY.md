@@ -1,8 +1,5 @@
 # Security Policy
 
-> Update the contact address below when initializing a project from this
-> template (`pnpm project:init`).
-
 ## Reporting a vulnerability
 
 **Do not open a public issue for security problems.** Report them privately:
@@ -29,8 +26,7 @@ machine or stolen credentials.
 
 ## Hardening already in place
 
-This template ships with several defensive defaults; keep them when building on
-it (see `AGENTS.md` for the rationale):
+Security defaults in place (see `AGENTS.md` for rationale):
 
 - **Two fully isolated auth systems** — end users and operators have separate
   BetterAuth instances, secrets, cookies, database roles, and schemas. A

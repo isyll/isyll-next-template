@@ -1,7 +1,7 @@
 # GitHub Copilot instructions
 
-This is **next-monorepo-template** — an ultra-powerful, server-first Next.js 16
-monorepo template (pnpm + Turborepo). Follow these rules in every suggestion.
+This is **next-monorepo-template** — a server-first Next.js 16 monorepo
+(pnpm + Turborepo). Follow these rules in every suggestion.
 
 ## Stack
 

@@ -2,8 +2,7 @@
 
 Two layers, one choke-point. Structured logs (pino) capture everything; Sentry
 captures the bugs and security signals worth alerting on. Both are wired so call
-sites never change and so the template runs fine with neither account
-configured.
+sites never change and both run fine with neither account configured.
 
 ## The choke-point
 

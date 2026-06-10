@@ -1,13 +1,8 @@
-# Next Monorepo Template
-
-> The base project. Replaced per-project by `pnpm project:init`.
+# Project Name
 
 ## Overview
 
-This is the **template itself**, not a specific product. When you start a new
-project from it, run `pnpm project:init` (or the `/start-project` command) to
-rewrite this file with the new project's purpose, domain model, and goals so
-that AI agents have accurate context.
+<!-- Describe what this project is, who it is for, and its goals. -->
 
 ## Domain model
 
@@ -29,4 +24,4 @@ Table names are plural. Add your real domain tables as pure-SQL migrations under
 
 ---
 
-Built on next-monorepo-template. See `AGENTS.md` for engineering conventions.
+See `AGENTS.md` for engineering conventions.

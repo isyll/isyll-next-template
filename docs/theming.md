@@ -81,7 +81,7 @@ pnpm project:init --theme emerald      # non-interactive
 pnpm project:init                      # or pick from the prompt
 ```
 
-`indigo` is the template default, so selecting it changes nothing. The admin
+`indigo` is the default, so selecting it changes nothing. The admin
 console keeps its own distinct hue (teal) regardless — see the `.admin` block in
 `globals.css`. For a hue not listed here, pick `indigo` and edit the block by
 hand as above.

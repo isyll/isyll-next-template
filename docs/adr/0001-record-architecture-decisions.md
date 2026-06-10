@@ -4,7 +4,7 @@
 
 ## Context
 
-This template is the base for many projects and is edited heavily by AI agents.
+This codebase is edited heavily by AI agents.
 Decisions that look arbitrary in the code (why soft-delete everywhere? why a
 nonce CSP that forces dynamic rendering?) get re-litigated or silently undone
 when the rationale isn't written down.

@@ -1,6 +1,6 @@
 # Domain events (transactional outbox)
 
-The template ships a small, reliable event system based on the **transactional
+A small, reliable event system based on the **transactional
 outbox** pattern. Use it to react to things that happen in your domain (a user
 registered, an order was paid, …) **without** doing that work inline in the
 request: send an email, write a notification, call a webhook, update analytics.

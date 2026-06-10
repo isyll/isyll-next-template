@@ -1,6 +1,6 @@
 # Security
 
-How this template defends itself, and the knobs you'll most likely turn.
+Security defaults and the knobs you'll most likely turn.
 The vulnerability-disclosure policy is in [`SECURITY.md`](../SECURITY.md).
 
 ## Two isolated auth systems
