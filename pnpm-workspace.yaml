@@ -24,13 +24,13 @@ overrides:
 # (no accidental dual-version drift — e.g. the zod v3/v4 split).
 catalog:
   # --- Framework / runtime ---
-  next: 16.2.7
+  next: 16.2.9
   react: 19.2.7
   react-dom: 19.2.7
 
   # --- Language / build ---
   typescript: 6.0.3
-  turbo: 2.9.16
+  turbo: 2.9.17
   tsx: 4.22.4
   dotenv: 17.4.2
 
@@ -49,13 +49,13 @@ catalog:
   eslint-config-prettier: 10.1.8
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 7.1.1
-  '@next/eslint-plugin-next': 16.2.7
-  eslint-plugin-turbo: 2.9.16
+  '@next/eslint-plugin-next': 16.2.9
+  eslint-plugin-turbo: 2.9.17
   '@tanstack/eslint-plugin-query': 5.101.0
   globals: 17.6.0
 
   # --- Prettier ---
-  prettier: 3.8.3
+  prettier: 3.8.4
   prettier-plugin-tailwindcss: 0.8.0
 
   # --- Styling / UI ---
@@ -79,7 +79,7 @@ catalog:
 
   # --- Observability ---
   pino: 10.3.1
-  '@sentry/nextjs': 10.56.0
+  '@sentry/nextjs': 10.57.0
 
   # --- Distributed tracing (OpenTelemetry, OTLP) ---
   '@opentelemetry/api': 1.9.1
@@ -97,18 +97,18 @@ catalog:
   pg-boss: 12.18.2
 
   # --- Object storage (S3-compatible: AWS S3, Cloudflare R2, MinIO, ...) ---
-  '@aws-sdk/client-s3': 3.1064.0
-  '@aws-sdk/s3-request-presigner': 3.1064.0
+  '@aws-sdk/client-s3': 3.1065.0
+  '@aws-sdk/s3-request-presigner': 3.1065.0
 
   # --- Auth ---
-  better-auth: 1.6.15
+  better-auth: 1.6.16
   jose: 6.2.3
   # Argon2id password hashing (prebuilt native bindings, incl. linux-musl).
   '@node-rs/argon2': 2.0.2
 
   # --- Email (Resend + React Email) ---
   resend: 6.12.4
-  'react-email': 6.5.0
+  'react-email': 6.6.0
 
   # --- Reference data (generated into migrations) ---
   world-countries: 5.1.0
