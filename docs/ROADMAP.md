@@ -30,23 +30,25 @@ Guiding principles:
 
 ---
 
-## Phase 1 — Product building blocks
+## Phase 1 — Product building blocks ✅ Shipped
 
-Things almost every serious app re-implements; ship them once, well.
+Things almost every serious app re-implements; shipped once, well.
 
-- **Billing.** Stripe behind a seam: customer/subscription tables, webhooks
-  routed through the **outbox** for reliability, and a billing-portal page.
-- **Notifications UI.** A bell + inbox on the existing `app.notifications` DAL,
-  with realtime updates (SSE) and per-channel preferences.
-- **File management.** An upload UI on `@/lib/storage` + `app.uploads`
-  (drag-and-drop, presigned direct upload, image variants).
-- **Search.** Postgres full-text with a generated `tsvector` column + GIN index
-  and `websearch_to_tsquery`, plus the existing `pg_trgm` indexes for
-  typo-tolerant autocomplete — a typed query builder, upgradeable to an external
-  engine later.
-- **Feature flags.** A small DB-backed flag service cached in Redis, gating
-  features per user/org; pairs with the event system for rollout metrics. An
-  OpenFeature-style interface keeps the backend swappable.
+- **Feature flags.** DB-backed flag service cached in Redis, gating features per
+  user (or any context attribute) with targeting rules + sticky percentage
+  rollouts; pure evaluation engine in `@workspace/core` behind an
+  OpenFeature-style provider seam. See `docs/feature-flags.md`.
+- **Search.** Postgres full-text — generated `tsvector` column + GIN index and
+  `websearch_to_tsquery` — combined with `pg_trgm` for typo-tolerant
+  autocomplete, behind a typed query builder. See `docs/search.md`.
+- **File management.** Drag-and-drop upload UI on `@/lib/storage` + `app.uploads`
+  with presigned direct upload and an image-preview gallery. See `docs/storage.md`.
+- **Notifications UI.** A bell + inbox on `app.notifications` with realtime
+  updates (SSE over Redis pub/sub) and per-channel preferences. See
+  `docs/notifications.md`.
+- **Billing.** Stripe behind a seam: `billing_customers` / `subscriptions`
+  tables, webhooks routed through the **outbox** for reliability, and a
+  billing-portal page. See `docs/billing.md`.
 
 ## Phase 2 — Scale & operations
 
