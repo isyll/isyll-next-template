@@ -137,6 +137,8 @@ opensearch
 previewable
 imgproxy
 prefs
+whsec
+HMAC
 ksuid
 tsid
 hashids

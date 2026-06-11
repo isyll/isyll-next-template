@@ -2,6 +2,7 @@ import 'server-only'
 
 import { resolveLocale } from '@workspace/core'
 import type {
+  BillingWebhookEvent,
   DomainEvent,
   DomainEventType,
   FeatureFlagChangedEvent,
@@ -10,7 +11,12 @@ import type {
 } from '@workspace/db'
 import { sendNewConnectionAlert } from '@workspace/email'
 
+import {
+  getUserIdByStripeCustomer,
+  upsertSubscription,
+} from '@/features/billing/queries'
 import { deliverNotification } from '@/features/notifications/service'
+import type { StripeSubscriptionObject } from '@/lib/billing/stripe'
 import { logger } from '@/lib/logger'
 import { siteConfig } from '@/lib/site-config'
 
@@ -75,6 +81,49 @@ function onFeatureFlagChanged(event: FeatureFlagChangedEvent): Promise<void> {
 }
 
 /**
+ * A Stripe webhook (delivered via the outbox) → keep the local subscription
+ * mirror in sync. Only subscription-lifecycle events are handled; others are
+ * ignored. Idempotent: the outbox dedupes on the Stripe event id, and the
+ * upsert is safe to repeat.
+ */
+async function onBillingWebhook(event: BillingWebhookEvent): Promise<void> {
+  if (!event.stripeEventType.startsWith('customer.subscription.')) return
+
+  const subscription = event.object as unknown as StripeSubscriptionObject
+  const userId = await getUserIdByStripeCustomer(subscription.customer)
+  if (!userId) {
+    logger.warn(
+      { scope: 'billing', stripeEventId: event.stripeEventId },
+      '[billing] webhook for an unknown Stripe customer'
+    )
+    return
+  }
+
+  await upsertSubscription({
+    id: subscription.id,
+    userId,
+    stripeCustomerId: subscription.customer,
+    status: subscription.status,
+    priceId: subscription.items?.data?.[0]?.price?.id ?? null,
+    currentPeriodEnd:
+      typeof subscription.current_period_end === 'number'
+        ? new Date(subscription.current_period_end * 1000)
+        : null,
+    cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+  })
+
+  if (event.stripeEventType === 'customer.subscription.created') {
+    await deliverNotification({
+      userId,
+      type: 'billing.subscribed',
+      title: `Abonnement activé`,
+      body: 'Merci ! Votre abonnement est désormais actif.',
+      data: { subscriptionId: subscription.id },
+    })
+  }
+}
+
+/**
  * Registry of handlers, one per event type. The dispatcher narrows the stored
  * payload to the matching `DomainEvent` variant before calling.
  */
@@ -87,4 +136,5 @@ export const eventHandlers: Record<
     onUserNewConnection(event as UserNewConnectionEvent),
   'feature_flag.changed': (event) =>
     onFeatureFlagChanged(event as FeatureFlagChangedEvent),
+  'billing.webhook': (event) => onBillingWebhook(event as BillingWebhookEvent),
 }

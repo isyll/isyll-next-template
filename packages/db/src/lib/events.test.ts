@@ -32,4 +32,18 @@ describe('buildOutboxEvent', () => {
       aggregateType: 'feature_flag',
     })
   })
+
+  it('maps a billing webhook to the billing aggregate keyed by Stripe event id', () => {
+    const event: DomainEvent = {
+      type: 'billing.webhook',
+      stripeEventId: 'evt_123',
+      stripeEventType: 'customer.subscription.updated',
+      object: { id: 'sub_1' },
+    }
+    expect(buildOutboxEvent(event)).toMatchObject({
+      eventType: 'billing.webhook',
+      aggregateId: 'evt_123',
+      aggregateType: 'billing',
+    })
+  })
 })

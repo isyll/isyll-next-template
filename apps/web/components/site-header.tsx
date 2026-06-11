@@ -45,6 +45,12 @@ export async function SiteHeader() {
               >
                 {tNav('files')}
               </Link>
+              <Link
+                href='/dashboard/billing'
+                className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+              >
+                {tNav('billing')}
+              </Link>
               <NotificationBell initialCount={unreadCount} />
               <form action={signOutAction}>
                 <Button type='submit' variant='outline' size='sm'>

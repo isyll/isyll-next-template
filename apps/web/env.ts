@@ -64,6 +64,12 @@ export const env = createEnv({
     S3_SECRET_ACCESS_KEY: z.string().optional(),
     S3_ENDPOINT: z.url().optional(),
     S3_FORCE_PATH_STYLE: z.stringbool().optional(),
+    // Billing (Stripe). All optional — absent secret key = billing disabled.
+    // STRIPE_PRICE_ID is the subscription price the checkout sells;
+    // STRIPE_WEBHOOK_SECRET verifies inbound webhook signatures (`whsec_…`).
+    STRIPE_SECRET_KEY: z.string().startsWith('sk_').optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
+    STRIPE_PRICE_ID: z.string().startsWith('price_').optional(),
     // Error tracking (Sentry). All optional — absent DSN = Sentry disabled.
     // `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN` additionally power the
     // admin monitoring dashboard (read-only API) and source-map upload.

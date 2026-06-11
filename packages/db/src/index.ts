@@ -6,11 +6,13 @@ export * from './lib/search'
 export {
   publishEvent,
   buildOutboxEvent,
+  type PublishOptions,
   type DomainEvent,
   type DomainEventType,
   type UserRegisteredEvent,
   type UserNewConnectionEvent,
   type FeatureFlagChangedEvent,
+  type BillingWebhookEvent,
 } from './lib/events'
 export {
   createTransactional,

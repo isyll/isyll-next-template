@@ -46,10 +46,21 @@ export interface FeatureFlagChangedEvent {
   actorId: string | null
 }
 
+export interface BillingWebhookEvent {
+  type: 'billing.webhook'
+  /** The Stripe event id (`evt_…`); used as the outbox idempotency key. */
+  stripeEventId: string
+  /** The Stripe event type, e.g. `customer.subscription.updated`. */
+  stripeEventType: string
+  /** The Stripe event's `data.object` (the subscription, session, …). */
+  object: Record<string, unknown>
+}
+
 export type DomainEvent =
   | UserRegisteredEvent
   | UserNewConnectionEvent
   | FeatureFlagChangedEvent
+  | BillingWebhookEvent
 
 export type DomainEventType = DomainEvent['type']
 
@@ -64,6 +75,8 @@ function aggregateRef(event: DomainEvent): { id: string; type: string } {
       return { id: event.userId, type: 'user' }
     case 'feature_flag.changed':
       return { id: event.key, type: 'feature_flag' }
+    case 'billing.webhook':
+      return { id: event.stripeEventId, type: 'billing' }
   }
 }
 
@@ -78,11 +91,31 @@ export function buildOutboxEvent(event: DomainEvent): NewOutboxEvent {
   }
 }
 
+export interface PublishOptions {
+  /**
+   * At-most-once key. A duplicate insert is silently ignored, so the same
+   * external event (e.g. a re-delivered Stripe webhook) is enqueued only once.
+   */
+  idempotencyKey?: string
+}
+
 /**
  * Publish a domain event to the transactional outbox. Joins the ambient
  * transaction when called inside `withTransaction`, so it commits atomically
- * with the surrounding domain change.
+ * with the surrounding domain change. Pass an `idempotencyKey` to dedupe
+ * re-delivered external events.
  */
-export async function publishEvent(event: DomainEvent): Promise<void> {
-  await getDb().insert(outboxEvents).values(buildOutboxEvent(event))
+export async function publishEvent(
+  event: DomainEvent,
+  options?: PublishOptions
+): Promise<void> {
+  const row = buildOutboxEvent(event)
+  if (options?.idempotencyKey !== undefined) {
+    await getDb()
+      .insert(outboxEvents)
+      .values({ ...row, idempotencyKey: options.idempotencyKey })
+      .onConflictDoNothing({ target: outboxEvents.idempotencyKey })
+    return
+  }
+  await getDb().insert(outboxEvents).values(row)
 }

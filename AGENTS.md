@@ -98,6 +98,13 @@ are absent (dev).
   **per-channel preferences** (`app.notification_preferences`). Send via
   `deliverNotification` (respects the channel preference + pushes realtime). See
   `docs/notifications.md`.
+- **Billing.** Stripe behind a seam (`@/lib/billing`): a fetch-based client (no
+  SDK), `app.billing_customers` / `app.subscriptions` mirror tables, a checkout
+  flow and a billing-portal page at `/dashboard/billing`. Webhooks (`POST
+/api/webhooks/stripe`) verify the signature with `node:crypto` then route
+  through the **outbox** (`billing.webhook`, deduped on the Stripe event id) for
+  reliable, at-most-once processing. Env-gated on `STRIPE_*` and the
+  `billing.enabled` flag. See `docs/billing.md`.
 - **Feature flags.** `@/lib/feature-flags` → `isEnabled` / `getStringFlag` /
   `getNumberFlag` / `getJsonFlag` and the `<FeatureGate>` server component, gated
   per user (or any context attribute) with targeting rules + sticky percentage

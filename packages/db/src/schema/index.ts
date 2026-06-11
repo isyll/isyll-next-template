@@ -1,6 +1,7 @@
 export * from './_helpers'
 export * from './audit'
 export * from './auth'
+export * from './billing'
 export * from './events'
 export * from './feature-flags'
 export * from './notifications'
