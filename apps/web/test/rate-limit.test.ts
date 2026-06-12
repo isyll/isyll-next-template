@@ -1,8 +1,12 @@
 import { RateLimitError } from '@workspace/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Isolate from Sentry (it reads server env, unavailable under jsdom).
+// Isolate from modules that read server-only env at load (unavailable under
+// jsdom): Sentry, and the structured logger (pulled in via @/lib/redis).
 vi.mock('@/lib/sentry', () => ({ captureSecurityEvent: vi.fn() }))
+vi.mock('@/lib/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}))
 
 import { InMemoryRateLimiter, enforceRateLimit } from '@/lib/rate-limit'
 
