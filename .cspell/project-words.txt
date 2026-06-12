@@ -92,6 +92,7 @@ pgboss
 stringbool
 ioredis
 setex
+smembers
 pexpire
 zadd
 zcard

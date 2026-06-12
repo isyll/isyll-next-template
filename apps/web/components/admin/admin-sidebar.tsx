@@ -4,6 +4,7 @@ import {
   Activity,
   KeyRound,
   LayoutDashboard,
+  ListChecks,
   ShieldCheck,
   Users,
 } from 'lucide-react'
@@ -27,6 +28,7 @@ interface NavItem {
     | '/admin/operators'
     | '/admin/roles'
     | '/admin/monitoring'
+    | '/admin/jobs'
   labelKey: string
   icon: ComponentType<{ className?: string }>
   /** Required permission, or null for always-visible. */
@@ -63,6 +65,12 @@ const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'monitoring',
     icon: Activity,
     permission: 'monitoring.read',
+  },
+  {
+    href: '/admin/jobs',
+    labelKey: 'jobs',
+    icon: ListChecks,
+    permission: 'jobs.read',
   },
 ]
 

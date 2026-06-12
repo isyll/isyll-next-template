@@ -117,7 +117,8 @@
     "users": "Utilisateurs",
     "operators": "Opérateurs",
     "roles": "Rôles & permissions",
-    "monitoring": "Supervision"
+    "monitoring": "Supervision",
+    "jobs": "Tâches & file d'attente"
   },
   "AdminUsers": {
     "title": "Utilisateurs",
@@ -191,6 +192,40 @@
     "open": "Ouvrir",
     "noData": "Aucune donnée disponible.",
     "noIssues": "Aucun problème non résolu. 🎉"
+  },
+  "AdminJobs": {
+    "title": "Tâches & file d'attente",
+    "subtitle": "Inspectez l'outbox, les files pg-boss et rejouez les événements en échec.",
+    "statPending": "En attente",
+    "statFailed": "En échec (à réessayer)",
+    "statDead": "Abandonnés",
+    "statDeadHint": "Événements ayant épuisé leurs tentatives.",
+    "statProcessed": "Traités",
+    "queuesTitle": "Files pg-boss",
+    "queuesEmpty": "Aucune file active.",
+    "colQueue": "File",
+    "colQueued": "En file",
+    "colActive": "Actifs",
+    "colDeferred": "Différés",
+    "colTotal": "Total",
+    "dlqTitle": "File de lettres mortes (outbox)",
+    "colEvent": "Événement",
+    "colStatus": "Statut",
+    "colAttempts": "Tentatives",
+    "colFailedAt": "Dernier échec",
+    "colError": "Erreur",
+    "colActions": "Actions",
+    "status": {
+      "failed": "En échec",
+      "dead": "Abandonné"
+    },
+    "replay": "Rejouer",
+    "discard": "Supprimer",
+    "replayAll": "Rejouer les {count} abandonnés",
+    "replayed": "Événement remis en file.",
+    "discarded": "Événement supprimé.",
+    "replayedAll": "{count} événements remis en file.",
+    "empty": "Aucun événement en échec. 🎉"
   },
   "Validation": {
     "required": "Ce champ est obligatoire",

@@ -90,7 +90,9 @@ are absent (dev).
   `sendEmail`.
 - **Background jobs.** `@/lib/jobs` (pg-boss, Postgres-backed) → `enqueue` from
   actions, `work`/`schedule` in a worker process (`pnpm --filter web worker:jobs`
-  runs the scheduled retention prune). No extra infra.
+  runs the scheduled retention prune). No extra infra. Operators inspect queues
+  and the outbox **dead-letter queue** — with replay/discard — at `/admin/jobs`
+  (PBAC `jobs.read`/`jobs.write`). See `docs/jobs.md`.
 - **Tracing.** OpenTelemetry spans around Server Actions, the DAL, and the outbox
   relay, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (no-op
   otherwise; Sentry owns tracing when its DSN is set). See `docs/observability.md`.

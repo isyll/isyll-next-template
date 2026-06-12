@@ -86,6 +86,43 @@ export async function schedule(
   await boss.schedule(name, cron, data ?? {}, options)
 }
 
+/** A pg-boss queue's current backlog, for the operator jobs dashboard. */
+export interface QueueState {
+  name: string
+  /** Jobs waiting to be processed (created + retry). */
+  queued: number
+  /** Jobs currently being processed by a worker. */
+  active: number
+  /** Jobs scheduled for the future (back-off / delayed). */
+  deferred: number
+  /** Total jobs currently tracked for the queue. */
+  total: number
+}
+
+/**
+ * Snapshot every pg-boss queue's backlog. Read-only; degrades to an empty list
+ * if pg-boss can't be reached (e.g. the queue tables don't exist yet) so the
+ * dashboard never hard-fails.
+ */
+export async function listQueueStates(): Promise<QueueState[]> {
+  try {
+    const boss = await getBoss()
+    const queues = await boss.getQueues()
+    return queues
+      .map((queue) => ({
+        name: queue.name,
+        queued: queue.queuedCount,
+        active: queue.activeCount,
+        deferred: queue.deferredCount,
+        total: queue.totalCount,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  } catch (error) {
+    console.error('[jobs] failed to read queue states', error)
+    return []
+  }
+}
+
 /** Gracefully stop the pg-boss instance (call on worker shutdown). */
 export async function stopJobs(): Promise<void> {
   const current = bossPromise

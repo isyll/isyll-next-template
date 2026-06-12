@@ -22,6 +22,14 @@ export const ADMIN_PERMISSIONS = [
     key: 'monitoring.read',
     description: 'View monitoring, issues and incidents',
   },
+  {
+    key: 'jobs.read',
+    description: 'View background jobs and the dead-letter queue',
+  },
+  {
+    key: 'jobs.write',
+    description: 'Replay or discard dead-letter events',
+  },
   { key: 'supported_countries.read', description: 'View supported countries' },
   {
     key: 'supported_countries.write',
