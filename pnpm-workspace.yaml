@@ -166,6 +166,16 @@ catalog:
   '@playwright/test': 1.60.0
   '@types/k6': 2.0.0
 
+# `pnpm audit` triage: list advisory IDs to ignore here, each with a justifying
+# comment. Empty = fail on any high/critical advisory (see docs/security.md).
+auditConfig:
+  ignoreCves: []
+
+# Supply-chain hardening (opt-in): set `minimumReleaseAge` (minutes) to quarantine
+# newly-published versions before they can be installed, narrowing the window for
+# a compromised release. It is left unset so the committed lockfile installs as-is;
+# the list below pre-allows packages that would otherwise be too new when you
+# enable it. Example: `minimumReleaseAge: 10080` (7 days).
 minimumReleaseAgeExclude:
   - '@aws-sdk/checksums@3.1000.1'
   - '@aws-sdk/client-s3@3.1061.0'
