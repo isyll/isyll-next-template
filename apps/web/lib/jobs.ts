@@ -7,6 +7,7 @@ import {
 } from 'pg-boss'
 
 import { env } from '@/env'
+import { logger } from '@/lib/logger'
 
 /**
  * Background jobs backed by PostgreSQL (pg-boss) — no extra infrastructure: it
@@ -26,7 +27,9 @@ async function getBoss(): Promise<PgBoss> {
   bossPromise ??= (async () => {
     const boss = new PgBoss(env.DATABASE_URL)
     boss.on('error', (error: Error) => {
-      console.error('[jobs] pg-boss error', error)
+      // Connection-level errors can fire repeatedly while reconnecting; log
+      // them structured (not Sentry) to avoid flooding it.
+      logger.error({ err: error, scope: 'jobs' }, '[jobs] pg-boss error')
     })
     await boss.start()
     return boss
@@ -118,7 +121,10 @@ export async function listQueueStates(): Promise<QueueState[]> {
       }))
       .sort((a, b) => a.name.localeCompare(b.name))
   } catch (error) {
-    console.error('[jobs] failed to read queue states', error)
+    logger.error(
+      { err: error, scope: 'jobs' },
+      '[jobs] failed to read queue states'
+    )
     return []
   }
 }

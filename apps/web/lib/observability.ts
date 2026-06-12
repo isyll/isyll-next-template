@@ -5,7 +5,33 @@ import { type AppError, normalizeError } from '@workspace/core'
 import { logger } from '@/lib/logger'
 import { captureException } from '@/lib/sentry'
 
-export type ErrorContext = Record<string, unknown>
+/**
+ * Stable subsystem tag attached to every reported error so logs and Sentry can
+ * be filtered by area. Add a new member here when instrumenting a new seam —
+ * keeping it a closed union stops ad-hoc, inconsistently-cased scope strings.
+ */
+export type Scope =
+  | 'action'
+  | 'admin-action'
+  | 'outbox'
+  | 'outbox-worker'
+  | 'jobs'
+  | 'jobs-worker'
+  | 'retention:run'
+  | 'stripe-webhook'
+  | 'feature-flags'
+  | 'billing'
+  | 'redis'
+  | 'csp'
+
+export interface ErrorContext {
+  /** Subsystem the error came from. */
+  scope?: Scope
+  /** The Server Action name, when reporting from the action layer. */
+  action?: string
+  /** Any additional structured context. */
+  [key: string]: unknown
+}
 
 /**
  * The single choke-point for server-side error reporting. It normalizes any

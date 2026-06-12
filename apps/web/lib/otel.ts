@@ -1,3 +1,4 @@
+import { isAppError } from '@workspace/core'
 import {
   type Attributes,
   type Span,
@@ -28,10 +29,19 @@ export function withSpan<T>(
         span.setStatus({ code: SpanStatusCode.OK })
         return result
       } catch (error) {
-        span.recordException(
-          error instanceof Error ? error : new Error(String(error))
-        )
-        span.setStatus({ code: SpanStatusCode.ERROR })
+        // Operational AppErrors (validation, auth, rate-limit, not-found) are
+        // expected control flow, not failures: recording them as span
+        // exceptions and ERROR status would inflate the error rate on every
+        // trace dashboard. `reportError` still logs them downstream. Only
+        // genuine (non-operational) errors mark the span as failed.
+        if (isAppError(error) && error.isOperational) {
+          span.setStatus({ code: SpanStatusCode.OK })
+        } else {
+          span.recordException(
+            error instanceof Error ? error : new Error(String(error))
+          )
+          span.setStatus({ code: SpanStatusCode.ERROR })
+        }
         throw error
       } finally {
         span.end()

@@ -3,6 +3,7 @@ import 'server-only'
 import Redis, { type RedisOptions } from 'ioredis'
 
 import { env } from '@/env'
+import { logger } from '@/lib/logger'
 
 /**
  * Typed Redis client (ioredis) for the web app. Provides a lazily created
@@ -53,8 +54,9 @@ export function getRedis(): Redis | null {
 
   const client = new Redis(env.REDIS_URL, createRedisOptions())
   client.on('error', (err: Error) => {
-    // Don't crash the process on connection errors; just log them.
-    console.error('[redis] connection error', err.message)
+    // Don't crash the process on connection errors; just log them (structured,
+    // not Sentry — these can fire repeatedly while reconnecting).
+    logger.error({ err, scope: 'redis' }, '[redis] connection error')
   })
 
   if (env.NODE_ENV !== 'production') {

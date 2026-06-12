@@ -13,7 +13,9 @@ import { env } from '@/env'
 if (env.NEXT_PUBLIC_SENTRY_DSN) {
   Sentry.init({
     dsn: env.NEXT_PUBLIC_SENTRY_DSN,
-    tracesSampleRate: 0.1,
+    // Match the server/edge default: full sampling in dev, 10% in prod. The
+    // server side is additionally tunable via SENTRY_TRACES_SAMPLE_RATE.
+    tracesSampleRate: env.NODE_ENV === 'production' ? 0.1 : 1,
     sendDefaultPii: false,
   })
 }

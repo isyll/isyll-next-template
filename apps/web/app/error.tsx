@@ -1,5 +1,6 @@
 'use client'
 
+import * as Sentry from '@sentry/nextjs'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useEffect } from 'react'
@@ -11,9 +12,11 @@ import { buttonVariants } from '@workspace/ui/components/button'
  * Components in the subtree. Next.js renders this page instead of crashing
  * the whole app.
  *
+ * Errors hitting a boundary are NOT auto-captured by the client Sentry SDK, so
+ * we forward them explicitly (no-op unless NEXT_PUBLIC_SENTRY_DSN is set).
+ *
  * HOW TO CUSTOMISE:
  *   • Update the copy to match your brand voice.
- *   • Wire `reportError` or Sentry here if you need client-side error tracking.
  *   • For root-level (layout) errors use `global-error.tsx` instead.
  */
 export default function ErrorPage({
@@ -26,8 +29,7 @@ export default function ErrorPage({
   const t = useTranslations('ErrorPage')
 
   useEffect(() => {
-    // Log to your observability service here.
-    console.error('[error-boundary]', error)
+    Sentry.captureException(error)
   }, [error])
 
   return (
