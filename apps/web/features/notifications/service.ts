@@ -20,6 +20,8 @@ export async function deliverNotification(
 ): Promise<NotificationDTO | null> {
   if (!(await isChannelEnabled(input.userId, 'in_app'))) return null
   const notification = await createNotification(input)
+  // null = deduped (already delivered): don't ping inboxes for a no-op.
+  if (!notification) return null
   await publishNotificationChange(input.userId)
   return notification
 }

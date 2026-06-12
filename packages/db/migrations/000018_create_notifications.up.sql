@@ -6,11 +6,20 @@ CREATE TABLE app.notifications (
   title text NOT NULL,
   body text,
   data jsonb NOT NULL DEFAULT '{}'::jsonb,
+  -- Optional stable key making delivery idempotent: at-least-once event handlers
+  -- can replay, so they pass a dedupe_key (e.g. 'welcome') and a re-delivery is
+  -- a no-op instead of a duplicate notification.
+  dedupe_key text,
   read_at timestamptz,
   deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- At most one notification per (user, dedupe_key). Not filtered on deleted_at:
+-- once delivered, a replay must not re-create it even if the user deleted it.
+CREATE UNIQUE INDEX notifications_dedupe_key_unique
+ON app.notifications (user_id, dedupe_key) WHERE dedupe_key IS NOT null;
 
 -- Newest-first listing of a user's live notifications.
 CREATE INDEX notifications_user_idx

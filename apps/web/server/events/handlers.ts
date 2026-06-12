@@ -34,6 +34,8 @@ async function onUserRegistered(event: UserRegisteredEvent): Promise<void> {
   await deliverNotification({
     userId: event.userId,
     type: 'welcome',
+    // Idempotent: at-least-once delivery + a replay must not double-welcome.
+    dedupeKey: 'welcome',
     // The app is single-locale today; localize via the user's `language` when
     // adding locales (handlers run outside a request, so use a server lookup).
     title: `Bienvenue sur ${siteConfig.name} !`,
@@ -121,6 +123,8 @@ async function onBillingWebhook(event: BillingWebhookEvent): Promise<void> {
     await deliverNotification({
       userId,
       type: 'billing.subscribed',
+      // Idempotent per subscription: a webhook replay won't re-notify.
+      dedupeKey: `billing.subscribed:${subscription.id}`,
       title: `Abonnement activé`,
       body: 'Merci ! Votre abonnement est désormais actif.',
       data: { subscriptionId: subscription.id },

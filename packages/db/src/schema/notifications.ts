@@ -6,6 +6,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
 
@@ -31,6 +32,8 @@ export const notifications = appSchema.table(
       .$type<Record<string, unknown>>()
       .notNull()
       .default(sql`'{}'::jsonb`),
+    /** Optional stable key making at-least-once delivery idempotent. */
+    dedupeKey: text('dedupe_key'),
     readAt: timestamp('read_at', { withTimezone: true, mode: 'date' }),
     ...softDelete,
     ...timestamps,
@@ -42,6 +45,10 @@ export const notifications = appSchema.table(
     index('notifications_user_unread_idx')
       .on(table.userId)
       .where(sql`${table.readAt} is null and ${table.deletedAt} is null`),
+    // At most one notification per (user, dedupe_key); a replay is a no-op.
+    uniqueIndex('notifications_dedupe_key_unique')
+      .on(table.userId, table.dedupeKey)
+      .where(sql`${table.dedupeKey} is not null`),
   ]
 )
 

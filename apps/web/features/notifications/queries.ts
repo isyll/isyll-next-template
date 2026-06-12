@@ -13,7 +13,7 @@ import {
   schema,
   softDeletePatch,
 } from '@workspace/db'
-import { and, count, desc, eq, isNull } from 'drizzle-orm'
+import { and, count, desc, eq, isNull, sql } from 'drizzle-orm'
 
 const { notifications } = schema
 
@@ -33,6 +33,13 @@ export interface CreateNotificationInput {
   title: string
   body?: string
   data?: Record<string, unknown>
+  /**
+   * Optional stable key making delivery idempotent. The outbox delivers
+   * at-least-once, so an event handler can run twice; pass a dedupeKey (e.g.
+   * `'welcome'` or `subscription:${id}`) and a replay is a no-op instead of a
+   * duplicate notification.
+   */
+  dedupeKey?: string
 }
 
 type NotificationRow = typeof notifications.$inferSelect
@@ -89,21 +96,38 @@ export async function getUnreadNotificationCount(
   return totals[0]?.value ?? 0
 }
 
-/** Create a notification — typically called by server code / background jobs. */
+/**
+ * Create a notification — typically called by server code / background jobs.
+ * When `dedupeKey` is set, a row that already exists for `(userId, dedupeKey)`
+ * is left untouched and `null` is returned, so at-least-once event handlers can
+ * replay safely. Without a `dedupeKey` a failed insert throws.
+ */
 export async function createNotification(
   input: CreateNotificationInput
-): Promise<NotificationDTO> {
-  const [row] = await db
-    .insert(notifications)
-    .values({
-      userId: input.userId,
-      type: input.type,
-      title: input.title,
-      body: input.body ?? null,
-      data: input.data ?? {},
-    })
-    .returning()
-  if (!row) throw new Error('Failed to create notification')
+): Promise<NotificationDTO | null> {
+  const values = {
+    userId: input.userId,
+    type: input.type,
+    title: input.title,
+    body: input.body ?? null,
+    data: input.data ?? {},
+    dedupeKey: input.dedupeKey ?? null,
+  }
+  const [row] = input.dedupeKey
+    ? await db
+        .insert(notifications)
+        .values(values)
+        .onConflictDoNothing({
+          target: [notifications.userId, notifications.dedupeKey],
+          where: sql`${notifications.dedupeKey} is not null`,
+        })
+        .returning()
+    : await db.insert(notifications).values(values).returning()
+  if (!row) {
+    // A dedupeKey conflict means it was already delivered — idempotent no-op.
+    if (input.dedupeKey) return null
+    throw new Error('Failed to create notification')
+  }
   return toDto(row)
 }
 
