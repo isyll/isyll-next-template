@@ -121,3 +121,30 @@ BEGIN
   END IF;
 END;
 $$;
+
+-- Operator action: permanently discard a single dead event. DELETE is revoked
+-- from the app role above, so the discard runs as the table owner (SECURITY
+-- DEFINER), scoped to a 'dead' row. Returns true when a row was removed.
+CREATE OR REPLACE FUNCTION app.discard_outbox_event(p_id uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  affected integer;
+BEGIN
+  DELETE FROM app.outbox_events WHERE id = p_id AND status = 'dead';
+  GET DIAGNOSTICS affected = ROW_COUNT;
+  RETURN affected > 0;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION app.discard_outbox_event(uuid) FROM public;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
+    GRANT EXECUTE ON FUNCTION app.discard_outbox_event(uuid) TO app;
+  END IF;
+END;
+$$;

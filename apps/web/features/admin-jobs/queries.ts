@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { db, getReadDb, type OutboxEventStatus, schema } from '@workspace/db'
-import { and, count, desc, eq, inArray } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
 
 const { outboxEvents } = schema
 
@@ -120,10 +120,11 @@ export async function replayAllDeadEvents(): Promise<number> {
 
 /**
  * Permanently discard a dead event (give up on it). Only dead rows can be
- * discarded — a still-retrying `failed` row is left to the worker.
+ * discarded. DELETE on `app.outbox_events` is revoked from the app role
+ * (least privilege), so this goes through the SECURITY DEFINER
+ * `app.discard_outbox_event` function (migration 000020) rather than a direct
+ * DELETE — which would fail under the production app role.
  */
 export async function discardDeadEvent(id: string): Promise<void> {
-  await db
-    .delete(outboxEvents)
-    .where(and(eq(outboxEvents.id, id), eq(outboxEvents.status, 'dead')))
+  await db.execute(sql`select app.discard_outbox_event(${id})`)
 }
