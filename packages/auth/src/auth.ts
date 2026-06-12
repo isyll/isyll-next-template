@@ -9,12 +9,15 @@ import { eq } from 'drizzle-orm'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
+import { getAuthEnv } from './env'
 import { hashPassword, verifyPassword } from './password'
 import { createAuthRedisStorage } from './redis'
 import { buildSocialProviders } from './social'
 
+// Validate auth env at module load (fail fast on e.g. a too-short secret).
+const env = getAuthEnv()
 const isProd = process.env['NODE_ENV'] === 'production'
-const userUrl = process.env['AUTH_USER_URL'] ?? 'http://localhost:3000'
+const userUrl = env.AUTH_USER_URL ?? 'http://localhost:3000'
 
 /** Product name shown in emails. `pnpm project:init` rewrites this constant. */
 const APP_NAME = 'App'
@@ -46,7 +49,7 @@ function userLocale(user: object): AppLocale {
 export const userAuth = betterAuth({
   appName: APP_NAME,
   baseURL: userUrl,
-  secret: process.env['AUTH_USER_SECRET'],
+  secret: env.AUTH_USER_SECRET,
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,

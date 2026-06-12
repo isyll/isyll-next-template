@@ -6,7 +6,7 @@ import type { FlagDefinition, FlagValueType, JsonValue } from '@workspace/core'
  *
  * Adding a key here makes it available to the type-safe client immediately and,
  * with no DB row, it resolves to `defaultValue` (degrade-safe). Run
- * `pnpm --filter web flags:sync` to materialize a tunable row per key.
+ * `pnpm --filter web flags sync` to materialize a tunable row per key.
  */
 export interface FlagSpec<
   Type extends FlagValueType = FlagValueType,

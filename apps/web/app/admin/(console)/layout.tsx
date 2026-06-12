@@ -28,8 +28,28 @@ export default async function ConsoleLayout({
     redirect('/admin/login')
   }
 
-  const permissions = [...(await getOperatorPermissions(session.user.id))]
+  const permissionSet = await getOperatorPermissions(session.user.id)
+  const permissions = [...permissionSet]
   const t = await getTranslations('Admin')
+
+  // `console.access` is the baseline gate (matches `adminActionClient`). An
+  // active operator without it is signed in but has no console access — show an
+  // access-denied screen rather than redirect-looping back to /admin/login.
+  if (!permissionSet.has('console.access')) {
+    return (
+      <div className='flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center'>
+        <div className='max-w-md space-y-2'>
+          <h1 className='text-lg font-semibold'>{t('noAccessTitle')}</h1>
+          <p className='text-sm text-muted-foreground'>{t('noAccessHint')}</p>
+        </div>
+        <form action={signOutAdminAction}>
+          <Button type='submit' variant='outline' size='sm'>
+            {t('signOut')}
+          </Button>
+        </form>
+      </div>
+    )
+  }
 
   return (
     <div className='flex min-h-svh'>

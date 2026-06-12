@@ -11,8 +11,6 @@ declare const __brand: unique symbol
 
 export type Brand<T, B extends string> = T & { readonly [__brand]: B }
 
-export type Branded<T, B extends string> = Brand<T, B>
-
 /** Strip the brand back to its underlying primitive. */
 export function unbrand<T, B extends string>(value: Brand<T, B>): T {
   return value

@@ -110,7 +110,9 @@
     "welcome": "Connecté en tant que {email}",
     "permissions": "Permissions",
     "permissionsHint": "Vos permissions déterminent les sections accessibles.",
-    "noPermissions": "Aucune permission attribuée."
+    "noPermissions": "Aucune permission attribuée.",
+    "noAccessTitle": "Accès refusé",
+    "noAccessHint": "Votre compte n'a pas accès à la console d'administration. Contactez un administrateur."
   },
   "AdminNav": {
     "dashboard": "Tableau de bord",

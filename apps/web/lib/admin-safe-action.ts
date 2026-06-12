@@ -39,13 +39,22 @@ const baseAdminActionClient = createSafeActionClient({
   withSpan(`action ${metadata.actionName}`, () => next())
 )
 
-/** Requires an active operator session; injects `ctx.operator` and `ctx.permissions`. */
+/**
+ * Requires an active operator session that holds the baseline `console.access`
+ * permission; injects `ctx.operator` and `ctx.permissions`. `console.access` is
+ * the gate to the console — an operator without it (no roles, or roles that
+ * don't grant it) is rejected here and by the console layout, so per-resource
+ * permissions are never the only thing standing between an account and admin.
+ */
 export const adminActionClient = baseAdminActionClient.use(async ({ next }) => {
   const session = await adminAuth.api.getSession({ headers: await headers() })
   if (!session?.user.isActive) {
     throw new UnauthorizedError()
   }
   const permissions = await getOperatorPermissions(session.user.id)
+  if (!permissions.has('console.access')) {
+    throw new ForbiddenError()
+  }
   return next({
     ctx: { operator: session.user, session: session.session, permissions },
   })

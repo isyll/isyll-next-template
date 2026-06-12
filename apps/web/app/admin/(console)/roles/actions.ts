@@ -1,9 +1,9 @@
 'use server'
 
-import { ForbiddenError } from '@workspace/core'
+import { ConflictError, ForbiddenError } from '@workspace/core'
 import { softDeletePatch } from '@workspace/db'
 import { adminDb, rolePermissions, roles } from '@workspace/db/admin'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import * as z from 'zod'
 
@@ -23,13 +23,24 @@ export const createRoleAction = adminActionWithPermission('roles.write')
     })
   )
   .action(async ({ parsedInput }) => {
-    await adminDb
+    // Names are unique among live roles (partial unique index, deleted_at IS
+    // NULL). Target that predicate so an inserted-then-soft-deleted name can be
+    // reused, and surface a ConflictError when an ACTIVE role already owns it
+    // (a bare onConflictDoNothing would silently no-op and confuse the operator).
+    const [created] = await adminDb
       .insert(roles)
       .values({
         name: parsedInput.name,
         description: parsedInput.description ?? null,
       })
-      .onConflictDoNothing()
+      .onConflictDoNothing({
+        target: roles.name,
+        where: sql`deleted_at is null`,
+      })
+      .returning({ id: roles.id })
+    if (!created) {
+      throw new ConflictError('A role with this name already exists.')
+    }
     revalidatePath('/admin/roles')
   })
 

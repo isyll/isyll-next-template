@@ -12,7 +12,8 @@
     "./branded": "./src/branded.ts",
     "./assert": "./src/assert.ts",
     "./env": "./src/env.ts",
-    "./i18n": "./src/i18n.ts"
+    "./i18n": "./src/i18n.ts",
+    "./feature-flags": "./src/feature-flags.ts"
   },
   "scripts": {
     "lint": "eslint .",

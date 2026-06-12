@@ -3,11 +3,14 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
+import { getAuthEnv } from './env'
 import { hashPassword, verifyPassword } from './password'
 import { createAuthRedisStorage } from './redis'
 
+// Validate auth env at module load (fail fast on e.g. a too-short secret).
+const env = getAuthEnv()
 const isProd = process.env['NODE_ENV'] === 'production'
-const adminUrl = process.env['AUTH_ADMIN_URL'] ?? 'http://localhost:3000'
+const adminUrl = env.AUTH_ADMIN_URL ?? 'http://localhost:3000'
 
 /**
  * Operator (administrator) BetterAuth instance, fully separate from the
@@ -24,7 +27,7 @@ export const adminAuth = betterAuth({
   appName: 'Admin Console',
   baseURL: adminUrl,
   basePath: '/admin/api/auth',
-  secret: process.env['AUTH_ADMIN_SECRET'],
+  secret: env.AUTH_ADMIN_SECRET,
   database: drizzleAdapter(adminDb, {
     provider: 'pg',
     schema: adminAuthSchema,
