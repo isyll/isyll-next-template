@@ -58,24 +58,23 @@ function getAuthRedis(): Redis | null {
 }
 
 /**
- * Returns a BetterAuth-compatible `secondaryStorage` adapter. Pass this as
- * `secondaryStorage` in your `betterAuth()` config. The `prefix` separates
- * user sessions (`'user'`) from operator sessions (`'admin'`) in the same
- * Redis instance.
+ * Returns a BetterAuth-compatible `secondaryStorage` adapter, or `undefined`
+ * when `REDIS_URL` is unset. Pass this straight to `secondaryStorage` in your
+ * `betterAuth()` config: when it is `undefined`, BetterAuth treats secondary
+ * storage as absent and persists sessions in its primary Drizzle adapter
+ * (`app.sessions` / `admin.operator_sessions`) — the documented no-Redis
+ * fallback. Returning a no-op object instead would silently black-hole every
+ * session, so `undefined` is deliberate. The `prefix` separates user sessions
+ * (`'user'`) from operator sessions (`'admin'`) in the same Redis instance.
  */
 export function createAuthRedisStorage(
   prefix: 'user' | 'admin'
-): AuthSecondaryStorage {
+): AuthSecondaryStorage | undefined {
   const redis = getAuthRedis()
 
-  if (!redis) {
-    // No Redis configured — BetterAuth will use its primary DB adapter.
-    return {
-      get: () => Promise.resolve(null),
-      set: () => Promise.resolve(),
-      delete: () => Promise.resolve(),
-    }
-  }
+  // No Redis configured — return undefined so BetterAuth falls back to the
+  // primary DB adapter rather than writing sessions into a black hole.
+  if (!redis) return undefined
 
   const ns = (key: string) => `auth:${prefix}:${key}`
 

@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import {
   boolean,
   char,
@@ -44,6 +45,9 @@ export const countries = pgTable(
   (table) => [
     index('countries_region_idx').on(table.region),
     index('countries_currency_code_idx').on(table.currencyCode),
+    // The migration also defines a pg_trgm GIN index on `name`
+    // (`countries_name_trgm_idx`) for typo-tolerant country search; not modelled
+    // here (no first-class operator-class support). See migration 000004.
   ]
 )
 
@@ -65,12 +69,20 @@ export const timezones = pgTable(
  * everywhere; populate it (with optional `launch_date`) to restrict access.
  * Unlike the reference tables above, this one is mutable.
  */
-export const supportedCountries = pgTable('supported_countries', {
-  countryCode: char('country_code', { length: 2 })
-    .primaryKey()
-    .references(() => countries.iso2, { onDelete: 'cascade' }),
-  launchDate: date('launch_date'),
-  isActive: boolean('is_active').notNull().default(true),
-  ...softDelete,
-  ...timestamps,
-})
+export const supportedCountries = pgTable(
+  'supported_countries',
+  {
+    countryCode: char('country_code', { length: 2 })
+      .primaryKey()
+      .references(() => countries.iso2, { onDelete: 'cascade' }),
+    launchDate: date('launch_date'),
+    isActive: boolean('is_active').notNull().default(true),
+    ...softDelete,
+    ...timestamps,
+  },
+  (table) => [
+    index('supported_countries_is_active_idx')
+      .on(table.isActive)
+      .where(sql`${table.deletedAt} is null`),
+  ]
+)

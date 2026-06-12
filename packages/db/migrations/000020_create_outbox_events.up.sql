@@ -75,9 +75,14 @@ WHERE status = 'processed';
 CREATE TRIGGER outbox_events_set_updated_at BEFORE UPDATE ON app.outbox_events
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+-- The schema-wide ALTER DEFAULT PRIVILEGES (000002) already granted the app
+-- role SELECT/INSERT/UPDATE/DELETE on every future app table, so a bare GRANT of
+-- a subset would NOT withhold DELETE. Revoke first, then grant only the three
+-- verbs the app needs, so the prune can only run as the owner (SECURITY DEFINER).
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app') THEN
+    REVOKE ALL ON app.outbox_events FROM app;
     GRANT SELECT, INSERT, UPDATE ON app.outbox_events TO app;
   END IF;
 END;

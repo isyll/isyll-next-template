@@ -1,10 +1,12 @@
 import { sql } from 'drizzle-orm'
 import {
   boolean,
+  index,
   pgSchema,
   primaryKey,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
@@ -66,31 +68,41 @@ export const operatorSessions = adminSchema.table('operator_sessions', {
     .defaultNow(),
 })
 
-export const operatorAccounts = adminSchema.table('operator_accounts', {
-  id: text('id').primaryKey(),
-  accountId: text('account_id').notNull(),
-  providerId: text('provider_id').notNull(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => operators.id, { onDelete: 'cascade' }),
-  accessToken: text('access_token'),
-  refreshToken: text('refresh_token'),
-  idToken: text('id_token'),
-  accessTokenExpiresAt: timestamp('access_token_expires_at', {
-    withTimezone: true,
-  }),
-  refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
-    withTimezone: true,
-  }),
-  scope: text('scope'),
-  password: text('password'),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-})
+export const operatorAccounts = adminSchema.table(
+  'operator_accounts',
+  {
+    id: text('id').primaryKey(),
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => operators.id, { onDelete: 'cascade' }),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', {
+      withTimezone: true,
+    }),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
+      withTimezone: true,
+    }),
+    scope: text('scope'),
+    password: text('password'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique('operator_accounts_provider_account_unique').on(
+      table.providerId,
+      table.accountId
+    ),
+    index('operator_accounts_user_id_idx').on(table.userId),
+  ]
+)
 
 export const operatorVerifications = adminSchema.table(
   'operator_verifications',
@@ -105,7 +117,10 @@ export const operatorVerifications = adminSchema.table(
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
-  }
+  },
+  (table) => [
+    index('operator_verifications_identifier_idx').on(table.identifier),
+  ]
 )
 
 export const permissions = adminSchema.table('permissions', {
@@ -149,7 +164,12 @@ export const rolePermissions = adminSchema.table(
       .notNull()
       .references(() => permissions.id, { onDelete: 'cascade' }),
   },
-  (table) => [primaryKey({ columns: [table.roleId, table.permissionId] })]
+  (table) => [
+    primaryKey({ columns: [table.roleId, table.permissionId] }),
+    // The composite PK indexes (role_id, permission_id); add the reverse so
+    // "which roles grant this permission?" and FK cascades stay indexed.
+    index('role_permissions_permission_id_idx').on(table.permissionId),
+  ]
 )
 
 export const operatorRoles = adminSchema.table(
@@ -162,7 +182,10 @@ export const operatorRoles = adminSchema.table(
       .notNull()
       .references(() => roles.id, { onDelete: 'cascade' }),
   },
-  (table) => [primaryKey({ columns: [table.operatorId, table.roleId] })]
+  (table) => [
+    primaryKey({ columns: [table.operatorId, table.roleId] }),
+    index('operator_roles_role_id_idx').on(table.roleId),
+  ]
 )
 
 /** Schema map consumed by the admin BetterAuth drizzle adapter. */

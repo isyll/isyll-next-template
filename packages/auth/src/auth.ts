@@ -134,11 +134,11 @@ export const userAuth = betterAuth({
       trustedProviders: ['google', 'microsoft', 'apple'],
     },
   },
-  // Sessions are stored exclusively in Redis (fast TTL-based lookup).
-  // `storeSessionInDatabase` is intentionally omitted (defaults to falsy when
-  // `secondaryStorage` is provided) so the `app.sessions` table is not written
-  // to. The sessions table exists as a no-op fallback; in dev without Redis it
-  // gracefully falls back to the Drizzle adapter.
+  // Sessions are stored exclusively in Redis (fast TTL-based lookup) when
+  // `REDIS_URL` is set: `createAuthRedisStorage` returns the storage adapter and
+  // `storeSessionInDatabase` defaults to falsy, so `app.sessions` is not
+  // written to. When `REDIS_URL` is unset it returns `undefined`, and BetterAuth
+  // falls back to persisting sessions in the Drizzle adapter (`app.sessions`).
   secondaryStorage: createAuthRedisStorage('user'),
   session: {
     expiresIn: 60 * 60 * 24 * 30,
