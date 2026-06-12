@@ -1,23 +1,39 @@
 # Theming & rebranding
 
 The UI is driven by a small set of CSS custom properties in
-[`packages/ui/src/styles/globals.css`](../packages/ui/src/styles/globals.css).
-Rebranding a project is usually a **one-block edit**.
+[`packages/ui/src/styles/globals.css`](../packages/ui/src/styles/globals.css), so
+rebranding a project is usually a one-block edit.
 
-## Three tiers
+## Overview
 
-```text
---brand-*            ← brand primitives  (edit these to rebrand)
-   ↓ mapped to
---primary, --background, --border, …   ← semantic role tokens (light + .dark)
-   ↓ exposed by @theme inline as
-bg-primary, text-muted-foreground, …   ← Tailwind utilities (used by components)
+Color flows through three tiers: brand primitives map to semantic role tokens,
+which `@theme inline` exposes as Tailwind utilities. Components only ever use the
+semantic utilities, so editing the brand primitives re-skins the whole UI.
+
+## How it works
+
+```mermaid
+flowchart TD
+    B["--brand-*  · brand primitives (edit to rebrand)"] --> S["--primary, --background, --border, … · semantic role tokens (light + .dark)"]
+    S --> U["bg-primary, text-muted-foreground, … · Tailwind utilities"]
+    U --> C[Components]
 ```
 
 Components only ever use the **semantic** utilities (`bg-primary`,
 `text-muted-foreground`, `border-border`, …). They never hardcode a color, so a
 change to the brand primitives flows everywhere — buttons, links, focus rings,
 the sidebar, the auth panel, etc.
+
+## Key files
+
+| Concern                              | Path                                                        |
+| ------------------------------------ | ----------------------------------------------------------- |
+| Tokens (brand + semantic + `.admin`) | `packages/ui/src/styles/globals.css`                        |
+| Theme presets (init)                 | `scripts/init-project.ts`                                   |
+| PWA / browser-chrome color           | `apps/web/lib/site-config.ts` (`themeColor`)                |
+| Email brand color                    | `packages/email/src/tokens.ts` (`emailTokens.colors.brand`) |
+| Dark-mode provider                   | `apps/web/components/providers.tsx`                         |
+| Mode toggle                          | `packages/ui/src/components/mode-toggle.tsx`                |
 
 ## Colors are oklch
 
@@ -31,7 +47,7 @@ oklch is perceptually uniform, so keeping L/C fixed and changing only H gives a
 palette of consistent contrast. Pick a color with any oklch picker (e.g.
 oklch.com).
 
-## Rebrand in one block
+## Usage / commands — rebrand in one block
 
 Edit `--brand`, `--brand-foreground` and `--brand-ring` in **both** `:root`
 (light) and `.dark` (dark). The default is indigo:
@@ -49,7 +65,7 @@ Edit `--brand`, `--brand-foreground` and `--brand-ring` in **both** `:root`
 }
 ```
 
-To switch the whole UI to, say, emerald: change `277` → `163` in those six
+To switch the whole UI to, say, emerald: change `277` to `163` in those six
 lines. That's it.
 
 Then keep two non-CSS values in sync (they can't read CSS variables):
@@ -81,20 +97,23 @@ pnpm project:init --theme emerald      # non-interactive
 pnpm project:init                      # or pick from the prompt
 ```
 
-`indigo` is the default, so selecting it changes nothing. The admin
-console keeps its own distinct hue (teal) regardless — see the `.admin` block in
-`globals.css`. For a hue not listed here, pick `indigo` and edit the block by
-hand as above.
+`indigo` is the default, so selecting it changes nothing. The admin console keeps
+its own distinct hue (teal) regardless — see the `.admin` block in `globals.css`.
+For a hue not listed here, pick `indigo` and edit the block by hand as above.
 
-## Going beyond one color
+## How to extend
 
-The neutrals (`--secondary`, `--muted`, `--accent`, `--border`) are intentionally
-neutral grays. To tint them toward the brand, give them a small chroma at the
-brand hue, e.g. `--accent: oklch(0.96 0.02 277)`. For a true second brand color,
-add a `--brand-secondary` primitive and map `--secondary`/`--accent` to it.
-
-`--chart-1…5` are a neutral data-viz ramp; replace them with a branded ramp if
-you build dashboards.
+- **Tint the neutrals** — `--secondary`, `--muted`, `--accent`, `--border` are
+  intentionally neutral grays. Give them a small chroma at the brand hue, e.g.
+  `--accent: oklch(0.96 0.02 277)`.
+- **A true second brand color** — add a `--brand-secondary` primitive and map
+  `--secondary`/`--accent` to it.
+- **Branded charts** — `--chart-1…5` are a neutral data-viz ramp; replace them
+  with a branded ramp if you build dashboards.
+- **Corner radius** — the whole UI scales from a single `--radius` token
+  (`--radius-sm/md/lg/…` are computed from it).
+- **Add components** — shadcn (Base UI) components live in
+  `packages/ui/src/components`; add more with `pnpm ui:add <component>`.
 
 ## Dark mode
 
@@ -106,9 +125,7 @@ The provider is wired in
 [`apps/web/components/providers.tsx`](../apps/web/components/providers.tsx) and
 carries the CSP nonce from `proxy.ts`.
 
-## Components & radius
+## Related docs
 
-shadcn (Base UI) components live in `packages/ui/src/components`. Add more with
-`pnpm ui:add <component>`. The corner radius scales from a single `--radius`
-token (`--radius-sm/md/lg/…` are computed from it), so one value controls the
-roundness of the whole UI.
+- [Operator console](./admin.md)
+- [Infrastructure](./infrastructure.md)

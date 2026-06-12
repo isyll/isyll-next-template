@@ -170,3 +170,8 @@ tsquery
 websearch
 opentelemetry
 otlp
+adminer
+cves
+replica
+réplica
+unparseable

@@ -65,7 +65,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Gate on known advisories. `high` (and above) fails the build; moderate/low
-      # are reported but non-blocking. Triage false positives with overrides in
-      # package.json (`pnpm.auditConfig.ignoreCves`) — never by lowering this gate.
+      # are reported but non-blocking. Triage false positives via
+      # `auditConfig.ignoreCves` in pnpm-workspace.yaml — never by lowering this gate.
       - name: Audit dependencies (fail on high or critical)
         run: pnpm audit --audit-level high

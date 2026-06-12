@@ -1,27 +1,63 @@
 # Caching
 
-Two complementary tiers, both keyed by the **same tag vocabulary** so a single
-write (or domain event) can invalidate everything derived from it.
+Two complementary tiers — Next 16 Cache Components for rendered output and a
+Redis read-through cache (`@/lib/cache`) for shared data — keyed by the **same
+tag vocabulary**, both degrading safely (the Redis tier no-ops without
+`REDIS_URL`).
+
+## Overview
 
 | Tier                  | Caches                             | Lives in                   | Invalidate with       |
 | --------------------- | ---------------------------------- | -------------------------- | --------------------- |
 | **Render cache**      | rendered Server Component output   | Next.js (Cache Components) | `revalidateTag(...)`  |
 | **Shared data cache** | serialized values across instances | Redis (`@/lib/cache`)      | `invalidateTags(...)` |
 
-Both degrade safely: render caching is a Next built-in, and the Redis tier
-no-ops without `REDIS_URL` (every read becomes the underlying query).
+Because both sides use the same `cacheTags` builders, a single write (or domain
+event) can invalidate everything derived from it. Render caching is a Next
+built-in; the Redis tier no-ops without `REDIS_URL` (every read becomes the
+underlying query, writes/invalidations are no-ops — correct, just uncached).
 
-## Shared data cache — `@/lib/cache`
+## How it works
 
-A typed, Redis-backed cache for data that is expensive to compute and safe to
-serve slightly stale — a subscription state, an aggregate count, a third-party
-lookup. Built on the shared ioredis client (`@/lib/redis`), so it inherits the
-same `REDIS_URL` gating and graceful degradation.
+One change can fan out to both tiers. In-process mutations revalidate the render
+tag synchronously; cross-process work (the outbox worker) reaches only the Redis
+tier — which is exactly what cross-instance freshness needs.
+
+```mermaid
+flowchart TD
+    M[Mutation / domain event] --> RT{Where does it run?}
+    RT -->|Server Action / Route Handler<br/>in-process| RV["revalidateTag(tag)<br/>→ Next render cache"]
+    RT -->|outbox worker<br/>separate process| INV["invalidateTags(tag)<br/>→ Redis shared cache"]
+    RV --> Tag[(shared cacheTags vocabulary)]
+    INV --> Tag
+    Tag --> Read[next reads recompute]
+```
+
+The built-in example is billing: `getActiveSubscription(userId)` is cached under
+`cacheKeys.activeSubscription(userId)` and tagged
+`cacheTags.userBilling(userId)`. A Stripe subscription event is routed through
+the **outbox**, and the `billing.webhook` handler updates the mirror row then
+calls `invalidateTags(cacheTags.userBilling(userId))` — so every instance sees
+the new state immediately instead of waiting out the TTL.
+
+## Key files
+
+| Concern              | Path                                   |
+| -------------------- | -------------------------------------- |
+| Redis cache + tags   | `@/lib/cache`                          |
+| Redis client (gated) | `@/lib/redis`                          |
+| Billing handler      | `@/server/events/handlers.ts`          |
+| Render-cache opt-in  | `@/next.config.ts` (`cacheComponents`) |
+| Per-render memo      | `@/lib/feature-flags/cache`            |
+
+## Usage
+
+Read-through with the Redis tier:
 
 ```ts
 import { cached, cacheKeys, cacheTags } from '@/lib/cache'
 
-// Read-through: cache hit, or run the loader, store it (TTL + tags), return it.
+// Cache hit, or run the loader, store it (TTL + tags), return it.
 const subscription = await cached(
   cacheKeys.activeSubscription(userId),
   () => loadSubscriptionFromDb(userId),
@@ -29,52 +65,8 @@ const subscription = await cached(
 )
 ```
 
-API:
-
-- `cached(key, loader, opts?)` — read-through. Without Redis it is just
-  `loader()`. Caches `null`/`false`/`0` correctly (an envelope distinguishes a
-  cached `null` from a miss), so unknown keys don't re-query every time.
-- `cacheGet<T>(key)` / `cacheSet(key, value, opts?)` / `cacheDelete(...keys)` —
-  explicit access when read-through doesn't fit.
-- `invalidateTags(...tags)` — drop every entry carrying any of the tags.
-- `cacheTags` / `cacheKeys` — the shared builders. **Add one per cacheable
-  concern** and use it on both sides of the cache (write + invalidate).
-
-`opts`: `ttlSeconds` (default 300; `0` = no expiry) and `tags`. Invalidation is
-meant to be precise; the TTL is only a backstop.
-
-### Invalidated by domain events
-
-The point of the Redis tier is **cross-instance** freshness: when data changes,
-every instance should see it immediately rather than waiting out the TTL. Wire
-the invalidation to the domain event that represents the change.
-
-The built-in example is billing. `getActiveSubscription(userId)` is cached and
-tagged `cacheTags.userBilling(userId)`. When Stripe sends a subscription event,
-it is routed through the outbox and the `billing.webhook` handler updates the
-mirror row and then drops the tag:
-
-```ts
-// apps/web/server/events/handlers.ts — onBillingWebhook
-await upsertSubscription({
-  /* … */
-})
-await invalidateTags(cacheTags.userBilling(userId))
-```
-
-Because the handler runs in the **outbox worker** (a separate process), it can
-only reach the shared Redis tier — which is exactly what cross-process
-invalidation needs. Render-cache tags (below) are revalidated in-process.
-
-## Render cache — Next 16 Cache Components
-
-Cache Components (`use cache` + `cacheTag`/`revalidateTag`) cache rendered output
-and `fetch`/function results. It is **opt-in**: uncomment `cacheComponents: true`
-in [`next.config.ts`](../apps/web/next.config.ts), then wrap every dynamic read
-(`cookies()`, `headers()`, `searchParams`) in `<Suspense>` — without that the
-build fails. Adopt it page-by-page.
-
-Use the **same** `cacheTags` builders so one invalidation covers both tiers:
+Render cache (Cache Components) using the **same** tag builder so one
+invalidation covers both tiers:
 
 ```ts
 import { unstable_cacheTag as cacheTag } from 'next/cache'
@@ -88,20 +80,41 @@ async function BillingSummary({ userId }: { userId: string }) {
 }
 ```
 
-Revalidate the render tag **synchronously, in-process** — from the Server Action
-or Route Handler that made the change (where the Next cache context exists):
+Cache Components are **opt-in**: uncomment `cacheComponents: true` in
+[`next.config.ts`](../apps/web/next.config.ts), then wrap every dynamic read
+(`cookies()`, `headers()`, `searchParams`) in `<Suspense>` or the build fails.
+Adopt it page-by-page.
 
-```ts
-import { revalidateTag } from 'next/cache'
-import { cacheTags } from '@/lib/cache'
+`@/lib/cache` API:
 
-revalidateTag(cacheTags.userBilling(userId))
-```
+- `cached(key, loader, opts?)` — read-through. Without Redis it is just
+  `loader()`. Caches `null`/`false`/`0` correctly (an envelope distinguishes a
+  cached `null` from a miss).
+- `cacheGet<T>(key)` / `cacheSet(key, value, opts?)` / `cacheDelete(...keys)` —
+  explicit access when read-through doesn't fit.
+- `invalidateTags(...tags)` — drop every entry carrying any of the tags.
+- `cacheTags` / `cacheKeys` — the shared builders.
+
+`opts`: `ttlSeconds` (default 300; `0` = no expiry) and `tags`. Invalidation is
+meant to be precise; the TTL is only a backstop.
 
 `revalidateTag` only affects the Next server that runs it, so call it where the
 mutation happens. For mutations that fan out through the outbox worker, rely on
-the Redis tier for cross-process invalidation and short render-cache TTLs (or a
+the Redis tier for cross-process invalidation plus short render-cache TTLs (or a
 `revalidateTag` in the originating action) for the render tier.
+
+## How to extend (add a cached concern)
+
+1. **Add a key + tag builder** in `@/lib/cache` (`cacheKeys.*`, `cacheTags.*`).
+   Always include the user/owner id so per-user data is never cached under a
+   shared key.
+2. **Read through** with `cached(cacheKeys.X(id), loader, { tags: [cacheTags.X(id)] })`
+   at the call site; use the **same** `cacheTag(cacheTags.X(id))` in any
+   `'use cache'` render path.
+3. **Invalidate on the matching domain event.** In the handler
+   (`@/server/events/handlers.ts`) call `invalidateTags(cacheTags.X(id))`; in the
+   in-process Server Action that made the change, also `revalidateTag` if a render
+   fragment is cached. See `docs/events.md`.
 
 ## When to cache what
 
@@ -112,5 +125,20 @@ the Redis tier for cross-process invalidation and short render-cache TTLs (or a
 - **Whole rendered fragments**: Cache Components.
 
 Don't cache anything you can't safely serve stale for the TTL window, and never
-cache per-user data under a shared key — always include the user id in the key
-and tag (`cacheKeys.*`/`cacheTags.*` make this the default).
+cache per-user data under a shared key.
+
+## Configuration
+
+| Env var     | Effect                                                                    |
+| ----------- | ------------------------------------------------------------------------- |
+| `REDIS_URL` | Enables the shared data tier; unset → `@/lib/cache` no-ops (loader-only). |
+
+The render tier (Cache Components) is a Next built-in and needs no env var, only
+the `cacheComponents` opt-in in `next.config.ts`.
+
+## Related docs
+
+- `docs/events.md` — domain events that drive cross-process invalidation.
+- `docs/billing.md` — the `billing.webhook` → `userBilling` invalidation example.
+- `docs/feature-flags.md` — the two-tier flag cache.
+- `docs/adr/0004-concrete-vendors-behind-seams.md` — env-gated vendor seams.
