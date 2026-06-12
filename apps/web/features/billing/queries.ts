@@ -3,6 +3,8 @@ import 'server-only'
 import { db, schema } from '@workspace/db'
 import { and, desc, eq, inArray } from 'drizzle-orm'
 
+import { cached, cacheKeys, cacheTags } from '@/lib/cache'
+
 const { billingCustomers, subscriptions } = schema
 
 /** Subscription statuses that grant access to paid features. */
@@ -66,22 +68,33 @@ export async function upsertBillingCustomer(
     })
 }
 
-/** The user's current access-granting subscription, if any. */
+/**
+ * The user's current access-granting subscription, if any. Read on every render
+ * that gates a paid feature, so it is cached in Redis and invalidated precisely
+ * by the `billing.webhook` domain-event handler (see `@/server/events/handlers`).
+ * Without Redis this is an uncached DB read.
+ */
 export async function getActiveSubscription(
   userId: string
 ): Promise<SubscriptionDTO | null> {
-  const [row] = await db
-    .select()
-    .from(subscriptions)
-    .where(
-      and(
-        eq(subscriptions.userId, userId),
-        inArray(subscriptions.status, [...ACTIVE_STATUSES])
-      )
-    )
-    .orderBy(desc(subscriptions.currentPeriodEnd))
-    .limit(1)
-  return row ? toDto(row) : null
+  return cached(
+    cacheKeys.activeSubscription(userId),
+    async () => {
+      const [row] = await db
+        .select()
+        .from(subscriptions)
+        .where(
+          and(
+            eq(subscriptions.userId, userId),
+            inArray(subscriptions.status, [...ACTIVE_STATUSES])
+          )
+        )
+        .orderBy(desc(subscriptions.currentPeriodEnd))
+        .limit(1)
+      return row ? toDto(row) : null
+    },
+    { tags: [cacheTags.userBilling(userId)] }
+  )
 }
 
 export interface UpsertSubscriptionInput {

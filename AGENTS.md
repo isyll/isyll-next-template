@@ -119,6 +119,12 @@ are absent (dev).
   (`pnpm --filter web worker:outbox`) dispatches it to handlers in
   `apps/web/server/events`. Use for reliable side effects (email, notifications,
   webhooks). See `docs/events.md`.
+- **Caching.** Two tiers sharing one tag vocabulary: Next 16 Cache Components
+  (`use cache` + `cacheTag`/`revalidateTag`, opt-in per page) for render output,
+  and `@/lib/cache` (`cached`/`cacheGet`/`cacheSet`/`invalidateTags` over Redis)
+  for shared cross-instance data. Tags/keys come from `cacheTags`/`cacheKeys`;
+  invalidate on the matching domain event (e.g. `billing.webhook` drops a user's
+  cached subscription). No-ops without `REDIS_URL`. See `docs/caching.md`.
 
 ## Enforcement & guardrails (these fail CI / block edits — don't fight them)
 

@@ -17,6 +17,7 @@ import {
 } from '@/features/billing/queries'
 import { deliverNotification } from '@/features/notifications/service'
 import type { StripeSubscriptionObject } from '@/lib/billing/stripe'
+import { cacheTags, invalidateTags } from '@/lib/cache'
 import { logger } from '@/lib/logger'
 import { siteConfig } from '@/lib/site-config'
 
@@ -111,6 +112,10 @@ async function onBillingWebhook(event: BillingWebhookEvent): Promise<void> {
         : null,
     cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
   })
+
+  // The subscription mirror just changed → drop the user's cached billing reads
+  // so every instance reflects the new state immediately, not on TTL expiry.
+  await invalidateTags(cacheTags.userBilling(userId))
 
   if (event.stripeEventType === 'customer.subscription.created') {
     await deliverNotification({
