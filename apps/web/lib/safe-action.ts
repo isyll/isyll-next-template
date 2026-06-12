@@ -2,40 +2,18 @@ import 'server-only'
 
 import { userAuth } from '@workspace/auth'
 import { UnauthorizedError } from '@workspace/core'
-import {
-  createSafeActionClient,
-  DEFAULT_SERVER_ERROR_MESSAGE,
-} from 'next-safe-action'
 import { headers } from 'next/headers'
-import * as z from 'zod'
 
-import { reportError } from '@/lib/observability'
-import { withSpan } from '@/lib/otel'
+import { createBaseActionClient } from '@/lib/base-safe-action'
 import { createRateLimiter, enforceRateLimit } from '@/lib/rate-limit'
 
 /**
- * Server-action clients. Errors thrown in actions are normalized and reported
- * through the observability choke-point; only operational AppErrors surface
- * their message — everything else is masked. The outermost middleware wraps each
- * action in an OpenTelemetry span (no-op unless tracing is enabled).
+ * User-facing server-action clients, built on the shared base
+ * (`@/lib/base-safe-action`): errors route through the observability
+ * choke-point, only operational AppErrors surface their message, and each
+ * action runs inside an OpenTelemetry span.
  */
-export const actionClient = createSafeActionClient({
-  defineMetadataSchema() {
-    return z.object({ actionName: z.string() })
-  },
-  defaultValidationErrorsShape: 'flattened',
-  handleServerError(error, utils) {
-    const normalized = reportError(error, {
-      scope: 'action',
-      action: utils.metadata.actionName,
-    })
-    return normalized.isOperational
-      ? normalized.message
-      : DEFAULT_SERVER_ERROR_MESSAGE
-  },
-}).use(({ next, metadata }) =>
-  withSpan(`action ${metadata.actionName}`, () => next())
-)
+export const actionClient = createBaseActionClient('action')
 
 /** Requires an authenticated session; injects `ctx.user` / `ctx.session`. */
 export const authActionClient = actionClient.use(async ({ next }) => {
