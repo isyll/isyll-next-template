@@ -16,6 +16,7 @@ import {
   upsertSubscription,
 } from '@/features/billing/queries'
 import { deliverNotification } from '@/features/notifications/service'
+import { isBillingConfigured } from '@/lib/billing/stripe'
 import type { StripeSubscriptionObject } from '@/lib/billing/stripe'
 import { cacheTags, invalidateTags } from '@/lib/cache'
 import { logger } from '@/lib/logger'
@@ -90,6 +91,11 @@ function onFeatureFlagChanged(event: FeatureFlagChangedEvent): Promise<void> {
  * upsert is safe to repeat.
  */
 async function onBillingWebhook(event: BillingWebhookEvent): Promise<void> {
+  // Billing is optional: if it's been disabled (no STRIPE_*), no new webhook
+  // rows are produced, but a stale row could still arrive here — no-op it rather
+  // than failing. (The worker has no request context, so it can't read the
+  // user-scoped flag; the env gate is the right check here.)
+  if (!isBillingConfigured()) return
   if (!event.stripeEventType.startsWith('customer.subscription.')) return
 
   const subscription = event.object as unknown as StripeSubscriptionObject

@@ -8,6 +8,7 @@ import { ModeToggle } from '@workspace/ui/components/mode-toggle'
 
 import { LocaleSwitcher } from '@/components/locale-switcher'
 import { NotificationBell } from '@/components/notification-bell'
+import { isBillingAvailable } from '@/lib/billing/availability'
 import { getUnreadNotificationCount } from '@/features/notifications/queries'
 import { signOutAction } from '@/server/auth'
 
@@ -18,9 +19,14 @@ export async function SiteHeader() {
     userAuth.api.getSession({ headers: await headers() }),
   ])
 
-  const unreadCount = session
-    ? await getUnreadNotificationCount(session.user.id)
-    : 0
+  // Billing is optional: only surface its nav link when it's actually available
+  // (configured + flag on), so projects without billing have no dead link.
+  const [unreadCount, billingAvailable] = session
+    ? await Promise.all([
+        getUnreadNotificationCount(session.user.id),
+        isBillingAvailable(),
+      ])
+    : [0, false]
 
   return (
     <header className='sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur'>
@@ -45,12 +51,14 @@ export async function SiteHeader() {
               >
                 {tNav('files')}
               </Link>
-              <Link
-                href='/dashboard/billing'
-                className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-              >
-                {tNav('billing')}
-              </Link>
+              {billingAvailable ? (
+                <Link
+                  href='/dashboard/billing'
+                  className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                >
+                  {tNav('billing')}
+                </Link>
+              ) : null}
               <NotificationBell initialCount={unreadCount} />
               <form action={signOutAction}>
                 <Button type='submit' variant='outline' size='sm'>

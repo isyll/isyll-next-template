@@ -6,14 +6,13 @@ import {
   getStripeCustomerId,
   upsertBillingCustomer,
 } from '@/features/billing/queries'
+import { isBillingAvailable } from '@/lib/billing/availability'
 import {
   createBillingPortalSession,
   createCheckoutSession,
   createStripeCustomer,
   getStripePriceId,
-  isBillingConfigured,
 } from '@/lib/billing/stripe'
-import { isEnabled } from '@/lib/feature-flags'
 import { authActionClient } from '@/lib/safe-action'
 import { siteConfig } from '@/lib/site-config'
 
@@ -38,7 +37,7 @@ async function ensureStripeCustomer(user: {
 export const startCheckoutAction = authActionClient
   .metadata({ actionName: 'billing.checkout' })
   .action(async ({ ctx }) => {
-    if (!isBillingConfigured() || !(await isEnabled('billing.enabled'))) {
+    if (!(await isBillingAvailable())) {
       throw new ForbiddenError('Billing is unavailable.')
     }
     const customerId = await ensureStripeCustomer(ctx.user)
@@ -55,7 +54,7 @@ export const startCheckoutAction = authActionClient
 export const openBillingPortalAction = authActionClient
   .metadata({ actionName: 'billing.portal' })
   .action(async ({ ctx }) => {
-    if (!isBillingConfigured()) {
+    if (!(await isBillingAvailable())) {
       throw new ForbiddenError('Billing is unavailable.')
     }
     const customerId = await getStripeCustomerId(ctx.user.id)

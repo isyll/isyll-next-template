@@ -4,8 +4,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { getActiveSubscription } from '@/features/billing/queries'
-import { isBillingConfigured } from '@/lib/billing/stripe'
-import { isEnabled } from '@/lib/feature-flags'
+import { isBillingAvailable } from '@/lib/billing/availability'
 
 import { BillingPanel } from './billing-panel'
 
@@ -16,10 +15,7 @@ export default async function BillingPage() {
   }
 
   const t = await getTranslations('Billing')
-  // Billing is gated by configuration AND the `billing.enabled` feature flag,
-  // so it can be rolled out gradually (see docs/feature-flags.md).
-  const available =
-    isBillingConfigured() && (await isEnabled('billing.enabled'))
+  const available = await isBillingAvailable()
 
   return (
     <main className='mx-auto w-full max-w-2xl space-y-8 px-4 py-8'>
