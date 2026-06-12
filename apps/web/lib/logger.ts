@@ -13,8 +13,14 @@ import { env } from '@/env'
  * `pino` is kept external from the bundle via `serverExternalPackages` in
  * next.config.ts so its lazy transport/worker requires don't trip Turbopack.
  */
+// When `SKIP_ENV_VALIDATION` is set (e.g. CI builds), @t3-oss/env-nextjs returns
+// the raw environment unparsed, so Zod defaults are not applied and `LOG_LEVEL`
+// can be undefined at runtime even though its type says otherwise. pino 10 throws
+// on an undefined level, so widen the binding and fall back to the Zod default.
+const level = env.LOG_LEVEL as typeof env.LOG_LEVEL | undefined
+
 export const logger = pino({
-  level: env.LOG_LEVEL,
+  level: level ?? 'info',
   // Drop pid/hostname noise (null, not undefined); platforms add their own.
   base: null,
   formatters: {
