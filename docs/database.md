@@ -90,3 +90,11 @@ served from one can be slightly stale. Keep these on the primary:
 Everything else — listings, detail views, counts, suggestions — uses
 `getReadDb()`. Picking the wrong side is never a crash, only a freshness choice;
 when in doubt, prefer the primary.
+
+## Multi-tenancy
+
+Single-tenant by default. To serve isolated tenants from one deployment, choose
+shared-schema + Postgres RLS or schema-per-tenant — both fit the existing
+transaction/audit machinery. `pnpm project:init --multitenancy <rls|schema>`
+records the decision and (for `rls`) drops a starter migration. See
+`docs/multitenancy.md`.
