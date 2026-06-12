@@ -39,5 +39,12 @@ export const authEnvSchema = z.object({
 export type AuthEnv = z.infer<typeof authEnvSchema>
 
 export function getAuthEnv(): AuthEnv {
+  // Mirror the app's `@/env`: skip validation for builds / codegen where the
+  // real secrets are absent (`SKIP_ENV_VALIDATION=1`). A real runtime boot has
+  // the flag unset and validates — so a too-short AUTH_*_SECRET still fails fast.
+  if (process.env['SKIP_ENV_VALIDATION']) {
+    const raw: unknown = process.env
+    return raw as AuthEnv
+  }
   return parseEnv(authEnvSchema)
 }
