@@ -86,6 +86,10 @@ export const outboxEvents = appSchema.table(
     index('outbox_events_processed_at_idx')
       .on(table.processedAt)
       .where(sql`${table.status} = 'processed'`),
+    // Dead-letter listing for the operator dashboard (newest failures first).
+    index('outbox_events_dlq_idx')
+      .on(table.failedAt.desc())
+      .where(sql`${table.status} in ('failed', 'dead')`),
   ]
 )
 

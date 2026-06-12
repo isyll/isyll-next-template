@@ -72,6 +72,10 @@ WHERE idempotency_key IS NOT NULL;
 CREATE INDEX outbox_events_processed_at_idx ON app.outbox_events (processed_at)
 WHERE status = 'processed';
 
+-- Dead-letter queue listing for the operator dashboard (newest failures first).
+CREATE INDEX outbox_events_dlq_idx ON app.outbox_events (failed_at DESC)
+WHERE status IN ('failed', 'dead');
+
 CREATE TRIGGER outbox_events_set_updated_at BEFORE UPDATE ON app.outbox_events
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 

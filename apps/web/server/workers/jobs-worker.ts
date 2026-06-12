@@ -32,7 +32,19 @@ async function main(): Promise<void> {
       throw error // surface to pg-boss so it records/retries the failure
     }
   })
-  await schedule(RETENTION_QUEUE, env.RETENTION_CRON)
+  // pg-boss defaults to 2 retries with no delay/backoff; for a DB-heavy prune a
+  // transient blip should back off rather than hammer. Apply an explicit policy
+  // to each scheduled instance.
+  await schedule(
+    RETENTION_QUEUE,
+    env.RETENTION_CRON,
+    {},
+    {
+      retryLimit: 3,
+      retryDelay: 60,
+      retryBackoff: true,
+    }
+  )
   logger.info({ cron: env.RETENTION_CRON }, '[jobs] worker started')
 }
 
