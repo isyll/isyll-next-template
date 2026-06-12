@@ -50,18 +50,27 @@ Things almost every serious app re-implements; shipped once, well.
   tables, webhooks routed through the **outbox** for reliability, and a
   billing-portal page. See `docs/billing.md`.
 
-## Phase 2 — Scale & operations
+## Phase 2 — Scale & operations ✅ Shipped
 
-- **Caching layer.** Lean on Next 16 Cache Components (`use cache` +
-  `cacheTag`/`revalidateTag`) for render caching, and add a typed helper over the
-  Redis client for shared, cross-request data — both invalidated by domain
-  events.
-- **Read replicas.** Teach the Drizzle client about a read pool; route DAL reads
-  to replicas and writes/transactions to the primary.
+- **Caching layer.** `@/lib/cache` — a typed read-through cache over the shared
+  Redis client for cross-instance data, with tag-group invalidation wired to the
+  matching domain event (the `billing.webhook` handler drops a user's cached
+  subscription). Shares one `cacheTags`/`cacheKeys` vocabulary with Next 16 Cache
+  Components (`use cache` + `cacheTag`/`revalidateTag`, opt-in per page) for
+  render caching. No-ops without `REDIS_URL`. See `docs/caching.md`.
+- **Read replicas.** The Drizzle client learned a read pool: set
+  `DATABASE_REPLICA_URL` (and the admin equivalent) to route standalone reads via
+  `getReadDb()`/`dbRead` to a follower while writes/transactions stay on the
+  primary. Transaction-aware (read-your-writes preserved); reads that gate a
+  write or an authz decision deliberately stay on the primary. See
+  `docs/database.md`.
 - **Multitenancy option.** A documented pattern (`tenant_id` + Postgres RLS, or
-  schema-per-tenant) plus a `project:init` flag to scaffold it.
-- **Background-job dashboard + DLQ tooling.** A small operator page to inspect
-  `dead` outbox rows and pg-boss queues, with replay.
+  schema-per-tenant) plus `project:init --multitenancy <rls|schema>` to record
+  the decision and scaffold the RLS foundation. See `docs/multitenancy.md`.
+- **Background-job dashboard + DLQ tooling.** An operator page (`/admin/jobs`,
+  PBAC `jobs.read`/`jobs.write`) inspecting outbox status, pg-boss queue backlog,
+  and the dead-letter queue, with replay (single / all-dead) and discard. See
+  `docs/jobs.md`.
 
 ## Phase 3 — Quality, accessibility & polish
 
