@@ -55,6 +55,10 @@ tests/load                    k6 load tests
    - **Audit + transactions:** mutations that must be atomic run inside
      `withTransaction` / `withAdminTransaction` (sets the audit actor); watched
      columns on audited tables are recorded automatically by a DB trigger.
+   - **Read replicas:** standalone reads use `getReadDb()` (routed to a replica
+     when `DATABASE_REPLICA_URL` is set, else the primary); writes/transactions
+     and reads that gate a write or an authz decision stay on `db`/`getDb()`.
+     See `docs/database.md`.
 4. **Env** is read via `@/env` (apps/web) or each package's validated env —
    never `process.env` directly in app code.
 5. **i18n.** All user-facing text lives in `apps/web/messages/fr.json`; add keys,

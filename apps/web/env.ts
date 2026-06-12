@@ -24,7 +24,18 @@ export const env = createEnv({
     DATABASE_URL: z
       .string()
       .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string'),
+    // Optional read replicas. When set, standalone DAL reads route to the
+    // follower (`dbRead`/`getReadDb`); writes and transactions stay on the
+    // primary. Unset = reads use the primary. See docs/database.md.
+    DATABASE_REPLICA_URL: z
+      .string()
+      .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string')
+      .optional(),
     ADMIN_DATABASE_URL: z
+      .string()
+      .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string')
+      .optional(),
+    ADMIN_DATABASE_REPLICA_URL: z
       .string()
       .regex(/^postgres(ql)?:\/\//, 'Must be a PostgreSQL connection string')
       .optional(),

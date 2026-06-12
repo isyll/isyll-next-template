@@ -45,6 +45,36 @@ describe('createTransactional', () => {
     expect(getDb()).toBe(base)
   })
 
+  it('getReadDb returns the base client when no replica is configured', () => {
+    const { base } = createHarness()
+    const { getReadDb } = createTransactional(base)
+    expect(getReadDb()).toBe(base)
+  })
+
+  it('getReadDb returns the replica outside a transaction', () => {
+    const { base } = createHarness()
+    const { base: replica } = createHarness()
+    const { getDb, getReadDb } = createTransactional(base, replica)
+    expect(getReadDb()).toBe(replica)
+    // Writes still go to the primary.
+    expect(getDb()).toBe(base)
+  })
+
+  it('getReadDb returns the ambient tx inside a transaction (read-your-writes)', async () => {
+    const { base, tx } = createHarness()
+    const { base: replica } = createHarness()
+    const { getReadDb, withTransaction } = createTransactional(base, replica)
+
+    await withTransaction(() => {
+      // Inside the tx, reads must see in-flight writes → primary tx, not replica.
+      expect(getReadDb()).toBe(tx)
+      return Promise.resolve()
+    })
+
+    // Back outside, reads route to the replica again.
+    expect(getReadDb()).toBe(replica)
+  })
+
   it('runs fn inside a transaction and exposes the tx via getDb', async () => {
     const { base, tx } = createHarness()
     const { getDb, withTransaction } = createTransactional(base)

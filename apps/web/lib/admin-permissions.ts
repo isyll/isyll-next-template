@@ -8,7 +8,11 @@ import {
 } from '@workspace/db/admin'
 import { eq } from 'drizzle-orm'
 
-/** Resolve the set of permission keys an operator holds through their roles. */
+/**
+ * Resolve the set of permission keys an operator holds through their roles.
+ * Reads the PRIMARY (not a replica): authorization must never be served stale,
+ * or a just-revoked permission could still grant access during replica lag.
+ */
 export async function getOperatorPermissions(
   operatorId: string
 ): Promise<Set<string>> {

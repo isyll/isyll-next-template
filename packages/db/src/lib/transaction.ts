@@ -22,6 +22,10 @@ const tracer = trace.getTracer('workspace-db')
  *   - `getDb()` — the ambient transaction when called inside `withTransaction`,
  *     otherwise the base client. DAL helpers should read through `getDb()` so
  *     they transparently participate in an enclosing transaction.
+ *   - `getReadDb()` — like `getDb()`, but outside a transaction it returns the
+ *     read `replica` (falling back to the primary when none is configured).
+ *     Inside a transaction it returns the ambient (primary) connection, so
+ *     read-your-writes still holds. Standalone DAL reads should use this.
  */
 export interface Actor {
   id: string
@@ -41,18 +45,28 @@ interface TxCapable {
 
 export interface Transactional<TDb> {
   getDb: () => TDb
+  getReadDb: () => TDb
   withTransaction: <T>(
     fn: (tx: TDb) => Promise<T>,
     options?: TransactionOptions
   ) => Promise<T>
 }
 
+/**
+ * @param base    Primary client — handles writes, transactions and any read
+ *                that must see in-flight writes.
+ * @param replica Read-only client for standalone reads. Defaults to `base`, so
+ *                a single-database setup behaves exactly as before.
+ */
 export function createTransactional<TDb extends TxCapable>(
-  base: TDb
+  base: TDb,
+  replica: TDb = base
 ): Transactional<TDb> {
   const storage = new AsyncLocalStorage<TDb>()
 
   const getDb = (): TDb => storage.getStore() ?? base
+
+  const getReadDb = (): TDb => storage.getStore() ?? replica
 
   const withTransaction = async <T>(
     fn: (tx: TDb) => Promise<T>,
@@ -92,5 +106,5 @@ export function createTransactional<TDb extends TxCapable>(
     })
   }
 
-  return { getDb, withTransaction }
+  return { getDb, getReadDb, withTransaction }
 }

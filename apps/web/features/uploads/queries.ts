@@ -1,6 +1,12 @@
 import 'server-only'
 
-import { db, notDeleted, schema, softDeletePatch } from '@workspace/db'
+import {
+  db,
+  getReadDb,
+  notDeleted,
+  schema,
+  softDeletePatch,
+} from '@workspace/db'
 import { and, desc, eq } from 'drizzle-orm'
 
 const { uploads } = schema
@@ -59,7 +65,7 @@ export async function recordUpload(
 
 /** A user's live uploads, newest first. Ownership enforced by `userId`. */
 export async function listUploads(userId: string): Promise<UploadDTO[]> {
-  const rows = await db
+  const rows = await getReadDb()
     .select()
     .from(uploads)
     .where(and(eq(uploads.userId, userId), notDeleted(uploads)))
@@ -72,7 +78,7 @@ export async function getUpload(
   userId: string,
   id: string
 ): Promise<UploadDTO | null> {
-  const [row] = await db
+  const [row] = await getReadDb()
     .select()
     .from(uploads)
     .where(

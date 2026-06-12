@@ -7,7 +7,7 @@ import {
   toLimitOffset,
 } from '@workspace/core'
 import {
-  db,
+  getReadDb,
   notDeleted,
   schema,
   smartTextSearch,
@@ -76,15 +76,16 @@ export async function listUsers(
     : [desc(users.createdAt)]
   const { limit, offset } = toLimitOffset(params)
 
+  const read = getReadDb()
   const [rows, totals] = await Promise.all([
-    db
+    read
       .select()
       .from(users)
       .where(where)
       .orderBy(...orderBy)
       .limit(limit)
       .offset(offset),
-    db.select({ value: count() }).from(users).where(where),
+    read.select({ value: count() }).from(users).where(where),
   ])
 
   return paginated(rows.map(toDto), totals[0]?.value ?? 0, params)
@@ -101,7 +102,7 @@ export async function suggestUsers(
   const query = term.trim()
   if (query.length === 0) return []
 
-  const rows = await db
+  const rows = await getReadDb()
     .select({
       id: users.id,
       name: users.name,

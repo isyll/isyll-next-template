@@ -6,7 +6,13 @@ import {
   paginated,
   toLimitOffset,
 } from '@workspace/core'
-import { db, notDeleted, schema, softDeletePatch } from '@workspace/db'
+import {
+  db,
+  getReadDb,
+  notDeleted,
+  schema,
+  softDeletePatch,
+} from '@workspace/db'
 import { and, count, desc, eq, isNull } from 'drizzle-orm'
 
 const { notifications } = schema
@@ -51,15 +57,16 @@ export async function listNotifications(
   const where = and(eq(notifications.userId, userId), notDeleted(notifications))
   const { limit, offset } = toLimitOffset(params)
 
+  const read = getReadDb()
   const [rows, totals] = await Promise.all([
-    db
+    read
       .select()
       .from(notifications)
       .where(where)
       .orderBy(desc(notifications.createdAt))
       .limit(limit)
       .offset(offset),
-    db.select({ value: count() }).from(notifications).where(where),
+    read.select({ value: count() }).from(notifications).where(where),
   ])
 
   return paginated(rows.map(toDto), totals[0]?.value ?? 0, params)
@@ -69,7 +76,7 @@ export async function listNotifications(
 export async function getUnreadNotificationCount(
   userId: string
 ): Promise<number> {
-  const totals = await db
+  const totals = await getReadDb()
     .select({ value: count() })
     .from(notifications)
     .where(

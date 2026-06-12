@@ -2,7 +2,7 @@ import 'server-only'
 
 import { notDeleted } from '@workspace/db'
 import {
-  adminDb,
+  getAdminReadDb,
   operatorRoles,
   operators,
   permissions,
@@ -13,8 +13,9 @@ import { asc, eq } from 'drizzle-orm'
 
 /**
  * Read models for operator (admin) + role/permission management. Everything
- * lives in the isolated `admin` schema and is reached through `adminDb`.
- * Authorization is enforced by PBAC at the action/page layer.
+ * lives in the isolated `admin` schema and is read through `getAdminReadDb()`
+ * (the replica outside a transaction). Authorization is enforced by PBAC at the
+ * action/page layer.
  */
 export interface RoleRef {
   id: string
@@ -45,13 +46,14 @@ export interface PermissionDTO {
 }
 
 export async function listOperators(): Promise<AdminOperatorDTO[]> {
+  const read = getAdminReadDb()
   const [ops, assignments] = await Promise.all([
-    adminDb
+    read
       .select()
       .from(operators)
       .where(notDeleted(operators))
       .orderBy(asc(operators.email)),
-    adminDb
+    read
       .select({
         operatorId: operatorRoles.operatorId,
         id: roles.id,
@@ -79,13 +81,10 @@ export async function listOperators(): Promise<AdminOperatorDTO[]> {
 }
 
 export async function listRoles(): Promise<RoleDTO[]> {
+  const read = getAdminReadDb()
   const [roleRows, grants] = await Promise.all([
-    adminDb
-      .select()
-      .from(roles)
-      .where(notDeleted(roles))
-      .orderBy(asc(roles.name)),
-    adminDb
+    read.select().from(roles).where(notDeleted(roles)).orderBy(asc(roles.name)),
+    read
       .select({ roleId: rolePermissions.roleId, key: permissions.key })
       .from(rolePermissions)
       .innerJoin(permissions, eq(permissions.id, rolePermissions.permissionId)),
@@ -108,7 +107,7 @@ export async function listRoles(): Promise<RoleDTO[]> {
 }
 
 export async function listPermissions(): Promise<PermissionDTO[]> {
-  const rows = await adminDb
+  const rows = await getAdminReadDb()
     .select()
     .from(permissions)
     .orderBy(asc(permissions.key))

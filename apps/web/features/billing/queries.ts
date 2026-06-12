@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { db, schema } from '@workspace/db'
+import { db, getReadDb, schema } from '@workspace/db'
 import { and, desc, eq, inArray } from 'drizzle-orm'
 
 import { cached, cacheKeys, cacheTags } from '@/lib/cache'
@@ -34,6 +34,7 @@ function toDto(row: SubscriptionRow): SubscriptionDTO {
 export async function getStripeCustomerId(
   userId: string
 ): Promise<string | null> {
+  // Read on the primary: gates a write (checkout creates the customer if absent).
   const [row] = await db
     .select({ stripeCustomerId: billingCustomers.stripeCustomerId })
     .from(billingCustomers)
@@ -42,7 +43,7 @@ export async function getStripeCustomerId(
   return row?.stripeCustomerId ?? null
 }
 
-/** Reverse lookup used by the webhook handler. */
+/** Reverse lookup used by the webhook handler (gates the subscription upsert). */
 export async function getUserIdByStripeCustomer(
   stripeCustomerId: string
 ): Promise<string | null> {
@@ -80,7 +81,7 @@ export async function getActiveSubscription(
   return cached(
     cacheKeys.activeSubscription(userId),
     async () => {
-      const [row] = await db
+      const [row] = await getReadDb()
         .select()
         .from(subscriptions)
         .where(

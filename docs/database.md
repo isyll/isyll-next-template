@@ -56,3 +56,37 @@ grants are guarded so they no-op when a role is absent.
 Migration `000002` creates the `set_updated_at()` trigger function, the
 `prevent_row_mutation()` guard, and the `email_address` domain (validated,
 case-insensitive `citext`) reused by every account table.
+
+## Read replicas
+
+Set `DATABASE_REPLICA_URL` (and `ADMIN_DATABASE_REPLICA_URL` for the admin
+system) to a follower's connection string to route reads off the primary. When
+unset, the read client **is** the primary, so the default single-database setup
+is unchanged — replicas are pure opt-in.
+
+Three accessors per client (`@workspace/db` and `@workspace/db/admin`):
+
+| Accessor                 | Routes to                           | Use for                   |
+| ------------------------ | ----------------------------------- | ------------------------- |
+| `db` / `withTransaction` | primary                             | writes, transactions      |
+| `getDb()`                | ambient tx if any, else primary     | writes inside DAL helpers |
+| `getReadDb()` / `dbRead` | ambient tx if any, else **replica** | standalone reads          |
+
+`getReadDb()` is transaction-aware: inside a `withTransaction` it returns the
+primary connection, so **read-your-writes still holds** within a transaction.
+Only standalone reads (outside a transaction) hit the replica.
+
+**What stays on the primary, by design** — replicas are asynchronous, so a read
+served from one can be slightly stale. Keep these on the primary:
+
+- **Reads that gate a write** in the same operation (e.g. "does this customer
+  exist?" before creating one) — staleness there causes duplicates or lost
+  writes.
+- **Authorization reads** (`getOperatorPermissions`) — a just-revoked permission
+  must not linger.
+- **Reads feeding a write-through cache** whose invalidation assumes
+  read-your-writes (the feature-flag store).
+
+Everything else — listings, detail views, counts, suggestions — uses
+`getReadDb()`. Picking the wrong side is never a crash, only a freshness choice;
+when in doubt, prefer the primary.

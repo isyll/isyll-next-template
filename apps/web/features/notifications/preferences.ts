@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { db, schema } from '@workspace/db'
+import { db, getReadDb, schema } from '@workspace/db'
 import { and, eq } from 'drizzle-orm'
 
 import {
@@ -15,7 +15,7 @@ const { notificationPreferences } = schema
 export async function getNotificationPreferences(
   userId: string
 ): Promise<NotificationPreferences> {
-  const rows = await db
+  const rows = await getReadDb()
     .select({
       channel: notificationPreferences.channel,
       enabled: notificationPreferences.enabled,
@@ -30,7 +30,7 @@ export async function isChannelEnabled(
   userId: string,
   channel: NotificationChannel
 ): Promise<boolean> {
-  const [row] = await db
+  const [row] = await getReadDb()
     .select({ enabled: notificationPreferences.enabled })
     .from(notificationPreferences)
     .where(

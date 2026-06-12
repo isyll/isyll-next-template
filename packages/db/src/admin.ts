@@ -1,7 +1,9 @@
 export {
   adminDb,
+  adminDbRead,
   type AdminDB,
   getAdminDb,
+  getAdminReadDb,
   withAdminTransaction,
 } from './admin-client'
 export * from './schema/admin'

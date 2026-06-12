@@ -1,4 +1,11 @@
-export { db, type DB, getDb, withTransaction } from './client'
+export {
+  db,
+  dbRead,
+  type DB,
+  getDb,
+  getReadDb,
+  withTransaction,
+} from './client'
 export * as schema from './schema'
 export * from './validators'
 export * from './lib/soft-delete'
