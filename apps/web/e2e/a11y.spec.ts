@@ -97,14 +97,22 @@ test.describe('accessibility — prefers-reduced-motion', () => {
     expect(matches, 'reduced-motion media feature is emulated').toBe(true)
 
     // Probe with a synthetic animated element so the assertion does not depend
-    // on a specific page using animation. The global reset collapses any
-    // animation-duration to ~0 under prefers-reduced-motion.
+    // on a specific page using animation. Drive it from a stylesheet using the
+    // `animation-duration` longhand (not the inline `animation` shorthand, which
+    // WebKit reports inconsistently) so the global `!important` reset overrides
+    // it identically across engines.
     const duration = await page.evaluate(() => {
+      const style = document.createElement('style')
+      style.textContent =
+        '@keyframes rm-probe{to{opacity:0}}' +
+        '.rm-probe{animation-name:rm-probe;animation-duration:2s;animation-iteration-count:infinite}'
+      document.head.appendChild(style)
       const el = document.createElement('div')
-      el.style.animation = 'spin 2s linear infinite'
+      el.className = 'rm-probe'
       document.body.appendChild(el)
       const value = getComputedStyle(el).animationDuration
       el.remove()
+      style.remove()
       return value
     })
 
