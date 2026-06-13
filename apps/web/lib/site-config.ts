@@ -44,7 +44,7 @@ export const siteConfig = {
 
   locale: {
     default: 'fr',
-    supported: ['fr'] as string[],
+    supported: ['fr', 'en'] as string[],
   },
 
   links: {

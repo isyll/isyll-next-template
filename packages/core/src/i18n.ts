@@ -6,7 +6,7 @@
  * templates (`@workspace/email`). Add a locale here, then add its message
  * catalogues in each consumer.
  */
-export const APP_LOCALES = ['fr'] as const
+export const APP_LOCALES = ['fr', 'en'] as const
 
 export type AppLocale = (typeof APP_LOCALES)[number]
 
@@ -15,6 +15,7 @@ export const DEFAULT_LOCALE: AppLocale = 'fr'
 /** Self-named labels for each locale (for language switchers). */
 export const LOCALE_LABELS: Record<AppLocale, string> = {
   fr: 'Français',
+  en: 'English',
 }
 
 /** Type guard: is `value` one of the supported locales? */

@@ -14,13 +14,17 @@ export function LocaleSwitcher() {
   const [isPending, startTransition] = useTransition()
 
   return (
-    <div className='flex items-center gap-1' aria-label={t('label')}>
+    <div
+      role='group'
+      aria-label={t('label')}
+      className='flex items-center gap-1'
+    >
       {locales.map((locale) => (
         <Button
           key={locale}
           size='sm'
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- always true with one locale; meaningful once more are added
           variant={locale === activeLocale ? 'secondary' : 'ghost'}
+          aria-pressed={locale === activeLocale}
           disabled={isPending}
           onClick={() => {
             startTransition(async () => {

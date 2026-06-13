@@ -22,10 +22,11 @@ describe('i18n locale registry', () => {
   describe('isAppLocale', () => {
     it('accepts supported locales', () => {
       expect(isAppLocale('fr')).toBe(true)
+      expect(isAppLocale('en')).toBe(true)
     })
 
     it('rejects unsupported locales and non-strings', () => {
-      expect(isAppLocale('en')).toBe(false)
+      expect(isAppLocale('de')).toBe(false)
       expect(isAppLocale(undefined)).toBe(false)
       expect(isAppLocale(42)).toBe(false)
     })
@@ -34,10 +35,11 @@ describe('i18n locale registry', () => {
   describe('resolveLocale', () => {
     it('passes through a supported locale', () => {
       expect(resolveLocale('fr')).toBe('fr')
+      expect(resolveLocale('en')).toBe('en')
     })
 
     it('falls back to the default for anything else', () => {
-      expect(resolveLocale('en')).toBe(DEFAULT_LOCALE)
+      expect(resolveLocale('de')).toBe(DEFAULT_LOCALE)
       expect(resolveLocale(null)).toBe(DEFAULT_LOCALE)
     })
   })

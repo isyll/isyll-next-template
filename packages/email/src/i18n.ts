@@ -97,7 +97,53 @@ const fr: EmailMessages = {
   },
 }
 
-const dictionaries: Record<EmailLocale, EmailMessages> = { fr }
+const en: EmailMessages = {
+  common: {
+    footerAccount: (appName) =>
+      `You're receiving this email because you have an account on ${appName}.`,
+    footerRights: (appName, year) =>
+      `© ${year} ${appName}. All rights reserved.`,
+    linkFallback:
+      "If the button doesn't work, copy and paste this link into your browser:",
+  },
+  registration: {
+    subject: (appName) => `Confirm your email address — ${appName}`,
+    preview: (appName) => `Welcome to ${appName} — confirm your email address`,
+    heading: (name) => `Welcome, ${name} 👋`,
+    body: (appName) =>
+      `Thanks for signing up to ${appName}. To activate your account, confirm your email address by clicking the button below.`,
+    cta: 'Confirm my email address',
+    expiry:
+      "This link expires in 1 hour. If you didn't create an account, you can safely ignore this email.",
+  },
+  newConnection: {
+    subject: (appName) => `New sign-in detected on your account — ${appName}`,
+    preview: (appName) => `New sign-in detected on your ${appName} account`,
+    heading: 'New sign-in detected',
+    greeting: (name) => `Hi ${name},`,
+    body: (appName) =>
+      `A new sign-in was detected on your ${appName} account. If this was you, there's nothing to do. Otherwise, secure your account right away.`,
+    dateLabel: 'Date and time',
+    ipLabel: 'IP address',
+    deviceLabel: 'Device',
+    cta: 'Review my active sessions',
+    warning:
+      "If you don't recognize this sign-in, change your password and contact support. In an emergency, sign out of all sessions from your account's security page.",
+  },
+  passwordReset: {
+    subject: (appName) => `Reset your password — ${appName}`,
+    preview: (appName) => `Reset the password for your ${appName} account`,
+    heading: 'Password reset',
+    body: (appName) =>
+      `We received a request to reset the password for your ${appName} account. Click the button below to choose a new one.`,
+    cta: 'Reset my password',
+    expiry: 'This link expires in 1 hour.',
+    ignore:
+      "If you didn't make this request, ignore this email: your password stays unchanged.",
+  },
+}
+
+const dictionaries: Record<EmailLocale, EmailMessages> = { fr, en }
 
 /** Return the email copy for `locale`, falling back to the default. */
 export function emailMessages(
