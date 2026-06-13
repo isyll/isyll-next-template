@@ -54,6 +54,7 @@ catalog:
   eslint-config-prettier: 10.1.8
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 7.1.1
+  eslint-plugin-jsx-a11y: 6.10.2
   '@next/eslint-plugin-next': 16.2.9
   eslint-plugin-turbo: 2.9.18
   '@tanstack/eslint-plugin-query': 5.101.0
@@ -169,6 +170,7 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/user-event': 14.6.1
   '@playwright/test': 1.60.0
+  '@axe-core/playwright': 4.11.3
   '@types/k6': 2.0.0
 
 # `pnpm audit` triage: list advisory IDs to ignore here, each with a justifying

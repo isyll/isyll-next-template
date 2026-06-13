@@ -74,6 +74,7 @@ tests/load      k6 load tests
 - [docs/auth.md](./docs/auth.md) — user vs operator auth, PBAC, operator provisioning
 - [docs/infrastructure.md](./docs/infrastructure.md) — Docker, Nginx, environment
 - [docs/deployment.md](./docs/deployment.md) — deploy to a VPS over SSH; preview in Codespaces
+- [docs/accessibility.md](./docs/accessibility.md) — the WCAG 2.2 AA gate (jsx-a11y + axe-core)
 - [AGENTS.md](./AGENTS.md) — the canonical guide for AI agents
 
 ## Scripts

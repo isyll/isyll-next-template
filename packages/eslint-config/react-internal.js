@@ -1,3 +1,4 @@
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import pluginReact from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import globals from 'globals'
@@ -16,6 +17,9 @@ export const config = defineConfig(
   { settings: { react: { version: '19' } } },
   pluginReact.configs.flat.recommended,
   reactHooks.configs.flat.recommended,
+  // Accessibility lint for presentational components (labelled controls, valid
+  // ARIA, no redundant roles) — the static half of the a11y gate.
+  jsxA11y.flatConfigs.recommended,
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

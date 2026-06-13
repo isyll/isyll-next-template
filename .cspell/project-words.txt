@@ -175,3 +175,4 @@ cves
 replica
 réplica
 unparseable
+wcag

@@ -180,6 +180,7 @@ export default async function RootLayout({
         {siteConfig.analytics.googleTagManagerId ? (
           <noscript>
             <iframe
+              title='Google Tag Manager'
               src={`https://www.googletagmanager.com/ns.html?id=${siteConfig.analytics.googleTagManagerId}`}
               height='0'
               width='0'

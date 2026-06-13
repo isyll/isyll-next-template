@@ -4,6 +4,10 @@ import { cn } from '@workspace/ui/lib/utils'
 
 function Label({ className, ...props }: ComponentProps<'label'>) {
   return (
+    // Design-system <label> primitive: consumers associate it with a control
+    // via `htmlFor` at the call site (e.g. <Label htmlFor="email">), which the
+    // rule cannot see from this generic wrapper.
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control
     <label
       data-slot='label'
       className={cn(

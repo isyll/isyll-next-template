@@ -187,4 +187,21 @@
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+  /*
+   * Honor `prefers-reduced-motion` globally (WCAG 2.2 — 2.3.3 Animation from
+   * Interactions). Users who request reduced motion get animations and
+   * transitions collapsed to ~0 and instant scrolling. Covers tw-animate-css
+   * utilities, `animate-*` spinners, and any `motion/react` CSS. Verified in
+   * the E2E a11y suite under an emulated reduced-motion preference.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }

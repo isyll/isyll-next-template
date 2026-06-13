@@ -1,5 +1,6 @@
 import pluginNext from '@next/eslint-plugin-next'
 import pluginQuery from '@tanstack/eslint-plugin-query'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import pluginReact from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import globals from 'globals'
@@ -19,6 +20,10 @@ export const nextJsConfig = defineConfig(
   { settings: { react: { version: '19' } } },
   pluginReact.configs.flat.recommended,
   reactHooks.configs.flat.recommended,
+  // Accessibility lint (WCAG-aligned) on all JSX — labelled controls, valid
+  // ARIA, keyboard handlers paired with mouse handlers, etc. Static companion
+  // to the axe-core checks in the E2E suite.
+  jsxA11y.flatConfigs.recommended,
   ...pluginQuery.configs['flat/recommended'],
   {
     files: ['**/*.{ts,tsx,js,jsx}'],
