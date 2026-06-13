@@ -82,12 +82,19 @@ test.describe('accessibility — keyboard & visible focus', () => {
 })
 
 test.describe('accessibility — prefers-reduced-motion', () => {
-  test.use({ reducedMotion: 'reduce' })
-
   test('animations are neutralized when reduced motion is requested', async ({
     page,
   }) => {
+    // Emulate the preference imperatively (reliable across browsers), then load.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
+
+    // Sanity-check the emulation actually took, so a failure below points at
+    // the CSS reset rather than the test harness.
+    const matches = await page.evaluate(
+      () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+    expect(matches, 'reduced-motion media feature is emulated').toBe(true)
 
     // Probe with a synthetic animated element so the assertion does not depend
     // on a specific page using animation. The global reset collapses any

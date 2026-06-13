@@ -29,6 +29,16 @@ export default async function AuthLayout({
           aria-hidden='true'
           className='pointer-events-none absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-primary-foreground/5 blur-3xl'
         />
+        {/*
+         * Contrast scrim. The brand primary is mid-light, so the decorative
+         * glows above can drop small text below WCAG AA (4.5:1). This uniform
+         * darkening keeps every text layer well clear of the threshold while
+         * preserving the brand hue — verified by the axe E2E scan.
+         */}
+        <div
+          aria-hidden='true'
+          className='pointer-events-none absolute inset-0 bg-black/20'
+        />
 
         <Link
           href='/'
@@ -41,12 +51,12 @@ export default async function AuthLayout({
           <h2 className='text-3xl font-semibold tracking-tight text-balance'>
             {t('panelTitle')}
           </h2>
-          <p className='max-w-sm text-pretty text-primary-foreground/80'>
+          <p className='max-w-sm text-pretty text-primary-foreground'>
             {t('panelSubtitle')}
           </p>
         </div>
 
-        <p className='relative z-10 text-sm text-primary-foreground/60'>
+        <p className='relative z-10 text-sm text-primary-foreground/90'>
           {siteConfig.name}
         </p>
       </aside>
