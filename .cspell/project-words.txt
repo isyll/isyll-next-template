@@ -176,3 +176,4 @@ replica
 réplica
 unparseable
 wcag
+networkidle

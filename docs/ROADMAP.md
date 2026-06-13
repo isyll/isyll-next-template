@@ -74,21 +74,30 @@ Things almost every serious app re-implements; shipped once, well.
 
 ## Phase 3 — Quality, accessibility & polish
 
-- **Accessibility as a CI gate (WCAG 2.2 AA).** `axe-core` assertions inside
-  Playwright and an `eslint-plugin-jsx-a11y` pass; verified keyboard navigation
-  and visible focus on every interactive component; `prefers-reduced-motion`
-  honored in the motion layer; semantic landmarks/headings and labelled form
-  controls; contrast checked against the theme tokens; and a manual
-  screen-reader pass (VoiceOver / NVDA) on the auth and dashboard flows.
+**Shipped:**
+
+- **Accessibility as a CI gate (WCAG 2.2 AA).** ✅ `eslint-plugin-jsx-a11y` on
+  every `.tsx` (in `lint`, gating each PR) plus an `axe-core` scan of the public
+  pages, keyboard-reachability / visible-focus checks, and a global
+  `prefers-reduced-motion` reset — all asserted in the Playwright E2E suite.
+  Semantic landmarks/headings and labelled controls verified; color contrast is
+  evaluated by the real-browser axe run. A manual VoiceOver / NVDA pass on the
+  auth and dashboard flows stays the human half. See `docs/accessibility.md`.
+- **More locales.** ✅ Added `en` alongside `fr`: a key-for-key
+  `messages/en.json`, an `en` transactional-email dictionary, dynamic per-locale
+  message loading, and a locale-switcher test. `fr` remains the default and the
+  canonical type source.
+- **Email previews in CI.** ✅ Per-locale rendered-HTML snapshots of every
+  transactional template (`@workspace/email`), so copy and localization changes
+  surface in the PR diff.
+
+**Remaining:**
+
 - **Component workbench.** Storybook (or Ladle) for `@workspace/ui` with the a11y
   addon + visual-regression snapshots in CI.
-- **E2E coverage.** Expand Playwright to the auth flows and dashboard; add
+- **E2E coverage.** Expand Playwright to the auth flows and dashboard (an
+  authenticated context — the axe scan already covers the public pages); add
   Lighthouse / performance budgets in CI.
-- **Email previews in CI.** Snapshot the rendered templates per locale so copy
-  changes are reviewable.
-- **More locales.** The i18n plumbing (core registry, `messages/*.json`, email
-  dictionaries, `users.language`) already supports it — add `en` and a
-  locale-switcher test.
 
 ---
 
