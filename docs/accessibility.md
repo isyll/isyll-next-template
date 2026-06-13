@@ -53,6 +53,17 @@ Authenticated pages (dashboard, admin) rely on the static pass plus
 session-backed E2E as those flows grow; extend `PUBLIC_ROUTES` / add an
 authenticated context to widen the scan.
 
+**Two WebKit-only carve-outs** (Chromium and Firefox enforce everything):
+
+- `target-size` (2.5.8) is skipped on WebKit only — its `getBoundingClientRect`
+  under-reports the height of compact inline-flex nav controls, so the rule
+  fires falsely there. It still gates on Chromium/Firefox; on WebKit the manual
+  pass covers it.
+- The reduced-motion assertion verifies the _computed_ animation-duration on
+  Chromium/Firefox; WebKit's `getComputedStyle` returns the authored value
+  regardless of an `!important` override, so on WebKit the test asserts only
+  that the preference is emulated (the CSS reset itself is engine-agnostic).
+
 ## Motion
 
 `packages/ui/src/styles/globals.css` carries a global
