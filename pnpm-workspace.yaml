@@ -17,6 +17,11 @@ allowBuilds:
 # kysely 0.29.x — pin to the 0.28 line that still exports it.
 overrides:
   kysely: 0.28.17
+  # GHSA-gv7w-rqvm-qjhr: esbuild <0.28.1 skips binary integrity verification.
+  # Only reaches us transitively (tsx, drizzle-kit's @esbuild-kit/esm-loader,
+  # @sentry/webpack-plugin). Force the patched floor across the tree — the
+  # build/transform API is stable across these versions.
+  esbuild: '>=0.28.1'
 
 # Single source of truth for every shared dependency version across the
 # monorepo. Reference with `"<pkg>": "catalog:"` in any package.json. This
