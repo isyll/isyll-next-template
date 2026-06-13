@@ -11,6 +11,8 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "email:preview": "email dev --dir src/templates --port 3030",
     "email:export": "email export --dir src/templates --outDir dist/emails --pretty"
   },
@@ -29,6 +31,7 @@
     "@workspace/typescript-config": "workspace:*",
     "eslint": "catalog:",
     "react-email": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
